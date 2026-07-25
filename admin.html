@@ -1270,6 +1270,104 @@
           </div>
         </section>
 
+        <!-- Import/Export Properties Modal -->
+        <div class="modal-overlay" id="importExportModal" role="dialog" aria-modal="true" aria-labelledby="importExportModalTitle">
+          <div class="modal" style="max-width: 900px;">
+            <div class="modal-header">
+              <h2 class="modal-title" id="importExportModalTitle"><i class="fas fa-file-import"></i> Importar / Exportar Propiedades</h2>
+              <button class="modal-close" id="closeImportExportModal" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div class="import-export-tabs" role="tablist">
+                <button class="import-export-tab active" data-tab="import" role="tab">Importar</button>
+                <button class="import-export-tab" data-tab="export" role="tab">Exportar</button>
+              </div>
+
+              <!-- Import Tab -->
+              <div class="import-export-panel active" id="panel-import" role="tabpanel">
+                <div class="import-section">
+                  <h3><i class="fas fa-file-import"></i> Importar desde CSV/Excel</h3>
+                  <p class="import-hint">Arrastra un archivo CSV/Excel o haz clic para seleccionar. Máx. 500 registros.</p>
+                  
+                  <div class="file-upload-area" id="fileUploadArea">
+                    <input type="file" id="importFile" accept=".csv,.xlsx,.xls" style="display: none;">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Arrastra tu archivo aquí o <button type="button" class="btn-link" id="btnSelectFile">selecciona un archivo</button></p>
+                    <small>Formatos: CSV, XLSX, XLS · Máx. 10MB</small>
+                  </div>
+                  
+                  <div id="importPreview" class="import-preview" style="display: none;">
+                    <h4>Vista previa de importación</h4>
+                    <div class="import-stats">
+                      <span class="stat"><strong id="importTotalRows">0</strong> filas totales</span>
+                      <span class="stat"><strong id="importValidRows">0</strong> válidas</span>
+                      <span class="stat error"><strong id="importErrorRows">0</strong> con errores</span>
+                    </div>
+                    <div class="import-preview-table-container">
+                      <table class="import-preview-table">
+                        <thead id="importPreviewHeaders"></thead>
+                        <tbody id="importPreviewBody"></tbody>
+                      </table>
+                    </div>
+                    <div class="import-errors" id="importErrors" style="display: none;">
+                      <h5><i class="fas fa-exclamation-triangle"></i> Errores encontrados</h5>
+                      <ul id="importErrorsList"></ul>
+                    </div>
+                    
+                    <div class="import-options">
+                      <label class="checkbox-option">
+                        <input type="checkbox" id="importSkipErrors" checked>
+                        <span>Omitir filas con errores (importar solo válidas)</span>
+                      </label>
+                      <label class="checkbox-option">
+                        <input type="checkbox" id="importUpdateExisting" checked>
+                        <span>Actualizar existentes (por título + ubicación)</span>
+                      </label>
+                      <label class="checkbox-option">
+                        <input type="checkbox" id="importDownloadImages" checked>
+                        <span>Descargar y subir imágenes a Cloudinary</span>
+                      </label>
+                    </div>
+                    
+                    <div class="modal-footer">
+                      <button type="button" class="btn-secondary" id="btnCancelImport">Cancelar</button>
+                      <button type="button" class="btn-primary" id="btnConfirmImport" disabled>
+                        <i class="fas fa-download"></i> Importar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Export Tab -->
+                <div class="import-export-panel" id="panel-export" role="tabpanel" style="display: none;">
+                  <h3><i class="fas fa-file-export"></i> Exportar Propiedades</h3>
+                  <p class="export-hint">Exporta las propiedades actuales con los filtros aplicados.</p>
+                  <div class="export-options">
+                    <h4>Campos a exportar</h4>
+                    <div class="checkbox-grid" id="exportFields">
+                      <!-- Se llena dinámicamente -->
+                    </div>
+                    <div class="checkbox-option">
+                      <input type="checkbox" id="exportApplyFilters" checked>
+                      <span>Aplicar filtros actuales de la tabla</span>
+                    </div>
+                    <div class="checkbox-option">
+                      <input type="checkbox" id="exportIncludeImages">
+                      <span>Incluir URLs de imágenes</span>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="btnCancelExport">Cancelar</button>
+                    <button type="button" class="btn-primary" id="btnConfirmExport">
+                      <i class="fas fa-file-export"></i> Exportar CSV
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- Agents Section -->
         <section id="section-agents" class="settings-panel">
           <div class="section-header">
