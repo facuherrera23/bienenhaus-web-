@@ -446,59 +446,7 @@
     </form>
   </div>
 
-  <!-- PANEL DE ADMINISTRACIÓN (solo se carga si se importa admin.js) -->
-  <div id="adminPanel" role="dialog" aria-modal="true" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:10000; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); padding:20px; overflow-y:auto;">
-    <div class="admin-container" style="max-width:1000px; margin:0 auto; background:white; border-radius:var(--radius-xl); padding:40px; position:relative;">
-      <button class="admin-close" onclick="cerrarAdmin()" aria-label="Cerrar panel" style="position:absolute; top:16px; right:20px; background:none; border:none; font-size:2rem; cursor:pointer; color:var(--gray-500);">&times;</button>
-      <h2 style="font-size:2rem; font-weight:800; margin-bottom:8px;">🛠️ Panel de Administración</h2>
-      <p style="color:var(--gray-600); margin-bottom:24px;">Gestiona propiedades y agentes de la plataforma.</p>
-      <div class="admin-tabs" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
-        <button class="active" onclick="cambiarTabAdmin('propiedades')" style="padding:10px 24px; border:1px solid var(--gray-200); border-radius:60px; background:var(--primary); color:white; cursor:pointer; font-weight:600; transition:var(--transition);">Propiedades</button>
-        <button onclick="cambiarTabAdmin('agentes')" style="padding:10px 24px; border:1px solid var(--gray-200); border-radius:60px; background:var(--gray-50); cursor:pointer; font-weight:600; transition:var(--transition);">Agentes</button>
-      </div>
-      <div class="admin-tab-content active" id="tabPropiedades" style="display:block;">
-        <button class="btn-admin btn-admin-success" onclick="mostrarFormPropiedad()" style="margin-bottom:16px; padding:8px 16px; border:none; border-radius:40px; font-weight:600; cursor:pointer; font-size:0.8rem; transition:var(--transition); background:var(--success); color:white;"><i class="fas fa-plus"></i> Nueva Propiedad</button>
-        <div id="formPropiedad" style="display:none;" class="admin-form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; background:var(--gray-50); padding:24px; border-radius:var(--radius); margin-bottom:24px; border:1px solid var(--gray-200);">
-          <h3 style="grid-column:1/-1; margin-bottom:8px;" id="formPropTitulo">Nueva Propiedad</h3>
-          <div><label>Título *</label><input type="text" id="propTitulo" placeholder="Ej: Ático dúplex con terraza"></div>
-          <div><label>Precio *</label><input type="number" id="propPrecio" placeholder="425000"></div>
-          <div><label>Moneda</label><select id="propMoneda"><option value="ARS">ARS (Pesos)</option><option value="USD">USD (Dólares)</option></select></div>
-          <div><label>Operación *</label><select id="propOperacion"><option value="venta">Venta</option><option value="alquiler">Alquiler</option></select></div>
-          <div><label>Ubicación *</label><input type="text" id="propUbicacion" placeholder="Córdoba"></div>
-          <div><label>Tipo *</label><select id="propTipo"><option value="piso">Piso/Apartamento</option><option value="chalet">Chalet/Casa</option><option value="atico">Ático</option><option value="local">Local/Oficina</option><option value="terreno">Terreno/Solar</option></select></div>
-          <div><label>Habitaciones</label><input type="number" id="propHabitaciones" placeholder="3"></div>
-          <div><label>Baños</label><input type="number" id="propBanos" placeholder="2"></div>
-          <div><label>m²</label><input type="number" id="propM2" placeholder="95"></div>
-          <div><label>Antigüedad</label><select id="propAntiguedad"><option value="nuevo">Nuevo</option><option value="reformado">Reformado</option><option value="viejo">Viejo</option></select></div>
-          <div><label>Destacado</label><select id="propDestacado"><option value="false">No</option><option value="true">Sí</option></select></div>
-          <div class="full" style="grid-column:1/-1;"><label>Características (separadas por coma)</label><input type="text" id="propCaracteristicas" placeholder="ascensor, terraza, garaje"></div>
-          <div class="full" style="grid-column:1/-1;"><label>Descripción</label><textarea id="propDescripcion" placeholder="Descripción detallada de la propiedad..."></textarea></div>
-          <div class="full" style="grid-column:1/-1;"><label>Imágenes (máximo 15)</label><input type="file" id="propImagenes" accept="image/*" multiple><div id="propImagenesPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div></div>
-          <div class="full" style="grid-column:1/-1; display:flex; gap:12px;"><button class="btn-admin btn-admin-success" onclick="guardarPropiedad()"><i class="fas fa-save"></i> Guardar</button><button class="btn-admin" onclick="cerrarFormPropiedad()" style="background:var(--gray-200);color:var(--gray-700);">Cancelar</button></div>
-        </div>
-        <div id="listaPropiedadesAdmin"><p>Cargando propiedades...</p></div>
-      </div>
-      <div class="admin-tab-content" id="tabAgentes" style="display:none;">
-        <button class="btn-admin btn-admin-success" onclick="mostrarFormAgente()" style="margin-bottom:16px; padding:8px 16px; border:none; border-radius:40px; font-weight:600; cursor:pointer; font-size:0.8rem; transition:var(--transition); background:var(--success); color:white;"><i class="fas fa-plus"></i> Nuevo Agente</button>
-        <div id="formAgente" style="display:none;" class="admin-form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; background:var(--gray-50); padding:24px; border-radius:var(--radius); margin-bottom:24px; border:1px solid var(--gray-200);">
-          <h3 style="grid-column:1/-1; margin-bottom:8px;" id="formAgenteTitulo">Nuevo Agente</h3>
-          <div><label>Nombre *</label><input type="text" id="agenteNombre" placeholder="Laura"></div>
-          <div><label>Apellido *</label><input type="text" id="agenteApellido" placeholder="Gómez"></div>
-          <div><label>Especialidad *</label><input type="text" id="agenteEspecialidad" placeholder="Venta · Lujo"></div>
-          <div><label>Email</label><input type="email" id="agenteEmail" placeholder="laura@bienenhaus.com"></div>
-          <div><label>Teléfono</label><input type="text" id="agenteTelefono" placeholder="+54 9 351 123-4567"></div>
-          <div><label>Orden</label><input type="number" id="agenteOrden" placeholder="1" value="99"></div>
-          <div class="full" style="grid-column:1/-1;"><label>Descripción</label><textarea id="agenteDescripcion" placeholder="Descripción del agente..."></textarea></div>
-          <div class="full" style="grid-column:1/-1;"><label>Avatar (imagen)</label><input type="file" id="agenteAvatar" accept="image/*"><div id="agenteAvatarPreview" style="width:60px;height:60px;border-radius:50%;background:var(--gray-200);display:flex;align-items:center;justify-content:center;font-size:2rem;margin-top:8px;overflow:hidden;"><span>👤</span></div></div>
-          <div class="full" style="grid-column:1/-1; display:flex; gap:12px;"><button class="btn-admin btn-admin-success" onclick="guardarAgente()"><i class="fas fa-save"></i> Guardar</button><button class="btn-admin" onclick="cerrarFormAgente()" style="background:var(--gray-200);color:var(--gray-700);">Cancelar</button></div>
-        </div>
-        <div id="listaAgentesAdmin"><p>Cargando agentes...</p></div>
-      </div>
-      <button class="btn-admin" onclick="cerrarAdmin()" style="background:var(--gray-200);color:var(--gray-700);margin-top:24px;padding:12px 32px;">Cerrar Panel</button>
-    </div>
-  </div>
-
-  <!-- Botón para abrir admin (oculto por defecto, se muestra con Ctrl+Shift+A) -->
+  <!-- Botón para abrir admin (se muestra con Ctrl+Shift+A) -->
   <button id="btnAdmin" onclick="abrirAdmin()" style="display:none; position:fixed; bottom:100px; left:30px; z-index:999; background:var(--primary); color:white; border:none; padding:12px 20px; border-radius:60px; font-weight:600; cursor:pointer; box-shadow:var(--shadow-lg);"><i class="fas fa-user-cog"></i> Admin</button>
 
   <script type="module" src="/src/main.js"></script>

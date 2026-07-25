@@ -16,6 +16,7 @@ import {
 } from './properties.js';
 import { obtenerAgentes, renderizarAgentes } from './agents.js';
 import { initAllUI, cerrarDetalle } from './ui.js';
+import { initAdminRouting } from './admin.js';
 
 // ================================================================
 // VARIABLES GLOBALES (compatibilidad con código inline en HTML)
@@ -42,7 +43,6 @@ async function init() {
   try {
     // 1. Cargar propiedades
     await obtenerPropiedades({});
-    // propiedadesData se actualiza internamente en properties.js
     renderizarPropiedades();
 
     // 2. Cargar agentes (público)
@@ -52,12 +52,8 @@ async function init() {
     // 3. Inicializar toda la UI
     initAllUI();
 
-    // 4. Cargar admin si está visible
-    const btnAdmin = document.getElementById('btnAdmin');
-    if (btnAdmin && btnAdmin.style.display === 'block') {
-      await window.cargarPropiedadesAdmin();
-      await window.cargarAgentesAdmin();
-    }
+    // 4. Inicializar routing admin (/admin auto-abre)
+    initAdminRouting();
 
     console.log('✅ Bienenhaus inicializado correctamente');
   } catch (e) {
@@ -77,36 +73,33 @@ window.abrirDetalle = abrirDetalle;
 window.cerrarDetalle = cerrarDetalle;
 
 // Funciones admin - lazy load al hacer click
-window.cargarPropiedadesAdmin = async () => { const m = await loadAdmin(); return m.cargarPropiedadesAdmin(); };
-window.cargarAgentesAdmin = async () => { const m = await loadAgents(); return m.cargarAgentesAdmin(); };
-window.mostrarFormPropiedad = async () => { const m = await loadAdmin(); return m.mostrarFormPropiedad(); };
-window.cerrarFormPropiedad = async () => { const m = await loadAdmin(); return m.cerrarFormPropiedad(); };
-window.guardarPropiedad = async () => { const m = await loadAdmin(); return m.guardarPropiedad(); };
-window.editarPropiedad = async (id) => { const m = await loadAdmin(); return m.editarPropiedad(id); };
-window.eliminarPropiedad = async (id) => { const m = await loadAdmin(); return m.eliminarPropiedad(id); };
+window.cargarPropiedadesAdmin = async () => { const m = await import('./admin.js'); return m.cargarPropiedadesAdmin(); };
+window.cargarAgentesAdmin = async () => { const m = await import('./admin.js'); return m.cargarAgentesAdmin(); };
+window.mostrarFormPropiedad = async () => { const m = await import('./admin.js'); return m.mostrarFormPropiedad(); };
+window.cerrarFormPropiedad = async () => { const m = await import('./admin.js'); return m.cerrarFormPropiedad(); };
+window.guardarPropiedad = async () => { const m = await import('./admin.js'); return m.guardarPropiedad(); };
+window.editarPropiedad = async (id) => { const m = await import('./admin.js'); return m.editarPropiedad(id); };
+window.eliminarPropiedad = async (id) => { const m = await import('./admin.js'); return m.eliminarPropiedad(id); };
 
 // Funciones agentes - lazy load
-window.mostrarFormAgente = async () => { const m = await loadAgents(); return m.mostrarFormAgente(); };
-window.cerrarFormAgente = async () => { const m = await loadAgents(); return m.cerrarFormAgente(); };
-window.guardarAgente = async () => { const m = await loadAgents(); return m.guardarAgente(); };
-window.editarAgente = async (id) => { const m = await loadAgents(); return m.editarAgente(id); };
-window.eliminarAgente = async (id) => { const m = await loadAgents(); return m.eliminarAgente(id); };
+window.mostrarFormAgente = async () => { const m = await import('./admin.js'); return m.mostrarFormAgente(); };
+window.cerrarFormAgente = async () => { const m = await import('./admin.js'); return m.cerrarFormAgente(); };
+window.guardarAgente = async () => { const m = await import('./admin.js'); return m.guardarAgente(); };
+window.editarAgente = async (id) => { const m = await import('./admin.js'); return m.editarAgente(id); };
+window.eliminarAgente = async (id) => { const m = await import('./admin.js'); return m.eliminarAgente(id); };
+window.cargarAgentesAdmin = async () => { const m = await import('./admin.js'); return m.cargarAgentesAdmin(); };
 
 // Admin UI helpers
 window.cambiarTabAdmin = (name) => {
   document.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.admin-tabs button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`tab${name.charAt(0).toUpperCase() + name.slice(1)}`)?.classList.add('active');
-  document.querySelector(`.admin-tabs button[onclick*="${name}"]`)?.classList.add('active');
+  const btn = document.querySelector(`.admin-tab-btn[data-tab="${name}"]`);
+  if (btn) { btn.classList.add('active'); btn.style.background = 'var(--primary)'; btn.style.color = 'white'; }
 };
-window.abrirAdmin = () => {
-  document.getElementById('adminPanel')?.classList.add('active');
-  document.body.style.overflow = 'hidden';
-};
-window.cerrarAdmin = () => {
-  document.getElementById('adminPanel')?.classList.remove('active');
-  document.body.style.overflow = '';
-};
+window.abrirAdmin = async () => { const m = await import('./admin.js'); return m.abrirAdmin(); };
+window.cerrarAdmin = async () => { const m = await import('./admin.js'); return m.cerrarAdmin(); };
+window.cambiarTabAdmin = async (tab) => { const m = await import('./admin.js'); return m.cambiarTabAdmin(tab); };
 
 // ================================================================
 // EJECUTAR
