@@ -1292,6 +1292,8 @@
             <button class="settings-tab" data-tab="offices" role="tab">Oficinas</button>
             <button class="settings-tab" data-tab="footer" role="tab">Footer</button>
             <button class="settings-tab" data-tab="seo" role="tab">SEO</button>
+            <button class="settings-tab" data-tab="faq" role="tab">FAQ</button>
+            <button class="settings-tab" data-tab="contacto" role="tab">Contacto</button>
           </div>
 
           <!-- Hero Content -->
@@ -1407,8 +1409,16 @@
           <!-- Footer Content -->
           <div class="settings-panel" id="panel-footer" role="tabpanel">
             <div class="form-group full">
+              <label>Marca del Footer</label>
+              <input type="text" id="footerBrand" placeholder="Bienenhaus Propiedades">
+            </div>
+            <div class="form-group full">
               <label>Descripción de la Marca</label>
               <textarea id="footerDescription" rows="2" placeholder="Comprometidos con tu hogar desde 2008. CPI. 1834 · Córdoba, Argentina."></textarea>
+            </div>
+            <div class="form-group full">
+              <label>Info de Contacto Footer</label>
+              <textarea id="footerContact" rows="3" placeholder="Dirección&#10;Teléfono&#10;Email"></textarea>
             </div>
             <div class="form-group full">
               <label>Enlaces Rápidos (formato: texto|url)</label>
@@ -1458,6 +1468,34 @@
             <div class="form-group full">
               <label>Schema.org JSON-LD (Organization)</label>
               <textarea id="seoSchema" rows="8" placeholder='{"@context":"https://schema.org","@type":"RealEstateAgent","name":"Bienenhaus Propiedades",...}'></textarea>
+            </div>
+          </div>
+
+          <!-- FAQ Content -->
+          <div class="settings-panel" id="panel-faq" role="tabpanel">
+            <div class="form-group full">
+              <label>Título FAQ</label>
+              <input type="text" id="faqTitle" placeholder="Preguntas frecuentes">
+            </div>
+            <div class="form-group full">
+              <label>Subtítulo FAQ</label>
+              <input type="text" id="faqSubtitle" placeholder="Resolvemos las dudas más comunes">
+            </div>
+            <div class="form-group full">
+              <label>FAQs (formato: pregunta|respuesta, uno por línea)</label>
+              <textarea id="faqGrid" rows="12" placeholder="&#191;C&#243;mo tasar mi propiedad?|Solicita una tasaci&#243;n gratuita a trav&#233;s de nuestro formulario de contacto.&#10;&#191;Cu&#225;nto tarda el proceso de venta?|En promedio 1-3 meses. El 85% se vende en menos de 60 d&#237;as."></textarea>
+            </div>
+          </div>
+
+          <!-- Contacto Content -->
+          <div class="settings-panel" id="panel-contacto" role="tabpanel">
+            <div class="form-group full">
+              <label>T&#237;tulo Contacto</label>
+              <input type="text" id="contactoTitle" placeholder="Contacta con nosotros">
+            </div>
+            <div class="form-group full">
+              <label>Subt&#237;tulo Contacto</label>
+              <input type="text" id="contactoSubtitle" placeholder="&#191;Quieres vender, alquilar, comprar o tasar tu propiedad? Cu&#233;ntanos tu caso.">
             </div>
           </div>
         </section>

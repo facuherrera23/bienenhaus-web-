@@ -274,6 +274,10 @@ async function loadContent() {
   }
 }
 
+async function loadContentEditor() {
+  await loadContent();
+}
+
 function populateContentEditor() {
   // Hero
   document.getElementById('heroBadge').value = contentCache.hero_badge || '';
@@ -311,11 +315,26 @@ function populateContentEditor() {
   document.getElementById('footerBrand').value = contentCache.footer_marca || '';
   document.getElementById('footerDescription').value = contentCache.footer_descripcion || '';
   document.getElementById('footerContact').value = contentCache.footer_contacto || '';
+  document.getElementById('footerLinks').value = (contentCache.footer_links || []).map(l => `${l.texto}|${l.url}`).join('\n');
+  document.getElementById('footerServices').value = (contentCache.footer_servicios || []).map(s => `${s.texto}|${s.url}`).join('\n');
+  document.getElementById('footerCopyright').value = contentCache.footer_copyright || '';
+  
+  // FAQ
+  document.getElementById('faqTitle').value = contentCache.faq_titulo || '';
+  document.getElementById('faqSubtitle').value = contentCache.faq_subtitulo || '';
+  document.getElementById('faqGrid').value = (contentCache.faq_grid || []).map(f => `${f.pregunta}|${f.respuesta}`).join('\n');
+  
+  // Contacto
+  document.getElementById('contactoTitle').value = contentCache.contacto_titulo || '';
+  document.getElementById('contactoSubtitle').value = contentCache.contacto_subtitulo || '';
   
   // SEO
   document.getElementById('seoTitle').value = contentCache.seo_titulo || '';
   document.getElementById('seoDescription').value = contentCache.seo_descripcion || '';
   document.getElementById('seoKeywords').value = contentCache.seo_keywords || '';
+  document.getElementById('seoOgImage').value = contentCache.seo_og_image || '';
+  document.getElementById('seoTwitterCard').value = contentCache.seo_twitter_card || '';
+  document.getElementById('seoSchema').value = contentCache.seo_schema || '';
 }
 
 // ================================================================
@@ -761,7 +780,7 @@ async function saveAllContent() {
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
   
   try {
-    const content = {
+const content = {
       // Hero
       hero_badge: document.getElementById('heroBadge').value,
       hero_titulo: document.getElementById('heroTitle').value,
@@ -801,6 +820,15 @@ async function saveAllContent() {
       footer_links: parsePipeArray(document.getElementById('footerLinks').value, ['texto', 'url']),
       footer_servicios: parsePipeArray(document.getElementById('footerServices').value, ['texto', 'url']),
       footer_copyright: document.getElementById('footerCopyright').value,
+      
+      // FAQ
+      faq_titulo: document.getElementById('faqTitle').value,
+      faq_subtitulo: document.getElementById('faqSubtitle').value,
+      faq_grid: parsePipeArray(document.getElementById('faqGrid').value, ['pregunta', 'respuesta']),
+      
+      // Contacto
+      contacto_titulo: document.getElementById('contactoTitle').value,
+      contacto_subtitulo: document.getElementById('contactoSubtitle').value,
       
       // SEO
       seo_titulo: document.getElementById('seoTitle').value,
