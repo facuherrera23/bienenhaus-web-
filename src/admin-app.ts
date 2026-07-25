@@ -1399,13 +1399,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Image uploads handled by setupImageUploads()
   
-  // Settings tabs
-  document.querySelectorAll('.settings-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
-      tab.classList.add('active');
-      document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+  // Settings tabs - scoped to each tab group
+  document.querySelectorAll('.settings-tabs').forEach(tabGroup => {
+    tabGroup.querySelectorAll('.settings-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        // Only affect panels within this tab group's parent section
+        const section = tab.closest('.settings-panel[id^="section-"]') || tab.closest('section');
+        section.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+        section.querySelectorAll('.settings-panel[role="tabpanel"]').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+      });
     });
   });
   
