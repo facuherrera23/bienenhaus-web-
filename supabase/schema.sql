@@ -141,6 +141,10 @@ ALTER TABLE ml_sync_log ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read ml_sync_log" ON ml_sync_log FOR SELECT USING (true);
 
 -- Insertar contenido por defecto
+-- Ensure descripcion column exists (for existing databases)
+ALTER TABLE contenido_sitio ADD COLUMN IF NOT EXISTS descripcion TEXT;
+
+-- Insertar contenido por defecto
 INSERT INTO contenido_sitio (clave, valor, descripcion) VALUES
 ('hero_badge', '"CPI. 1834 · Córdoba · Argentina"', 'Badge superior del hero'),
 ('hero_titulo', '"Encuentra tu <span class=\\"highlight\\">hogar</span> o la<br>inversión que <span class=\\"highlight\\">buscas</span>"', 'Título principal del hero (HTML permitido)'),
