@@ -34,6 +34,69 @@ async function getValidAccessToken(supabase: any): Promise<string> {
   return creds.access_token
 }
 
+// Cloudinary upload helper
+async function uploadToCloudinary(imageUrl: string, folder: string, preset: string): Promise<{ url: string; public_id: string } | null> {
+  try {
+    // Download image from ML
+    const imgRes = await fetch(imageUrl)
+    if (!imgRes.ok) {
+      console.warn(`Failed to download image: ${imageUrl}`)
+      return null
+    }
+    const blob = await imgRes.blob()
+    
+    // Upload to Cloudinary
+    const formData = new FormData()
+    formData.append('file', blob)
+    formData.append('upload_preset', preset)
+    formData.append('folder', folder)
+    
+    const cloudName = Deno.env.get('CLOUDINARY_CLOUD_NAME')
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`
+    
+    const uploadRes = await fetch(uploadUrl, {
+      method: 'POST',
+      body: formData
+    })
+    
+    if (!uploadRes.ok) {
+      const err = await uploadRes.json()
+      console.error('Cloudinary upload failed:', err)
+      return null
+    }
+    
+    const data = await uploadRes.json()
+    return { url: data.secure_url, public_id: data.public_id }
+  } catch (err) {
+    console.error('Error uploading to Cloudinary:', err)
+    return null
+  }
+}
+
+async function processPropertyImages(
+  supabase: any,
+  propertyId: number,
+  mlPictures: Array<{ source: string }>,
+  preset: string
+): Promise<void> {
+  const folder = `inmoconecta/propiedades/${propertyId}`
+  
+  for (let i = 0; i < mlPictures.length; i++) {
+    const pic = mlPictures[i]
+    const result = await uploadToCloudinary(pic.source, folder, preset)
+    
+    if (result) {
+      await supabase.from('imagenes').insert({
+        propiedad_id: propertyId,
+        url: result.url,
+        cloudinary_public_id: result.public_id,
+        orden: i,
+        es_principal: i === 0
+      })
+    }
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -119,11 +182,14 @@ serve(async (req) => {
           .eq('ml_item_id', item.id)
           .single()
 
+        let propertyId: number
+
         if (existing) {
           await supabase
             .from('propiedades')
             .update(propData)
             .eq('id', existing.id)
+          propertyId = existing.id
           updated++
         } else {
           const { data: newProp } = await supabase
@@ -132,12 +198,21 @@ serve(async (req) => {
             .select('id')
             .single()
           
-          if (newProp) imported++
+          if (newProp) {
+            propertyId = newProp.id
+            imported++
+          }
+        }
+
+        // Process and upload images to Cloudinary
+        if (propertyId && item.pictures?.length) {
+          const preset = Deno.env.get('CLOUDINARY_UPLOAD_PRESET_PROPS') || 'inmoconecta_propiedades'
+          await processPropertyImages(supabase, propertyId, item.pictures, preset)
         }
 
         // Log sync
         await supabase.from('ml_sync_log').insert({
-          propiedad_id: existing?.id || null,
+          propiedad_id: propertyId || null,
           ml_item_id: item.id,
           accion: 'import',
           detalle: { title: item.title, status: item.status }
