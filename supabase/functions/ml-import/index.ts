@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { mapMLItemToProperty, MLItem, Property } from "./ml-mapper.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,45 +9,6 @@ const corsHeaders = {
 }
 
 const ML_API = "https://api.mercadolibre.com"
-
-interface MLItem {
-  id: string
-  site_id: string
-  title: string
-  price: number
-  currency_id: string
-  available_quantity: number
-  sold_quantity: number
-  buying_mode: string
-  listing_type_id: string
-  condition: string
-  permalink: string
-  thumbnail: string
-  pictures: Array<{ source: string }>
-  attributes: Array<{ id: string; value_name: string; value_id?: string }>
-  status: string
-  date_created: string
-  last_updated: string
-  category_id: string
-}
-
-interface Property {
-  id: number
-  titulo: string
-  precio: number
-  moneda: string
-  operacion: string
-  ubicacion: string
-  tipo: string
-  habitaciones: number
-  banos: number
-  m2: number
-  antiguedad: string
-  caracteristicas: string[]
-  descripcion: string
-  imagenes?: Array<{ url: string; orden: number; es_principal: boolean }>
-  ml_item_id?: string
-}
 
 function getCredentials(supabase: any) {
   return supabase
@@ -66,70 +28,10 @@ async function getValidAccessToken(supabase: any): Promise<string> {
   const buffer = 5 * 60 * 1000 // 5 min buffer
 
   if (expiresAt.getTime() - now.getTime() < buffer) {
-    // Need refresh - will be handled by ml-refresh-token cron
     throw new Error('Token expired, needs refresh')
   }
 
   return creds.access_token
-}
-
-function mapPropertyToMLItem(prop: Property, categoryId: string): any {
-  const attrs = [
-    { id: 'ROOMS', value_name: String(prop.habitaciones || 0) },
-    { id: 'FULL_BATHROOMS', value_name: String(prop.banos || 0) },
-    { id: 'COVERED_AREA', value_struct: { number: prop.m2 || 0, unit: 'm²' } },
-  ]
-
-  if (prop.antiguedad) attrs.push({ id: 'ITEM_CONDITION', value_name: prop.antiguedad === 'nuevo' ? 'new' : 'used' })
-  if (prop.caracteristicas?.length) {
-    prop.caracteristicas.forEach(c => {
-      attrs.push({ id: 'MAINTENANCE_FEE', value_name: c }) // fallback
-    })
-  }
-
-  const pictures = prop.imagenes?.map((img, i) => ({
-    source: img.url,
-    index: i,
-  })) || []
-
-  return {
-    title: prop.titulo,
-    category_id: categoryId,
-    price: prop.precio,
-    currency_id: prop.moneda,
-    available_quantity: 1,
-    buying_mode: prop.operacion === 'alquiler' ? 'rental' : 'sale',
-    listing_type_id: 'gold_special',
-    condition: prop.antiguedad === 'nuevo' ? 'new' : 'used',
-    pictures,
-    attributes: attrs,
-    description: { plain_text: prop.descripcion },
-    channels: ['marketplace'],
-  }
-}
-
-function mapMLItemToProperty(item: MLItem): Partial<Property> {
-  const attrMap: Record<string, string> = {}
-  item.attributes.forEach(a => {
-    attrMap[a.id] = a.value_name || a.value_id || ''
-  })
-
-  return {
-    ml_item_id: item.id,
-    ml_status: item.status,
-    ml_permalink: item.permalink,
-    ml_last_sync: new Date().toISOString(),
-    titulo: item.title,
-    precio: item.price,
-    moneda: item.currency_id,
-    operacion: item.buying_mode === 'rental' ? 'alquiler' : 'venta',
-    tipo: attrMap['PROPERTY_TYPE'] || 'piso',
-    habitaciones: parseInt(attrMap['ROOMS'] || '0'),
-    banos: parseInt(attrMap['FULL_BATHROOMS'] || '0'),
-    m2: parseInt(attrMap['COVERED_AREA']?.replace(/[^0-9]/g, '') || '0'),
-    descripcion: '', // would need separate call
-    imagenes: item.pictures?.map((p, i) => ({ url: p.source, orden: i, es_principal: i === 0 })) || [],
-  }
 }
 
 serve(async (req) => {
