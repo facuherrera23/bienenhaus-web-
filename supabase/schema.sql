@@ -291,3 +291,49 @@ CREATE TRIGGER update_contenido_updated_at BEFORE UPDATE ON contenido_sitio
 -- ================================================================
 -- Cloudinary folders: inmoconecta/propiedades/{id}/, inmoconecta/agentes/{id}/
 -- Upload presets: inmoconecta_propiedades, inmoconecta_agentes (unsigned)
+
+-- ================================================================
+-- PG_CRON - Tareas programadas
+-- ================================================================
+-- Habilitar extensión pg_cron (ejecutar una vez en Supabase SQL Editor)
+-- CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- Refrescar tokens de MercadoLibre cada 30 minutos
+-- Llama a la Edge Function ml-refresh-token usando pg_net
+-- Requiere: CREATE EXTENSION IF NOT EXISTS pg_net;
+-- SELECT cron.schedule(
+--   'ml-refresh-token',
+--   '*/30 * * * *',
+--   $$
+--   SELECT net.http_post(
+--     url := 'https://TU_PROYECTO.supabase.co/functions/v1/ml-refresh-token',
+--     headers := jsonb_build_object(
+--       'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'),
+--       'Content-Type', 'application/json'
+--     ),
+--     body := '{}'::jsonb
+--   );
+--   $$
+-- );
+
+-- Alternativa más simple: usar pg_cron con http extension (si está disponible)
+-- SELECT cron.schedule(
+--   'ml-refresh-token',
+--   '*/30 * * * *',
+--   'SELECT http_post(''https://TU_PROYECTO.supabase.co/functions/v1/ml-refresh-token'', ''{"Authorization": "Bearer " || current_setting(''app.settings.service_role_key'')}'', ''{}'')'
+-- );
+
+-- Para configurar manualmente en Supabase Dashboard:
+-- 1. Settings > Edge Functions > ml-refresh-token > Copy URL
+-- 2. Settings > Database > Cron Jobs > Add job:
+--    Name: ml-refresh-token
+--    Schedule: */30 * * * *
+--    Command: 
+--    SELECT net.http_post(
+--      url := 'https://TU_PROYECTO.supabase.co/functions/v1/ml-refresh-token',
+--      headers := jsonb_build_object(
+--        'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'),
+--        'Content-Type', 'application/json'
+--      ),
+--      body := '{}'::jsonb
+--    );
