@@ -1,31 +1,30 @@
 // ================================================================
-// ADMIN APP - Lógica completa para admin.html
+// ADMIN APP - Standalone Dashboard for admin.html
 // ================================================================
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from './supabase.js';
 import { CONFIG } from './config.js';
 import { uploadToCloudinary, validateImageFile } from './cloudinary.js';
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-
 // ================================================================
-// ESTADO GLOBAL
+// GLOBAL STATE
 // ================================================================
 let currentSection = 'dashboard';
 let currentUser = null;
 let propertiesCache = [];
 let agentsCache = [];
 let contentCache = {};
-let deleteCallback = null;
 let editingPropertyId = null;
 let editingAgentId = null;
 let uploadedPropertyImages = [];
 let uploadedAgentAvatar = null;
 
 // ================================================================
-// UTILIDADES
+// UTILITIES
 // ================================================================
 function showToast(message, type = 'success', duration = 4000) {
   const container = document.getElementById('toastContainer');
+  if (!container) return;
+  
   const toast = document.createElement('div');
   const icons = { success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
   const colors = { success: 'var(--success)', error: 'var(--danger)', warning: 'var(--warning)', info: 'var(--accent)' };
@@ -64,6 +63,7 @@ function formatDate(dateString) {
 }
 
 function getInitials(name) {
+  if (!name) return '?';
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
@@ -75,12 +75,24 @@ function debounce(fn, delay) {
   };
 }
 
+function parsePipeArray(value, fields) {
+  if (!value) return [];
+  return value.split('\n')
+    .filter(line => line.trim())
+    .map(line => {
+      const parts = line.split('|');
+      const obj = {};
+      fields.forEach((field, i) => { obj[field] = parts[i]?.trim() || ''; });
+      return obj;
+    });
+}
+
 // ================================================================
-// AUTENTICACIÓN
+// AUTHENTICATION
 // ================================================================
 async function checkAuth() {
   const { data: { session } } = await supabase.auth.getSession();
-  if (session && session.user.email === 'admin@bienenhaus.com.ar') {
+  if (session && session.user.email === CONFIG.ADMIN_EMAIL) {
     currentUser = session.user;
     showDashboard();
     return true;
@@ -102,7 +114,7 @@ async function handleLogin(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     
-    if (data.user.email !== 'admin@bienenhaus.com.ar') {
+    if (data.user.email !== CONFIG.ADMIN_EMAIL) {
       await supabase.auth.signOut();
       throw new Error('Acceso denegado: credenciales no autorizadas');
     }
@@ -135,7 +147,6 @@ function showDashboard() {
   document.getElementById('dashboardView').classList.remove('d-none');
   document.body.className = 'dashboard-page';
   
-  // Update user info
   if (currentUser) {
     document.getElementById('userName').textContent = currentUser.email.split('@')[0];
     document.getElementById('userAvatar').textContent = getInitials(currentUser.email);
@@ -146,23 +157,19 @@ function showDashboard() {
 }
 
 // ================================================================
-// NAVEGACIÓN
+// NAVIGATION
 // ================================================================
 function navigate(section) {
-  // Update URL hash
   window.location.hash = section;
   
-  // Update active nav
   document.querySelectorAll('.nav-item').forEach(item => {
     item.classList.toggle('active', item.dataset.section === section);
   });
   
-  // Show section
   document.querySelectorAll('.settings-panel').forEach(panel => {
     panel.classList.toggle('active', panel.id === `section-${section}`);
   });
   
-  // Update page title
   const titles = {
     dashboard: 'Dashboard',
     properties: 'Propiedades',
@@ -175,7 +182,6 @@ function navigate(section) {
   
   currentSection = section;
   
-  // Load section data
   switch(section) {
     case 'dashboard': loadDashboard(); break;
     case 'properties': loadProperties(); break;
@@ -186,7 +192,7 @@ function navigate(section) {
 }
 
 // ================================================================
-// CARGA DE DATOS
+// DATA LOADING
 // ================================================================
 async function loadAllData() {
   await Promise.all([
@@ -318,12 +324,11 @@ function updatePropertyStats() {
   
   document.getElementById('statProperties').textContent = total;
   document.getElementById('statAgents').textContent = agentsCache.filter(a => a.activo).length;
-  document.getElementById('statLeads').textContent = Math.floor(Math.random() * 50) + 10; // placeholder
-  document.getElementById('statVisits').textContent = Math.floor(Math.random() * 1000) + 500; // placeholder
+  document.getElementById('statLeads').textContent = '—'; // Requiere tabla de leads real
+  document.getElementById('statVisits').textContent = '—'; // Requiere analytics real
   
-  // Trends (mock)
-  document.getElementById('propTrend').innerHTML = '<i class="fas fa-arrow-up"></i> +12%';
-  document.getElementById('propTrend').className = 'stat-trend up';
+  document.getElementById('propTrend').innerHTML = '<i class="fas fa-arrow-up"></i> —';
+  document.getElementById('propTrend').className = 'stat-trend';
 }
 
 function updateAgentStats() {
@@ -337,23 +342,9 @@ function updateNavBadges() {
 }
 
 async function loadRecentActivity() {
-  // Mock activity - en producción vendría de una tabla de auditoría
-  const activities = [
-    { date: new Date(), type: 'property', desc: 'Nueva propiedad creada: "Ático en Nueva Córdoba"', status: 'published' },
-    { date: new Date(Date.now() - 3600000), type: 'lead', desc: 'Nuevo lead: Juan Pérez interesado en propiedad #123', status: 'new' },
-    { date: new Date(Date.now() - 7200000), type: 'agent', desc: 'Nuevo agente registrado: María González', status: 'active' },
-    { date: new Date(Date.now() - 86400000), type: 'property', desc: 'Propiedad actualizada: "Casa en Cerro de las Rosas"', status: 'updated' },
-  ];
-  
+  // TODO: Conectar a tabla de auditoría real
   const tbody = document.getElementById('recentActivityBody');
-  tbody.innerHTML = activities.map(a => `
-    <tr>
-      <td>${a.date.toLocaleString('es-AR')}</td>
-      <td><span class="badge badge-${a.type === 'property' ? 'sale' : a.type === 'lead' ? 'draft' : 'active'}">${a.type}</span></td>
-      <td>${a.desc}</td>
-      <td><span class="badge badge-${a.status === 'published' ? 'published' : a.status === 'new' ? 'draft' : a.status}">${a.status}</span></td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Conectar tabla de auditoría para ver actividad real</td></tr>';
 }
 
 // ================================================================
@@ -390,7 +381,7 @@ function renderPropertiesTable(filter = '') {
       <td>
         <div class="action-btns">
           <button class="action-btn" onclick="editProperty(${p.id})" title="Editar"><i class="fas fa-edit"></i></button>
-          <button class="action-btn delete" onclick="confirmDelete('property', ${p.id}, '${p.titulo}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+          <button class="action-btn delete" onclick="confirmDelete('property', ${p.id}, '${p.titulo.replace(/'/g, "\\'")}')" title="Eliminar"><i class="fas fa-trash"></i></button>
         </div>
       </td>
     </tr>
@@ -477,7 +468,7 @@ function renderAgentsTableFiltered(filtered) {
 }
 
 // ================================================================
-// MODALES - PROPIEDADES
+// MODALS - PROPIEDADES
 // ================================================================
 function openPropertyModal(property = null) {
   editingPropertyId = property?.id || null;
@@ -492,21 +483,20 @@ function openPropertyModal(property = null) {
   
   if (property) {
     title.textContent = 'Editar Propiedad';
-    document.getElementById('propTitulo').value = property.titulo || '';
-    document.getElementById('propPrecio').value = property.precio || '';
-    document.getElementById('propMoneda').value = property.moneda || 'ARS';
-    document.getElementById('propOperacion').value = property.operacion || 'venta';
-    document.getElementById('propUbicacion').value = property.ubicacion || '';
-    document.getElementById('propTipo').value = property.tipo || 'piso';
-    document.getElementById('propHabitaciones').value = property.habitaciones || '';
-    document.getElementById('propBanos').value = property.banos || '';
+    document.getElementById('propTitle').value = property.titulo || '';
+    document.getElementById('propPrice').value = property.precio || '';
+    document.getElementById('propCurrency').value = property.moneda || 'ARS';
+    document.getElementById('propOperation').value = property.operacion || 'venta';
+    document.getElementById('propLocation').value = property.ubicacion || '';
+    document.getElementById('propType').value = property.tipo || 'piso';
+    document.getElementById('propRooms').value = property.habitaciones || '';
+    document.getElementById('propBaths').value = property.banos || '';
     document.getElementById('propM2').value = property.m2 || '';
-    document.getElementById('propAntiguedad').value = property.antiguedad || 'reformado';
+    document.getElementById('propAge').value = property.antiguedad || 'reformado';
     document.getElementById('propFeatured').checked = property.destacado || false;
     document.getElementById('propFeatures').value = (property.caracteristicas || []).join(', ');
     document.getElementById('propDescription').value = property.descripcion || '';
     
-    // Preview existing images
     if (property.imagenes?.length) {
       const preview = document.getElementById('propImagesPreview');
       property.imagenes.sort((a,b) => a.orden - b.orden).forEach((img, i) => {
@@ -537,16 +527,16 @@ async function saveProperty(e) {
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
   
   try {
-    const titulo = document.getElementById('propTitulo').value.trim();
-    const precio = parseFloat(document.getElementById('propPrecio').value);
-    const moneda = document.getElementById('propMoneda').value;
-    const operacion = document.getElementById('propOperacion').value;
-    const ubicacion = document.getElementById('propUbicacion').value.trim();
-    const tipo = document.getElementById('propTipo').value;
-    const habitaciones = parseInt(document.getElementById('propHabitaciones').value) || 0;
-    const banos = parseInt(document.getElementById('propBanos').value) || 0;
+    const titulo = document.getElementById('propTitle').value.trim();
+    const precio = parseFloat(document.getElementById('propPrice').value);
+    const moneda = document.getElementById('propCurrency').value;
+    const operacion = document.getElementById('propOperation').value;
+    const ubicacion = document.getElementById('propLocation').value.trim();
+    const tipo = document.getElementById('propType').value;
+    const habitaciones = parseInt(document.getElementById('propRooms').value) || 0;
+    const banos = parseInt(document.getElementById('propBaths').value) || 0;
     const m2 = parseInt(document.getElementById('propM2').value) || 0;
-    const antiguedad = document.getElementById('propAntiguedad').value;
+    const antiguedad = document.getElementById('propAge').value;
     const destacado = document.getElementById('propFeatured').checked;
     const caracteristicas = document.getElementById('propFeatures').value.split(',').map(c => c.trim()).filter(c => c);
     const descripcion = document.getElementById('propDescription').value.trim();
@@ -577,7 +567,6 @@ async function saveProperty(e) {
       const maxImagenes = Math.min(files.length, 15);
       for (let i = 0; i < maxImagenes; i++) {
         validateImageFile(files[i]);
-        const { uploadToCloudinary } = await import('./cloudinary.js');
         const folder = `inmoconecta/propiedades/${editingPropertyId}`;
         const img = await uploadToCloudinary(files[i], folder, CONFIG.CLOUDINARY_UPLOAD_PRESET_PROPS);
         imagenesData.push({
@@ -607,7 +596,7 @@ async function saveProperty(e) {
 }
 
 // ================================================================
-// MODALES - AGENTES
+// MODALS - AGENTES
 // ================================================================
 function openAgentModal(agent = null) {
   editingAgentId = agent?.id || null;
@@ -682,7 +671,7 @@ async function saveAgent(e) {
     
     let avatarUrl = null;
     if (file) {
-      const { uploadToCloudinary } = await import('./cloudinary.js');
+      validateImageFile(file);
       const folder = `inmoconecta/agentes/${editingAgentId || 'nuevo'}`;
       const img = await uploadToCloudinary(file, folder, CONFIG.CLOUDINARY_UPLOAD_PRESET_AGENTES);
       avatarUrl = img.url;
@@ -711,48 +700,49 @@ async function saveAgent(e) {
 }
 
 // ================================================================
-// ELIMINAR
+// DELETE CONFIRMATION (no global callback race condition)
 // ================================================================
+let pendingDelete = { type: null, id: null, name: null };
+
 function confirmDelete(type, id, name) {
-  deleteCallback = async () => {
-    try {
-      if (type === 'property') {
-        // Delete images first
-        const { data: images } = await supabase.from('imagenes').select('cloudinary_public_id').eq('propiedad_id', id);
-        if (images?.length) {
-          // Cloudinary delete would need signed request - skip for now
-        }
-        const { error } = await supabase.from('propiedades').delete().eq('id', id);
-        if (error) throw error;
-        await loadProperties();
-      } else if (type === 'agent') {
-        const { error } = await supabase.from('agentes').update({ activo: false }).eq('id', id);
-        if (error) throw error;
-        await loadAgents();
-      }
-      showToast('Eliminado correctamente', 'success');
-      closeConfirmModal();
-    } catch (e) {
-      console.error(e);
-      showToast('Error al eliminar', 'error');
-    }
-  };
-  
+  pendingDelete = { type, id, name };
   document.getElementById('confirmMessage').textContent = `¿Eliminar "${name}"? Esta acción no se puede deshacer.`;
   document.getElementById('confirmModal').classList.add('active');
 }
 
 function closeConfirmModal() {
   document.getElementById('confirmModal').classList.remove('active');
-  deleteCallback = null;
+  pendingDelete = { type: null, id: null, name: null };
 }
 
-document.getElementById('confirmDelete').addEventListener('click', () => deleteCallback?.());
-document.getElementById('cancelConfirm').addEventListener('click', closeConfirmModal);
-document.getElementById('closeConfirmModal').addEventListener('click', closeConfirmModal);
+async function executeDelete() {
+  const { type, id } = pendingDelete;
+  if (!type || !id) return;
+  
+  try {
+    if (type === 'property') {
+      const { data: images } = await supabase.from('imagenes').select('cloudinary_public_id').eq('propiedad_id', id);
+      if (images?.length) {
+        // TODO: Cloudinary delete via signed request or admin API
+      }
+      const { error } = await supabase.from('propiedades').delete().eq('id', id);
+      if (error) throw error;
+      await loadProperties();
+    } else if (type === 'agent') {
+      const { error } = await supabase.from('agentes').update({ activo: false }).eq('id', id);
+      if (error) throw error;
+      await loadAgents();
+    }
+    showToast('Eliminado correctamente', 'success');
+    closeConfirmModal();
+  } catch (e) {
+    console.error(e);
+    showToast('Error al eliminar', 'error');
+  }
+}
 
 // ================================================================
-// CONTENIDO - GUARDAR
+// CONTENT EDITOR - SAVE ALL
 // ================================================================
 async function saveAllContent() {
   const btn = document.getElementById('btnSaveAllContent');
@@ -761,42 +751,55 @@ async function saveAllContent() {
   
   try {
     const content = {
+      // Hero
       hero_badge: document.getElementById('heroBadge').value,
       hero_titulo: document.getElementById('heroTitle').value,
       hero_subtitulo: document.getElementById('heroSubtitle').value,
       hero_badges: document.getElementById('heroBadges').value.split('\n').filter(b => b.trim()),
       hero_cta_primario: document.getElementById('heroCtaPrimary').value,
       hero_cta_secundario: document.getElementById('heroCtaSecondary').value,
-      hero_stats: document.getElementById('heroStats').value.split('\n').filter(s => s.trim()).map(s => {
-        const [label, valor, icono] = s.split('|');
-        return { label: label?.trim(), valor: valor?.trim(), icono: icono?.trim() || 'fa-star' };
-      }),
+      hero_stats: parsePipeArray(document.getElementById('heroStats').value, ['label', 'valor', 'icono']),
       
+      // About
       about_titulo: document.getElementById('aboutTitle').value,
       about_descripcion: document.getElementById('aboutDescription').value,
-      about_valores: document.getElementById('aboutValues').value.split('\n').filter(v => v.trim()).map(v => {
-        const [icono, titulo, descripcion] = v.split('|');
-        return { icono: icono?.trim(), titulo: titulo?.trim(), descripcion: descripcion?.trim() };
-      }),
+      about_valores: parsePipeArray(document.getElementById('aboutValues').value, ['icono', 'titulo', 'descripcion']),
       
+      // Services
       servicios_titulo: document.getElementById('servicesTitle').value,
       servicios_subtitulo: document.getElementById('servicesSubtitle').value,
-      servicios_lista: document.getElementById('servicesList').value.split('\n').filter(s => s.trim()).map(s => {
-        const [icono, titulo, descripcion] = s.split('|');
-        return { icono: icono?.trim(), titulo: titulo?.trim(), descripcion: descripcion?.trim() };
-      }),
+      servicios_lista: parsePipeArray(document.getElementById('servicesList').value, ['icono', 'titulo', 'descripcion']),
       
+      // Why
       por_que_titulo: document.getElementById('whyTitle').value,
       por_que_subtitulo: document.getElementById('whySubtitle').value,
-      por_que_razones: document.getElementById('whyReasons').value.split('\n').filter(r => r.trim()).map(r => {
-        const [emoji, titulo, descripcion] = r.split('|');
-        return { emoji: emoji?.trim(), titulo: titulo?.trim(), descripcion: descripcion?.trim() };
-      }),
+      por_que_razones: parsePipeArray(document.getElementById('whyReasons').value, ['emoji', 'titulo', 'descripcion']),
       
-      // Services, team, offices, footer, seo...
+      // Team
+      equipo_titulo: document.getElementById('teamTitle').value,
+      equipo_subtitulo: document.getElementById('teamSubtitle').value,
+      
+      // Offices
+      oficinas_titulo: document.getElementById('officesTitle').value,
+      oficinas_subtitulo: document.getElementById('officesSubtitle').value,
+      
+      // Footer
+      footer_marca: document.getElementById('footerBrand').value,
+      footer_descripcion: document.getElementById('footerDescription').value,
+      footer_contacto: document.getElementById('footerContact').value,
+      footer_links: parsePipeArray(document.getElementById('footerLinks').value, ['texto', 'url']),
+      footer_servicios: parsePipeArray(document.getElementById('footerServices').value, ['texto', 'url']),
+      footer_copyright: document.getElementById('footerCopyright').value,
+      
+      // SEO
+      seo_titulo: document.getElementById('seoTitle').value,
+      seo_descripcion: document.getElementById('seoDescription').value,
+      seo_keywords: document.getElementById('seoKeywords').value,
+      seo_og_image: document.getElementById('seoOgImage').value,
+      seo_twitter_card: document.getElementById('seoTwitterCard').value,
+      seo_schema: document.getElementById('seoSchema').value
     };
     
-    // Upsert each content item
     for (const [clave, valor] of Object.entries(content)) {
       await supabase.from('contenido_sitio').upsert({ clave, valor }, { onConflict: 'clave' });
     }
@@ -813,6 +816,61 @@ async function saveAllContent() {
 }
 
 // ================================================================
+// SETTINGS - LOAD / SAVE
+// ================================================================
+async function loadSettings() {
+  // Load settings from contenido_sitio or dedicated settings table
+  // For now, populate from contentCache if keys exist
+  const settingsMap = {
+    siteName: 'site_nombre',
+    siteTagline: 'site_eslogan',
+    sitePhone: 'site_telefono',
+    siteEmail: 'site_email',
+    siteWhatsApp: 'site_whatsapp',
+    siteAddress: 'site_direccion',
+    siteHours: 'site_horario'
+  };
+  
+  for (const [elementId, cacheKey] of Object.entries(settingsMap)) {
+    const el = document.getElementById(elementId);
+    if (el && contentCache[cacheKey]) el.value = contentCache[cacheKey];
+  }
+}
+
+async function saveSettings() {
+  const btn = document.getElementById('btnSaveSettings');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+  
+  try {
+    const settingsMap = {
+      site_nombre: document.getElementById('siteName').value,
+      site_eslogan: document.getElementById('siteTagline').value,
+      site_telefono: document.getElementById('sitePhone').value,
+      site_email: document.getElementById('siteEmail').value,
+      site_whatsapp: document.getElementById('siteWhatsApp').value,
+      site_direccion: document.getElementById('siteAddress').value,
+      site_horario: document.getElementById('siteHours').value,
+      maintenance_mode: document.getElementById('maintenanceMode').checked,
+      show_prices: document.getElementById('showPrices').checked,
+      enable_chat: document.getElementById('enableChat').checked
+    };
+    
+    for (const [clave, valor] of Object.entries(settingsMap)) {
+      await supabase.from('contenido_sitio').upsert({ clave, valor }, { onConflict: 'clave' });
+    }
+    
+    showToast('Configuración guardada', 'success');
+  } catch (e) {
+    console.error(e);
+    showToast('Error al guardar configuración', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save"></i> Guardar Configuración';
+  }
+}
+
+// ================================================================
 // IMAGE UPLOAD PREVIEWS
 // ================================================================
 function setupImageUploads() {
@@ -821,30 +879,33 @@ function setupImageUploads() {
   const propInput = document.getElementById('propImages');
   const propPreview = document.getElementById('propImagesPreview');
   
-  propUpload.addEventListener('click', () => propInput.click());
-  propUpload.addEventListener('dragover', e => { e.preventDefault(); propUpload.classList.add('dragover'); });
-  propUpload.addEventListener('dragleave', () => propUpload.classList.remove('dragover'));
-  propUpload.addEventListener('drop', e => {
-    e.preventDefault();
-    propUpload.classList.remove('dragover');
-    handleFiles(e.dataTransfer.files, 'property');
-  });
-  
-  propInput.addEventListener('change', e => handleFiles(e.target.files, 'property'));
+  if (propUpload && propInput) {
+    propUpload.addEventListener('click', () => propInput.click());
+    propUpload.addEventListener('dragover', e => { e.preventDefault(); propUpload.classList.add('dragover'); });
+    propUpload.addEventListener('dragleave', () => propUpload.classList.remove('dragover'));
+    propUpload.addEventListener('drop', e => {
+      e.preventDefault();
+      propUpload.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files, 'property');
+    });
+    propInput.addEventListener('change', e => handleFiles(e.target.files, 'property'));
+  }
   
   // Agent avatar
   const agentUpload = document.getElementById('agentAvatarUpload');
   const agentInput = document.getElementById('agentAvatar');
   
-  agentUpload.addEventListener('click', () => agentInput.click());
-  agentUpload.addEventListener('dragover', e => { e.preventDefault(); agentUpload.classList.add('dragover'); });
-  agentUpload.addEventListener('dragleave', () => agentUpload.classList.remove('dragover'));
-  agentUpload.addEventListener('drop', e => {
-    e.preventDefault();
-    agentUpload.classList.remove('dragover');
-    handleFiles(e.dataTransfer.files, 'agent');
-  });
-  agentInput.addEventListener('change', e => handleFiles(e.target.files, 'agent'));
+  if (agentUpload && agentInput) {
+    agentUpload.addEventListener('click', () => agentInput.click());
+    agentUpload.addEventListener('dragover', e => { e.preventDefault(); agentUpload.classList.add('dragover'); });
+    agentUpload.addEventListener('dragleave', () => agentUpload.classList.remove('dragover'));
+    agentUpload.addEventListener('drop', e => {
+      e.preventDefault();
+      agentUpload.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files, 'agent');
+    });
+    agentInput.addEventListener('change', e => handleFiles(e.target.files, 'agent'));
+  }
 }
 
 function handleFiles(files, type) {
@@ -868,6 +929,7 @@ function handleFiles(files, type) {
 
 function renderPropertyImagePreviews() {
   const preview = document.getElementById('propImagesPreview');
+  if (!preview) return;
   preview.innerHTML = '';
   uploadedPropertyImages.forEach((file, i) => {
     const url = URL.createObjectURL(file);
@@ -879,11 +941,144 @@ function renderPropertyImagePreviews() {
 }
 
 // ================================================================
-// EVENT LISTENERS
+// MARKDOWN EDITOR (simple toolbar for textareas)
+// ================================================================
+const RICH_TEXT_FIELDS = [
+  { id: 'heroSubtitle', placeholder: 'Escribe el subtítulo del hero...' },
+  { id: 'aboutDescription', placeholder: 'Descripción de quiénes somos...' },
+  { id: 'servicesSubtitle', placeholder: 'Subtítulo de servicios...' },
+  { id: 'whySubtitle', placeholder: 'Subtítulo de por qué elegirnos...' },
+  { id: 'teamSubtitle', placeholder: 'Subtítulo del equipo...' },
+  { id: 'officesSubtitle', placeholder: 'Subtítulo de oficinas...' },
+  { id: 'footerDescription', placeholder: 'Descripción del footer...' },
+  { id: 'seoDescription', placeholder: 'Meta description (máx 160 chars)...' },
+];
+
+function setupMarkdownTextareas() {
+  setTimeout(() => {
+    RICH_TEXT_FIELDS.forEach(({ id }) => {
+      const element = document.getElementById(id);
+      if (!element || element.getAttribute('data-md-initialized') === 'true') return;
+      
+      const wrapper = document.createElement('div');
+      wrapper.className = 'markdown-wrapper';
+      wrapper.innerHTML = `
+        <div class="markdown-toolbar">
+          <button type="button" data-action="bold" title="Negrita (Ctrl+B)"><i class="fas fa-bold"></i></button>
+          <button type="button" data-action="italic" title="Cursiva (Ctrl+I)"><i class="fas fa-italic"></i></button>
+          <button type="button" data-action="link" title="Enlace (Ctrl+K)"><i class="fas fa-link"></i></button>
+          <button type="button" data-action="h2" title="Título H2"><i class="fas fa-heading"></i> H2</button>
+          <button type="button" data-action="h3" title="Título H3"><i class="fas fa-heading"></i> H3</button>
+          <button type="button" data-action="ul" title="Lista"><i class="fas fa-list-ul"></i></button>
+          <button type="button" data-action="ol" title="Lista numerada"><i class="fas fa-list-ol"></i></button>
+          <button type="button" data-action="quote" title="Cita"><i class="fas fa-quote-left"></i></button>
+          <button type="button" data-action="code" title="Código"><i class="fas fa-code"></i></button>
+          <span class="toolbar-divider"></span>
+          <button type="button" data-action="preview" title="Vista previa"><i class="fas fa-eye"></i></button>
+        </div>
+      `;
+      
+      element.parentNode.insertBefore(wrapper, element);
+      wrapper.appendChild(element);
+      
+      let isPreview = false;
+      const previewDiv = document.createElement('div');
+      previewDiv.className = 'markdown-preview d-none';
+      element.parentNode.insertBefore(previewDiv, element.nextSibling);
+      
+      wrapper.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const action = btn.dataset.action;
+          const textarea = element;
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const text = textarea.value;
+          
+          let prefix = '', suffix = '';
+          switch (action) {
+            case 'bold': prefix = suffix = '**'; break;
+            case 'italic': prefix = suffix = '*'; break;
+            case 'link': prefix = '['; suffix = '](url)'; break;
+            case 'h2': prefix = '\n## '; suffix = '\n'; break;
+            case 'h3': prefix = '\n### '; suffix = '\n'; break;
+            case 'ul': prefix = '\n- '; suffix = ''; break;
+            case 'ol': prefix = '\n1. '; suffix = ''; break;
+            case 'quote': prefix = '\n> '; suffix = ''; break;
+            case 'code': prefix = '`'; suffix = '`'; break;
+            case 'preview':
+              isPreview = !isPreview;
+              if (isPreview) {
+                element.classList.add('d-none');
+                previewDiv.classList.remove('d-none');
+                previewDiv.innerHTML = markedParse(element.value);
+                btn.innerHTML = '<i class="fas fa-edit"></i>';
+              } else {
+                element.classList.remove('d-none');
+                previewDiv.classList.add('d-none');
+                btn.innerHTML = '<i class="fas fa-eye"></i>';
+              }
+              return;
+          }
+          if (prefix || suffix) {
+            const newText = text.substring(0, start) + prefix + text.substring(start, end) + suffix + text.substring(end);
+            element.value = newText;
+            element.selectionStart = element.selectionEnd = start + prefix.length;
+            element.focus();
+          }
+        });
+      });
+      
+      element.setAttribute('data-md-initialized', 'true');
+    });
+  }, 100);
+}
+
+function markedParse(text) {
+  if (!text) return '';
+  return text
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/gim, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/gim, '<em>$1</em>')
+    .replace(/`(.+?)`/gim, '<code>$1</code>')
+    .replace(/\[(.+?)\]\((.+?)\)/gim, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/^> (.+)$/gim, '<blockquote>$1</blockquote>')
+    .replace(/^- (.+)$/gim, '<li>$1</li>')
+    .replace(/^\d+\. (.+)$/gim, '<li>$1</li>')
+    .replace(/\n\n/gim, '</p><p>')
+    .replace(/^(?!<[h|u|o|l|b])(.+)$/gim, '<p>$1</p>')
+    .replace(/<p><li>/gim, '<ul><li>')
+    .replace(/<\/li><\/p>/gim, '</li></ul>')
+    .replace(/<p><h/gim, '<h')
+    .replace(/<\/h([1-6])><\/p>/gim, '</h$1>');
+}
+
+// ================================================================
+// GLOBAL EXPORTS FOR INLINE ONCLICK
+// ================================================================
+window.editProperty = (id) => {
+  const prop = propertiesCache.find(p => p.id === id);
+  if (prop) openPropertyModal(prop);
+};
+
+window.editAgent = (id) => {
+  const agent = agentsCache.find(a => a.id === id);
+  if (agent) openAgentModal(agent);
+};
+
+window.confirmDelete = (type, id, name) => confirmDelete(type, id, name);
+
+window.filterProperties = filterProperties;
+window.filterAgents = filterAgents;
+
+// ================================================================
+// INIT
 // ================================================================
 document.addEventListener('DOMContentLoaded', async () => {
   // Setup image uploads
   setupImageUploads();
+  setupMarkdownTextareas();
   
   // Login form
   document.getElementById('loginForm').addEventListener('submit', e => {
@@ -946,8 +1141,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Save content
   document.getElementById('btnSaveAllContent').addEventListener('click', saveAllContent);
   
+  // Save settings
+  document.getElementById('btnSaveSettings')?.addEventListener('click', saveSettings);
+  
   // Refresh stats
-  document.getElementById('btnRefreshStats').addEventListener('click', loadDashboard);
+  document.getElementById('btnRefreshStats')?.addEventListener('click', loadDashboard);
   
   // Search
   document.getElementById('searchProperties').addEventListener('input', debounce(filterProperties, 300));
@@ -955,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('searchAgents').addEventListener('input', debounce(filterAgents, 300));
   
   // Mobile menu toggle
-  document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('menuToggle')?.addEventListener('click', () => {
     document.getElementById('sidebar').classList.toggle('open');
   });
   
@@ -972,28 +1170,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
-      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebar')?.classList.remove('open');
     }
   });
+  
+  // Confirm delete
+  document.getElementById('confirmDelete').addEventListener('click', executeDelete);
+  document.getElementById('cancelConfirm').addEventListener('click', closeConfirmModal);
+  document.getElementById('closeConfirmModal').addEventListener('click', closeConfirmModal);
   
   // Check auth
   await checkAuth();
 });
-
-// ================================================================
-// GLOBAL FUNCTIONS (for onclick handlers)
-// ================================================================
-window.editProperty = (id) => {
-  const prop = propertiesCache.find(p => p.id === id);
-  if (prop) openPropertyModal(prop);
-};
-
-window.editAgent = (id) => {
-  const agent = agentsCache.find(a => a.id === id);
-  if (agent) openAgentModal(agent);
-};
-
-window.confirmDelete = (type, id, name) => confirmDelete(type, id, name);
-
-window.filterProperties = filterProperties;
-window.filterAgents = filterAgents;

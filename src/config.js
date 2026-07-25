@@ -11,6 +11,9 @@ export const CONFIG = {
   CLOUDINARY_UPLOAD_PRESET_PROPS: 'inmoconecta_propiedades',
   CLOUDINARY_UPLOAD_PRESET_AGENTES: 'inmoconecta_agentes',
 
+  // Admin
+  ADMIN_EMAIL: import.meta.env.VITE_ADMIN_EMAIL || 'admin@bienenhaus.com.ar',
+
   // WhatsApp
   WHATSAPP_NUMBER: import.meta.env.VITE_WHATSAPP_NUMBER || '5493511234567',
 
