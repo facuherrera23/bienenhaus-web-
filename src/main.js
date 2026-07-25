@@ -41,7 +41,17 @@ async function loadAgents() { return import('./agents.js'); }
 // ================================================================
 async function init() {
   try {
-    // 🔀 SPA Redirect handling (GitHub Pages 404.html redirect)
+    // 🔀 SPA Redirect handling (GitHub Pages 404.html redirect + query param fallback)
+    // 1. Leer query param ?spa_redirect_path=/admin y guardarlo en sessionStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryRedirect = urlParams.get('spa_redirect_path');
+    if (queryRedirect) {
+      sessionStorage.setItem('spa_redirect_path', queryRedirect);
+      // Limpiar URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    // 2. Leer sessionStorage (poblado por 404.html o query param)
     const redirectedPath = sessionStorage.getItem('spa_redirect_path');
     if (redirectedPath) {
       sessionStorage.removeItem('spa_redirect_path');
