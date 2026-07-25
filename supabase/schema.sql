@@ -232,12 +232,20 @@ ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contenido_sitio ENABLE ROW LEVEL SECURITY;
 
 -- Políticas públicas de LECTURA
+DROP POLICY IF EXISTS "Public read propiedades" ON propiedades;
 CREATE POLICY "Public read propiedades" ON propiedades FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read imagenes" ON imagenes;
 CREATE POLICY "Public read imagenes" ON imagenes FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read agentes activos" ON agentes;
 CREATE POLICY "Public read agentes activos" ON agentes FOR SELECT USING (activo = true);
+
+DROP POLICY IF EXISTS "Public read contenido" ON contenido_sitio;
 CREATE POLICY "Public read contenido" ON contenido_sitio FOR SELECT USING (true);
 
 -- Leads: solo INSERT público (formulario contacto)
+DROP POLICY IF EXISTS "Public insert leads" ON leads;
 CREATE POLICY "Public insert leads" ON leads FOR INSERT WITH CHECK (true);
 
 -- Service role tiene acceso total (para admin panel)
