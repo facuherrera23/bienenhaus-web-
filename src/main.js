@@ -14,7 +14,7 @@ import {
   propiedadActual,
   abrirDetalle
 } from './properties.js';
-import { obtenerAgentes, renderizarAgentes, cargarAgentesAdmin } from './agents.js';
+import { obtenerAgentes, renderizarAgentes } from './agents.js';
 import { initAllUI, cerrarDetalle } from './ui.js';
 
 // ================================================================
@@ -55,9 +55,8 @@ async function init() {
     // 4. Cargar admin si está visible
     const btnAdmin = document.getElementById('btnAdmin');
     if (btnAdmin && btnAdmin.style.display === 'block') {
-      const { cargarPropiedadesAdmin } = await loadAdmin();
-      await cargarPropiedadesAdmin();
-      await cargarAgentesAdmin();
+      await window.cargarPropiedadesAdmin();
+      await window.cargarAgentesAdmin();
     }
 
     console.log('✅ Bienenhaus inicializado correctamente');
@@ -76,10 +75,10 @@ window.aplicarFiltros = aplicarFiltros;
 window.limpiarFiltros = limpiarFiltros;
 window.abrirDetalle = abrirDetalle;
 window.cerrarDetalle = cerrarDetalle;
-window.cargarPropiedadesAdmin = cargarPropiedadesAdmin;
-window.cargarAgentesAdmin = cargarAgentesAdmin;
 
 // Funciones admin - lazy load al hacer click
+window.cargarPropiedadesAdmin = async () => { const m = await loadAdmin(); return m.cargarPropiedadesAdmin(); };
+window.cargarAgentesAdmin = async () => { const m = await loadAgents(); return m.cargarAgentesAdmin(); };
 window.mostrarFormPropiedad = async () => { const m = await loadAdmin(); return m.mostrarFormPropiedad(); };
 window.cerrarFormPropiedad = async () => { const m = await loadAdmin(); return m.cerrarFormPropiedad(); };
 window.guardarPropiedad = async () => { const m = await loadAdmin(); return m.guardarPropiedad(); };
