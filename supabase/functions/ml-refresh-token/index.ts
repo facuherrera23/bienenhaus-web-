@@ -63,7 +63,7 @@ serve(async (req) => {
     try {
       // Use advisory lock to prevent concurrent refresh of same user
       const lockKey = `ml_refresh_${cred.ml_user_id}`
-      const { data: lockResult } = await supabase.rpc('pg_try_advisory_xact_lock', { key', lockKey })
+      const { data: lockResult } = await supabase.rpc('pg_try_advisory_xact_lock', { key: lockKey })
       
       if (!lockResult) {
         results.push({ user_id: cred.ml_user_id, status: 'skipped', reason: 'lock held' })
