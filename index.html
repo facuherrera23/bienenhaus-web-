@@ -77,16 +77,16 @@
     <!-- HERO -->
     <section class="hero" id="hero" role="banner">
       <div class="hero-content">
-        <div class="hero-badge-top">
+        <div class="hero-badge-top" id="heroBadgeTop">
           <i class="fas fa-crown" aria-hidden="true"></i> CPI. 1834 · Córdoba · Argentina
         </div>
-        <h1>
+        <h1 id="heroTitulo">
           Encuentra tu <span class="highlight">hogar</span> o la<br>
           inversión que <span class="highlight">buscas</span>
         </h1>
-        <p>Más de <span id="heroCount">300</span> propiedades en venta y alquiler. Asesoría profesional, tasación sin compromiso y video tours 360°.</p>
+        <p id="heroSubtitulo">Más de <span id="heroCount">300</span> propiedades en venta y alquiler. Asesoría profesional, tasación sin compromiso y video tours 360°.</p>
 
-        <div class="hero-badges">
+        <div class="hero-badges" id="heroBadges">
           <span class="hero-badge"><i class="fas fa-check-circle" aria-hidden="true"></i> Sin comisiones ocultas</span>
           <span class="hero-badge"><i class="fas fa-shield-alt" aria-hidden="true"></i> Garantía legal</span>
           <span class="hero-badge"><i class="fas fa-video" aria-hidden="true"></i> Video tours 360°</span>
@@ -94,11 +94,11 @@
         </div>
 
         <div class="hero-cta-group">
-          <a href="#catalogo" class="btn-hero-primary"><i class="fas fa-search" aria-hidden="true"></i> Ver propiedades</a>
-          <a href="#contacto" class="btn-hero-secondary"><i class="fas fa-comment-dots" aria-hidden="true"></i> Solicitar asesoría</a>
+          <a href="#catalogo" class="btn-hero-primary" id="heroCtaPrimario"><i class="fas fa-search" aria-hidden="true"></i> Ver propiedades</a>
+          <a href="#contacto" class="btn-hero-secondary" id="heroCtaSecundario"><i class="fas fa-comment-dots" aria-hidden="true"></i> Solicitar asesoría</a>
         </div>
 
-        <div class="hero-stats">
+        <div class="hero-stats" id="heroStats">
           <div class="stat"><div class="number" id="statPropiedades">Cargando...</div><div class="label">Propiedades activas</div></div>
           <div class="stat"><div class="number">1.200+</div><div class="label">Operaciones cerradas</div></div>
           <div class="stat"><div class="number">98%</div><div class="label">Satisfacción clientes</div></div>
@@ -202,9 +202,9 @@
 
     <!-- POR QUÉ ELEGIRNOS -->
     <section class="seccion" id="porque-elegirnos">
-      <h2><i class="fas fa-star" aria-hidden="true"></i> ¿Por qué elegir Bienenhaus?</h2>
-      <p class="subtitulo" style="font-size:1.05rem;color:var(--gray-600);max-width:780px;margin-bottom:20px;">Expertos en el mercado inmobiliario de Córdoba y Argentina.</p>
-      <div class="porque-grid">
+      <h2 id="porQueTitulo"><i class="fas fa-star" aria-hidden="true"></i> ¿Por qué elegir Bienenhaus?</h2>
+      <p class="subtitulo" id="porQueSubtitulo" style="font-size:1.05rem;color:var(--gray-600);max-width:780px;margin-bottom:20px;">Expertos en el mercado inmobiliario de Córdoba y Argentina.</p>
+      <div class="porque-grid" id="porQueRazones">
         <div class="porque-item"><div class="icono" style="font-size:2.5rem;">🏆</div><h4>18+ años de experiencia</h4><p>Más de 1.200 operaciones</p></div>
         <div class="porque-item"><div class="icono" style="font-size:2.5rem;">📋</div><h4>Asesoramiento personalizado</h4><p>Te acompañamos en cada paso</p></div>
         <div class="porque-item"><div class="icono" style="font-size:2.5rem;">🔒</div><h4>Transparencia total</h4><p>Sin comisiones ocultas</p></div>
@@ -216,9 +216,9 @@
 
     <!-- QUIÉNES SOMOS -->
     <section class="seccion" id="quienes-somos">
-      <h2><i class="fas fa-flag" aria-hidden="true"></i> Quiénes somos</h2>
-      <p class="subtitulo"><strong>Bienenhaus Propiedades</strong> es una agencia inmobiliaria con más de 18 años de experiencia en el mercado de Córdoba y Argentina. Ofrecemos un servicio integral: venta, alquiler, tasación y asesoramiento legal. <strong>CPI. 1834</strong></p>
-      <div class="valores-grid">
+      <h2 id="aboutTitulo"><i class="fas fa-flag" aria-hidden="true"></i> Quiénes somos</h2>
+      <p class="subtitulo" id="aboutDescripcion"><strong>Bienenhaus Propiedades</strong> es una agencia inmobiliaria con más de 18 años de experiencia en el mercado de Córdoba y Argentina. Ofrecemos un servicio integral: venta, alquiler, tasación y asesoramiento legal. <strong>CPI. 1834</strong></p>
+      <div class="valores-grid" id="aboutValores">
         <div class="valor-item"><i class="fas fa-handshake" aria-hidden="true"></i><h4>Confianza</h4><p>Relaciones transparentes</p></div>
         <div class="valor-item"><i class="fas fa-rocket" aria-hidden="true"></i><h4>Agilidad</h4><p>Procesos eficientes</p></div>
         <div class="valor-item"><i class="fas fa-gavel" aria-hidden="true"></i><h4>Legalidad</h4><p>Asesoría jurídica</p></div>
@@ -230,9 +230,9 @@
 
     <!-- SERVICIOS -->
     <section class="seccion" id="servicios">
-      <h2><i class="fas fa-concierge-bell" aria-hidden="true"></i> Nuestros servicios</h2>
-      <p class="subtitulo">Soluciones inmobiliarias integrales para cada necesidad.</p>
-      <div class="servicios-grid">
+      <h2 id="serviciosTitulo"><i class="fas fa-concierge-bell" aria-hidden="true"></i> Nuestros servicios</h2>
+      <p class="subtitulo" id="serviciosSubtitulo">Soluciones inmobiliarias integrales para cada necesidad.</p>
+      <div class="servicios-grid" id="serviciosLista">
         <div class="servicio-item"><i class="fas fa-home" aria-hidden="true"></i><h4>Venta de propiedades</h4><p>Vende al mejor precio del mercado</p></div>
         <div class="servicio-item"><i class="fas fa-key" aria-hidden="true"></i><h4>Alquiler de viviendas</h4><p>Encuentra el inquilino ideal</p></div>
         <div class="servicio-item"><i class="fas fa-calculator" aria-hidden="true"></i><h4>Tasación</h4><p>Valoración precisa y certificada</p></div>
@@ -244,8 +244,8 @@
 
     <!-- EQUIPO - DINÁMICO DESDE SUPABASE -->
     <section class="seccion" id="equipo">
-      <h2><i class="fas fa-users" aria-hidden="true"></i> Nuestro equipo</h2>
-      <p class="subtitulo">Agentes especializados con amplia experiencia en el mercado de Córdoba.</p>
+      <h2 id="equipoTitulo"><i class="fas fa-users" aria-hidden="true"></i> Nuestro equipo</h2>
+      <p class="subtitulo" id="equipoSubtitulo">Agentes especializados con amplia experiencia en el mercado de Córdoba.</p>
       <div class="equipo-grid" id="equipoGrid">
         <div style="grid-column:1/-1; text-align:center; padding:40px;">
           <div class="spinner" style="margin:0 auto;"></div>
@@ -256,9 +256,9 @@
 
     <!-- FAQ -->
     <section class="seccion" id="faq">
-      <h2><i class="fas fa-question-circle" aria-hidden="true"></i> Preguntas frecuentes</h2>
-      <p class="subtitulo">Resolvemos las dudas más comunes.</p>
-      <div class="faq-grid">
+      <h2 id="faqTitulo"><i class="fas fa-question-circle" aria-hidden="true"></i> Preguntas frecuentes</h2>
+      <p class="subtitulo" id="faqSubtitulo">Resolvemos las dudas más comunes.</p>
+      <div class="faq-grid" id="faqGrid">
         <div class="faq-item"><h4><i class="fas fa-chevron-right" aria-hidden="true"></i> ¿Cómo puedo tasar mi propiedad?</h4><p>Solicita una tasación gratuita a través de nuestro formulario de contacto.</p></div>
         <div class="faq-item"><h4><i class="fas fa-chevron-right" aria-hidden="true"></i> ¿Cuánto tarda el proceso de venta?</h4><p>En promedio 1-3 meses. El 85% se vende en menos de 60 días.</p></div>
         <div class="faq-item"><h4><i class="fas fa-chevron-right" aria-hidden="true"></i> ¿Qué comisiones cobran?</h4><p>Trabajamos con un porcentaje fijo y transparente. Consulta nuestras condiciones.</p></div>
@@ -270,16 +270,16 @@
 
     <!-- CONTACTO -->
     <section class="seccion" id="contacto">
-      <h2><i class="fas fa-envelope" aria-hidden="true"></i> Contacta con nosotros</h2>
-      <p class="subtitulo">¿Quieres vender, alquilar, comprar o tasar tu propiedad? Cuéntanos tu caso.</p>
+      <h2 id="contactoTitulo"><i class="fas fa-envelope" aria-hidden="true"></i> Contacta con nosotros</h2>
+      <p class="subtitulo" id="contactoSubtitulo">¿Quieres vender, alquilar, comprar o tasar tu propiedad? Cuéntanos tu caso.</p>
 
       <div class="info-contacto-grid">
-        <div class="info-contacto-item"><i class="fas fa-phone-alt" aria-hidden="true"></i><div class="text"><strong>Teléfono</strong>+54 351 123-4567</div></div>
-        <div class="info-contacto-item"><i class="fas fa-envelope" aria-hidden="true"></i><div class="text"><strong>Email</strong>bienenhaus.propiedades@gmail.com</div></div>
-        <div class="info-contacto-item"><i class="fas fa-map-marker-alt" aria-hidden="true"></i><div class="text"><strong>Cobertura</strong>Córdoba · Argentina</div></div>
-        <div class="info-contacto-item"><i class="fas fa-clock" aria-hidden="true"></i><div class="text"><strong>Horario</strong>Lun-Vie 9-20h · Sáb 10-14h</div></div>
-        <div class="info-contacto-item"><i class="fas fa-whatsapp" aria-hidden="true"></i><div class="text"><strong>WhatsApp</strong>+54 9 351 123-4567</div></div>
-        <div class="info-contacto-item"><i class="fas fa-globe" aria-hidden="true"></i><div class="text"><strong>Web</strong>www.bienenhaus.com.ar</div></div>
+        <div class="info-contacto-item"><i class="fas fa-phone-alt" aria-hidden="true"></i><div class="text"><strong>Teléfono</strong><span id="sitePhone">+54 351 123-4567</span></div></div>
+        <div class="info-contacto-item"><i class="fas fa-envelope" aria-hidden="true"></i><div class="text"><strong>Email</strong><span id="siteEmail">bienenhaus.propiedades@gmail.com</span></div></div>
+        <div class="info-contacto-item"><i class="fas fa-map-marker-alt" aria-hidden="true"></i><div class="text"><strong>Cobertura</strong><span id="siteCobertura">Córdoba · Argentina</span></div></div>
+        <div class="info-contacto-item"><i class="fas fa-clock" aria-hidden="true"></i><div class="text"><strong>Horario</strong><span id="siteHorario">Lun-Vie 9-20h · Sáb 10-14h</span></div></div>
+        <div class="info-contacto-item"><i class="fas fa-whatsapp" aria-hidden="true"></i><div class="text"><strong>WhatsApp</strong><span id="siteWhatsApp">+54 9 351 123-4567</span></div></div>
+        <div class="info-contacto-item"><i class="fas fa-globe" aria-hidden="true"></i><div class="text"><strong>Web</strong><span id="siteWeb">www.bienenhaus.com.ar</span></div></div>
       </div>
 
       <form class="form-contacto" id="formContacto" novalidate>
@@ -340,12 +340,12 @@
     </section>
   </div>
 
-  <!-- FOOTER -->
+<!-- FOOTER -->
   <footer class="footer" role="contentinfo">
     <div class="footer-grid">
-      <div class="footer-brand">
+      <div class="footer-brand" id="footerBrand">
         <h3><i class="fas fa-building" aria-hidden="true"></i> <span style="color:var(--accent);">Bienen</span>haus</h3>
-        <p>Comprometidos con tu hogar desde 2008. <strong>CPI. 1834</strong> · Córdoba, Argentina.</p>
+        <p id="footerDescripcion">Comprometidos con tu hogar desde 2008. <strong>CPI. 1834</strong> · Córdoba, Argentina.</p>
         <div class="social-footer">
           <a href="https://instagram.com/bienenhaus.prop" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram" aria-hidden="true"></i></a>
           <a href="https://facebook.com/Bienenhaus.prop" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
@@ -357,7 +357,7 @@
       </div>
       <div class="footer-col">
         <h4>Enlaces rápidos</h4>
-        <ul>
+        <ul id="footerLinks">
           <li><a href="#catalogo"><i class="fas fa-chevron-right" aria-hidden="true"></i> Propiedades</a></li>
           <li><a href="#quienes-somos"><i class="fas fa-chevron-right" aria-hidden="true"></i> Quiénes somos</a></li>
           <li><a href="#servicios"><i class="fas fa-chevron-right" aria-hidden="true"></i> Servicios</a></li>
@@ -367,7 +367,7 @@
       </div>
       <div class="footer-col">
         <h4>Servicios</h4>
-        <ul>
+        <ul id="footerServicios">
           <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Venta de propiedades</a></li>
           <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Alquiler de viviendas</a></li>
           <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Tasación profesional</a></li>
@@ -388,7 +388,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 <strong>Bienenhaus Propiedades</strong> · CPI. 1834 · Córdoba · Argentina</span>
+      <span id="footerCopyright">© 2026 <strong>Bienenhaus Propiedades</strong> · CPI. 1834 · Córdoba · Argentina</span>
       <div class="footer-links">
         <a href="#">Aviso legal</a>
         <a href="#">Política de cookies</a>

@@ -16,6 +16,7 @@ import {
 } from './properties.js';
 import { obtenerAgentes, renderizarAgentes } from './agents.js';
 import { initAllUI, cerrarDetalle } from './ui.js';
+import { cargarContenidoSitio } from './content.js';
 
 // ================================================================
 // VARIABLES GLOBALES (compatibilidad con código inline en HTML)
@@ -30,15 +31,18 @@ window.propiedadActual = null;
 // ================================================================
 async function init() {
   try {
-    // 1. Cargar propiedades
+    // 1. Cargar contenido dinámico del sitio (SEO, textos, etc.)
+    await cargarContenidoSitio();
+
+    // 2. Cargar propiedades
     await obtenerPropiedades({});
     renderizarPropiedades();
 
-    // 2. Cargar agentes (público)
+    // 3. Cargar agentes (público)
     const agentes = await obtenerAgentes();
     renderizarAgentes(agentes);
 
-    // 3. Inicializar toda la UI
+    // 4. Inicializar toda la UI
     initAllUI();
 
     console.log('✅ Bienenhaus inicializado correctamente');
