@@ -1381,10 +1381,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('filterPropertyStatus').addEventListener('change', filterProperties);
   document.getElementById('searchAgents').addEventListener('input', debounce(filterAgents, 300));
   
-  // Mobile menu toggle
   document.getElementById('menuToggle')?.addEventListener('click', () => {
     document.getElementById('sidebar').classList.toggle('open');
   });
+  
+  // MercadoLibre connect button
+  document.getElementById('btnConnectML')?.addEventListener('click', connectMercadoLibre);
   
   // Close modals on overlay click
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
