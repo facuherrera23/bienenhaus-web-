@@ -147,7 +147,7 @@ ALTER TABLE contenido_sitio ADD COLUMN IF NOT EXISTS descripcion TEXT;
 -- Insertar contenido por defecto (usando ::jsonb para escapar HTML correctamente)
 INSERT INTO contenido_sitio (clave, valor, descripcion) VALUES
 ('hero_badge', '"CPI. 1834 · Córdoba · Argentina"'::jsonb, 'Badge superior del hero'),
-('hero_titulo', 'Encuentra tu <span class="highlight">hogar</span> o la<br>inversión que <span class="highlight">buscas</span>'::jsonb, 'Título principal del hero (HTML permitido)'),
+('hero_titulo', '"Encuentra tu <span class=\"highlight\">hogar</span> o la<br>inversión que <span class=\"highlight\">buscas</span>"'::jsonb, 'Título principal del hero (HTML permitido)'),
 ('hero_subtitulo', '"Más de 300 propiedades en venta y alquiler. Asesoría profesional, tasación sin compromiso y video tours 360°."'::jsonb, 'Subtítulo del hero'),
 ('hero_badges', '["Sin comisiones ocultas", "Garantía legal", "Video tours 360°", "Respuesta en 24h"]'::jsonb, 'Array de badges del hero'),
 ('hero_cta_primario', '"Ver propiedades"'::jsonb, 'Texto CTA primario'),
