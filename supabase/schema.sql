@@ -254,15 +254,19 @@ CREATE POLICY "Public insert leads" ON leads FOR INSERT WITH CHECK (true);
 -- ================================================================
 -- TRIGGERS para updated_at
 -- ================================================================
+DROP TRIGGER IF EXISTS update_ml_credenciales_updated_at ON ml_credenciales;
 CREATE TRIGGER update_ml_credenciales_updated_at BEFORE UPDATE ON ml_credenciales
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_propiedades_updated_at ON propiedades;
 CREATE TRIGGER update_propiedades_updated_at BEFORE UPDATE ON propiedades
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_agentes_updated_at ON agentes;
 CREATE TRIGGER update_agentes_updated_at BEFORE UPDATE ON agentes
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_contenido_updated_at ON contenido_sitio;
 CREATE TRIGGER update_contenido_updated_at BEFORE UPDATE ON contenido_sitio
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
