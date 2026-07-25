@@ -15,6 +15,10 @@ export default defineConfig({
       }
     },
     rollupOptions: {
+      input: {
+        main: './index.html',
+        admin: './admin.html'
+      },
       output: {
         manualChunks: {
           vendor: ['@supabase/supabase-js', 'axios']
@@ -25,7 +29,6 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
-    // SPA fallback para desarrollo - sirve index.html en rutas no encontradas
     fs: { strict: false }
   },
   appType: 'spa'
