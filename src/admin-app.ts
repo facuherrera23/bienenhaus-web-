@@ -1340,15 +1340,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     navigate(hash);
   });
   
-  // Initial route
+// Initial route
   const initialHash = window.location.hash.slice(1) || 'dashboard';
   navigate(initialHash);
-  
+
+  // Handle MercadoLibre OAuth callback (check for code/state in URL)
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  const state = urlParams.get('state');
+  if (code && state) {
+    await handleMLCallback();
+    // Clean URL after handling
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+  }
+
   // Modals
   document.getElementById('btnNewProperty').addEventListener('click', () => openPropertyModal());
   document.getElementById('closePropertyModal').addEventListener('click', closePropertyModal);
   document.getElementById('cancelPropertyModal').addEventListener('click', closePropertyModal);
   document.getElementById('propertyForm').addEventListener('submit', saveProperty);
+  document.getElementById('btnSyncPropertyML')?.addEventListener('click', () => {
+    if (editingPropertyId) syncPropertyToML(editingPropertyId, 'publish');
+  });
   
   document.getElementById('btnNewAgent').addEventListener('click', () => openAgentModal());
   document.getElementById('closeAgentModal').addEventListener('click', closeAgentModal);
@@ -1387,6 +1400,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // MercadoLibre connect button
   document.getElementById('btnConnectML')?.addEventListener('click', connectMercadoLibre);
+  
+  // MercadoLibre panel buttons
+  document.getElementById('btnImportML')?.addEventListener('click', importFromMercadoLibre);
+  document.getElementById('btnSyncML')?.addEventListener('click', () => {
+    // Sync all properties - could implement batch sync
+    showToast('Sincronización masiva no implementada aún', 'info');
+  });
+  document.getElementById('btnPublishAllML')?.addEventListener('click', () => {
+    showToast('Publicación masiva no implementada aún', 'info');
+  });
+  document.getElementById('btnPauseAllML')?.addEventListener('click', () => {
+    showToast('Pausa masiva no implementada aún', 'info');
+  });
+  document.getElementById('btnActivateAllML')?.addEventListener('click', () => {
+    showToast('Activación masiva no implementada aún', 'info');
+  });
   
   // Close modals on overlay click
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
