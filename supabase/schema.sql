@@ -147,6 +147,7 @@ CREATE INDEX IF NOT EXISTS idx_ml_sync_created ON ml_sync_log(created_at DESC);
 
 -- RLS: lectura pública para debug en admin
 ALTER TABLE ml_sync_log ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read ml_sync_log" ON ml_sync_log;
 CREATE POLICY "Public read ml_sync_log" ON ml_sync_log FOR SELECT USING (true);
 
 -- Insertar contenido por defecto
