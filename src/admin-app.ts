@@ -251,7 +251,11 @@ async function loadContent() {
       .from('contenido_sitio')
       .select('*');
     
-    if (error) throw error;
+    if (error) {
+      // Tabla puede no existir o RLS bloquear - no romper el admin
+      console.warn('contenido_sitio no accesible:', error.message);
+      return;
+    }
     contentCache = {};
     (data || []).forEach(item => {
       contentCache[item.clave] = item.valor;
@@ -259,7 +263,7 @@ async function loadContent() {
     
     populateContentEditor();
   } catch (e) {
-    console.error('Error loading content:', e);
+    console.warn('Error loading content:', e);
   }
 }
 
@@ -587,8 +591,8 @@ async function saveProperty(e) {
     closePropertyModal();
     await loadProperties();
   } catch (e) {
-    console.error(e);
-    showToast('Error al guardar propiedad', 'error');
+    console.error('saveProperty error:', e);
+    showToast(`Error: ${e.message || 'Error al guardar propiedad'}`, 'error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
@@ -691,8 +695,8 @@ async function saveAgent(e) {
     closeAgentModal();
     await loadAgents();
   } catch (e) {
-    console.error(e);
-    showToast('Error al guardar agente', 'error');
+    console.error('saveAgent error:', e);
+    showToast(`Error: ${e.message || 'Error al guardar agente'}`, 'error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
@@ -807,8 +811,8 @@ async function saveAllContent() {
     showToast('Contenido guardado correctamente', 'success');
     await loadContent();
   } catch (e) {
-    console.error(e);
-    showToast('Error al guardar contenido', 'error');
+    console.error('saveAllContent error:', e);
+    showToast(`Error: ${e.message || 'Error al guardar contenido'}`, 'error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-save"></i> Guardar Todo';
@@ -880,7 +884,10 @@ function setupImageUploads() {
   const propPreview = document.getElementById('propImagesPreview');
   
   if (propUpload && propInput) {
-    propUpload.addEventListener('click', () => propInput.click());
+    // Make file input cover the upload area for native click handling
+    propInput.style.cssText = 'position:absolute;inset:0;opacity:0;cursor:pointer;z-index:10;';
+    propUpload.style.position = 'relative';
+    
     propUpload.addEventListener('dragover', e => { e.preventDefault(); propUpload.classList.add('dragover'); });
     propUpload.addEventListener('dragleave', () => propUpload.classList.remove('dragover'));
     propUpload.addEventListener('drop', e => {
@@ -896,7 +903,9 @@ function setupImageUploads() {
   const agentInput = document.getElementById('agentAvatar');
   
   if (agentUpload && agentInput) {
-    agentUpload.addEventListener('click', () => agentInput.click());
+    agentInput.style.cssText = 'position:absolute;inset:0;opacity:0;cursor:pointer;z-index:10;';
+    agentUpload.style.position = 'relative';
+    
     agentUpload.addEventListener('dragover', e => { e.preventDefault(); agentUpload.classList.add('dragover'); });
     agentUpload.addEventListener('dragleave', () => agentUpload.classList.remove('dragover'));
     agentUpload.addEventListener('drop', e => {
@@ -1120,13 +1129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('cancelAgentModal').addEventListener('click', closeAgentModal);
   document.getElementById('agentForm').addEventListener('submit', saveAgent);
   
-  // Property image upload
-  document.getElementById('propImageUpload').addEventListener('click', () => document.getElementById('propImages').click());
-  document.getElementById('propImages').addEventListener('change', e => handleFiles(e.target.files, 'property'));
-  
-  // Agent avatar
-  document.getElementById('agentAvatarUpload').addEventListener('click', () => document.getElementById('agentAvatar').click());
-  document.getElementById('agentAvatar').addEventListener('change', e => handleFiles(e.target.files, 'agent'));
+  // Image uploads handled by setupImageUploads()
   
   // Settings tabs
   document.querySelectorAll('.settings-tab').forEach(tab => {
