@@ -41,6 +41,20 @@ async function loadAgents() { return import('./agents.js'); }
 // ================================================================
 async function init() {
   try {
+    // 🔀 SPA Redirect handling (GitHub Pages 404.html redirect)
+    const redirectedPath = sessionStorage.getItem('spa_redirect_path');
+    if (redirectedPath) {
+      sessionStorage.removeItem('spa_redirect_path');
+      // Si la redirección era a /admin, abrir admin
+      if (redirectedPath.startsWith('/admin')) {
+        setTimeout(async () => {
+          const m = await import('./admin.js');
+          m.abrirAdmin();
+        }, 100);
+      }
+      // Otras rutas se pueden manejar aquí
+    }
+
     // 1. Cargar propiedades
     await obtenerPropiedades({});
     renderizarPropiedades();

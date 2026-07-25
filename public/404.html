@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirigiendo...</title>
+  <script>
+    // SPA redirect para GitHub Pages
+    // Preserva la ruta y query string al redirigir a index.html
+    (function() {
+      var path = window.location.pathname;
+      var search = window.location.search;
+      var hash = window.location.hash;
+      
+      // Si ya estamos en index.html, no redirigir (evitar loop)
+      if (path === '/' || path === '/index.html') return;
+      
+      // Construir URL de destino
+      var destination = '/index.html' + search + hash;
+      
+      // Guardar la ruta original en sessionStorage para que la app la recupere
+      try {
+        sessionStorage.setItem('spa_redirect_path', path + search + hash);
+      } catch (e) {}
+      
+      // Redirigir
+      window.location.replace(destination);
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirigiendo a <a href="/">inicio</a>...</p>
+</body>
+</html>
