@@ -6,6 +6,15 @@
 -- Extensiones
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Función para updated_at (debe existir antes de los triggers)
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ language 'plpgsql';
+
 -- ================================================================
 -- TABLA: propiedades
 -- ================================================================
@@ -237,13 +246,8 @@ CREATE POLICY "Public insert leads" ON leads FOR INSERT WITH CHECK (true);
 -- ================================================================
 -- TRIGGERS para updated_at
 -- ================================================================
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ language 'plpgsql';
+CREATE TRIGGER update_ml_credenciales_updated_at BEFORE UPDATE ON ml_credenciales
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_propiedades_updated_at BEFORE UPDATE ON propiedades
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -252,9 +256,6 @@ CREATE TRIGGER update_agentes_updated_at BEFORE UPDATE ON agentes
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_contenido_updated_at BEFORE UPDATE ON contenido_sitio
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_ml_credenciales_updated_at BEFORE UPDATE ON ml_credenciales
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ================================================================
