@@ -41,6 +41,8 @@
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
   <!-- Favicon -->
@@ -220,18 +222,40 @@
 
     <!-- CATÁLOGO DE PROPIEDADES -->
     <section class="catalogo" id="catalogo" role="main">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:24px;gap:16px;">
         <h2 style="font-size:2.2rem;font-weight:800;"><i class="fas fa-home" aria-hidden="true"></i> Propiedades destacadas</h2>
-        <span class="resultados" id="contadorPropiedades" style="background:var(--gray-100);padding:6px 20px;border-radius:40px;font-weight:500;font-size:0.9rem;color:var(--gray-700);">Cargando...</span>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <span class="resultados" id="contadorPropiedades" style="background:var(--gray-100);padding:6px 20px;border-radius:40px;font-weight:500;font-size:0.9rem;color:var(--gray-700);">Cargando...</span>
+          <div class="vista-toggle" role="group" aria-label="Cambiar vista">
+            <button type="button" class="vista-btn active" data-vista="lista" aria-pressed="true" title="Vista lista"><i class="fas fa-list"></i></button>
+            <button type="button" class="vista-btn" data-vista="mapa" aria-pressed="false" title="Vista mapa"><i class="fas fa-map-marked-alt"></i></button>
+          </div>
+          <div class="carga-toggle" role="group" aria-label="Modo de carga">
+            <button type="button" class="carga-btn active" data-modo="paginacion" aria-pressed="true" title="Paginación"><i class="fas fa-bars"></i></button>
+            <button type="button" class="carga-btn" data-modo="infinito" aria-pressed="false" title="Cargar más"><i class="fas fa-infinity"></i></button>
+          </div>
+        </div>
       </div>
-      <div class="grid-propiedades" id="gridPropiedades" role="list"></div>
-      <div class="paginacion" id="paginacion" role="navigation"></div>
+      
+      <!-- Vista Lista -->
+      <div class="vista-contenedor" id="vistaLista">
+        <div class="grid-propiedades" id="gridPropiedades" role="list"></div>
+        <div class="paginacion" id="paginacion" role="navigation"></div>
+      </div>
+      
+      <!-- Vista Mapa -->
+      <div class="vista-contenedor" id="vistaMapa" hidden>
+        <div id="mapaPropiedades" style="height:600px;border-radius:var(--radius-lg);overflow:hidden;"></div>
+      </div>
     </section>
 
     <!-- MODAL DETALLE PROPIEDAD -->
     <div class="detalle-overlay" id="detalleOverlay" role="dialog" aria-modal="true" aria-labelledby="detalle-titulo">
       <div class="detalle-modal" id="detalleModal">
-        <button class="detalle-close" id="detalleClose" aria-label="Cerrar detalles"><i class="fas fa-times" aria-hidden="true"></i></button>
+        <div class="detalle-header">
+          <button class="detalle-fullscreen" id="detalleFullscreen" aria-label="Pantalla completa" title="Pantalla completa (F)"><i class="fas fa-expand"></i></button>
+          <button class="detalle-close" id="detalleClose" aria-label="Cerrar detalles"><i class="fas fa-times" aria-hidden="true"></i></button>
+        </div>
         <div class="detalle-imagen-principal" id="detalleImagen">
           <span class="badge-op-detalle" id="detalleBadge">VENTA</span>
         </div>
@@ -243,6 +267,7 @@
             <div class="detalle-precio"><span id="detalleSimbolo">$</span> <span id="detallePrecio">0</span> <span class="sub-moneda" id="detalleSubMoneda" style="font-size:0.8rem;font-weight:400;color:var(--gray-500);display:block;">Pesos argentinos</span></div>
             <div class="detalle-caracteristicas" id="detalleCaracteristicas"></div>
             <div class="detalle-tags" id="detalleTags"></div>
+            <div id="detalleVideoTour" style="display:none;"></div>
             <div style="margin:20px 0;background:var(--gray-900);border-radius:var(--radius);padding:40px 20px;text-align:center;color:white;">
               <i class="fas fa-play-circle" style="font-size:3rem;color:var(--accent);" aria-hidden="true"></i>
               <p><strong>Video informativo 360°</strong><br>Recorrido virtual de la propiedad</p>
@@ -510,6 +535,37 @@
 
   <!-- Botón para abrir admin (se muestra con Ctrl+Shift+A) -->
   <button id="btnAdmin" onclick="abrirAdmin()" style="display:none; position:fixed; bottom:100px; left:30px; z-index:999; background:var(--primary); color:white; border:none; padding:12px 20px; border-radius:60px; font-weight:600; cursor:pointer; box-shadow:var(--shadow-lg);"><i class="fas fa-user-cog"></i> Admin</button>
+
+  <!-- Modal Comparador de Propiedades -->
+  <div class="comparador-overlay" id="comparadorOverlay" role="dialog" aria-modal="true" aria-labelledby="comparadorTitulo">
+    <div class="comparador-modal">
+      <div class="comparador-header">
+        <h3 id="comparadorTitulo"><i class="fas fa-balance-scale"></i> Comparar Propiedades</h3>
+        <button class="comparador-close" id="comparadorClose" aria-label="Cerrar comparador"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="comparador-body">
+        <div class="comparador-grid" id="comparadorGrid">
+          <!-- Se llena dinámicamente -->
+        </div>
+      </div>
+      <div class="comparador-footer">
+        <button class="btn-secundario" id="btnLimpiarComparador">Limpiar todo</button>
+        <button class="btn-primario" id="btnCerrarComparador">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón para abrir admin (se muestra con Ctrl+Shift+A) -->
+  <button id="btnAdmin" onclick="abrirAdmin()" style="display:none; position:fixed; bottom:100px; left:30px; z-index:999; background:var(--primary); color:white; border:none; padding:12px 20px; border-radius:60px; font-weight:600; cursor:pointer; box-shadow:var(--shadow-lg);"><i class="fas fa-user-cog"></i> Admin</button>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Leaflet MarkerCluster -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
   <script type="module" src="/src/main.js"></script>
 </body>

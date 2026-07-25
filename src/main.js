@@ -12,7 +12,11 @@ import {
   aplicarFiltros,
   limpiarFiltros,
   propiedadActual,
-  abrirDetalle
+  abrirDetalle,
+  initUrlState,
+  toggleComparar,
+  limpiarComparador,
+  abrirComparador
 } from './properties.js';
 import { obtenerAgentes, renderizarAgentes } from './agents.js';
 import { initAllUI, cerrarDetalle } from './ui.js';
@@ -34,9 +38,8 @@ async function init() {
     // 1. Cargar contenido dinámico del sitio (SEO, textos, etc.)
     await cargarContenidoSitio();
 
-    // 2. Cargar propiedades
-    await obtenerPropiedades({});
-    renderizarPropiedades();
+    // 2. Inicializar estado URL y cargar propiedades con filtros de la URL
+    initUrlState();
 
     // 3. Cargar agentes (público)
     const agentes = await obtenerAgentes();
@@ -60,6 +63,9 @@ window.aplicarFiltros = aplicarFiltros;
 window.limpiarFiltros = limpiarFiltros;
 window.abrirDetalle = abrirDetalle;
 window.cerrarDetalle = cerrarDetalle;
+window.toggleComparar = toggleComparar;
+window.limpiarComparador = limpiarComparador;
+window.abrirComparador = abrirComparador;
 
 // ================================================================
 // EJECUTAR
