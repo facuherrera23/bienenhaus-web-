@@ -24,6 +24,11 @@ CREATE TABLE IF NOT EXISTS propiedades (
   destacado BOOLEAN DEFAULT FALSE,
   caracteristicas TEXT[],
   descripcion TEXT,
+  -- MercadoLibre sync fields
+  ml_item_id TEXT UNIQUE,
+  ml_status TEXT,
+  ml_permalink TEXT,
+  ml_last_sync TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -99,6 +104,42 @@ CREATE TABLE IF NOT EXISTS contenido_sitio (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ================================================================
+-- TABLA: ml_credenciales (OAuth tokens para MercadoLibre)
+-- ================================================================
+CREATE TABLE IF NOT EXISTS ml_credenciales (
+  id BIGSERIAL PRIMARY KEY,
+  ml_user_id BIGINT NOT NULL,
+  access_token TEXT NOT NULL,
+  refresh_token TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  scope TEXT,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS: solo accesible desde Edge Functions (service_role)
+ALTER TABLE ml_credenciales ENABLE ROW LEVEL SECURITY;
+-- Sin políticas públicas = solo service_role bypassa RLS
+
+-- ================================================================
+-- TABLA: ml_sync_log (trazabilidad de sincronización ML)
+-- ================================================================
+CREATE TABLE IF NOT EXISTS ml_sync_log (
+  id BIGSERIAL PRIMARY KEY,
+  propiedad_id BIGINT REFERENCES propiedades(id) ON DELETE CASCADE,
+  ml_item_id TEXT,
+  accion TEXT CHECK (accion IN ('import','create','update','pause','error')),
+  detalle JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ml_sync_propiedad ON ml_sync_log(propiedad_id);
+CREATE INDEX IF NOT EXISTS idx_ml_sync_created ON ml_sync_log(created_at DESC);
+
+-- RLS: lectura pública para debug en admin
+ALTER TABLE ml_sync_log ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read ml_sync_log" ON ml_sync_log FOR SELECT USING (true);
+
 -- Insertar contenido por defecto
 INSERT INTO contenido_sitio (clave, valor, descripcion) VALUES
 ('hero_badge', '"CPI. 1834 · Córdoba · Argentina"', 'Badge superior del hero'),
@@ -133,6 +174,41 @@ INSERT INTO contenido_sitio (clave, valor, descripcion) VALUES
 ('seo_schema', '{"@context":"https://schema.org","@type":"RealEstateAgent","name":"Bienenhaus Propiedades","description":"Agencia inmobiliaria profesional con más de 18 años de experiencia en el mercado argentino","address":{"@type":"PostalAddress","addressLocality":"Córdoba","addressCountry":"AR"},"telephone":"+54 351 123-4567","email":"bienenhaus.propiedades@gmail.com","url":"https://bienenhaus.com.ar"}', 'Schema.org JSON-LD'),
 
 ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor, updated_at = NOW();
+
+-- ================================================================
+-- MERCADOLIBRE INTEGRATION TABLES
+-- ================================================================
+
+-- Tabla de credenciales ML (solo accesible via service_role / Edge Functions)
+CREATE TABLE IF NOT EXISTS ml_credenciales (
+  id BIGSERIAL PRIMARY KEY,
+  ml_user_id BIGINT NOT NULL,
+  access_token TEXT NOT NULL,
+  refresh_token TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  scope TEXT,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS: solo service_role puede acceder (sin políticas públicas = solo service_role)
+ALTER TABLE ml_credenciales ENABLE ROW LEVEL SECURITY;
+
+-- Tabla de log de sincronización ML
+CREATE TABLE IF NOT EXISTS ml_sync_log (
+  id BIGSERIAL PRIMARY KEY,
+  propiedad_id BIGINT REFERENCES propiedades(id) ON DELETE CASCADE,
+  ml_item_id TEXT,
+  accion TEXT CHECK (accion IN ('import','create','update','pause','error')),
+  detalle JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ml_sync_propiedad ON ml_sync_log(propiedad_id);
+CREATE INDEX IF NOT EXISTS idx_ml_sync_created ON ml_sync_log(created_at DESC);
+
+-- Trigger para updated_at en ml_credenciales
+CREATE TRIGGER update_ml_credenciales_updated_at BEFORE UPDATE ON ml_credenciales
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ================================================================
 -- RLS (Row Level Security)
@@ -173,6 +249,9 @@ CREATE TRIGGER update_agentes_updated_at BEFORE UPDATE ON agentes
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_contenido_updated_at BEFORE UPDATE ON contenido_sitio
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_ml_credenciales_updated_at BEFORE UPDATE ON ml_credenciales
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ================================================================

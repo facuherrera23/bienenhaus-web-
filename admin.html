@@ -1069,6 +1069,15 @@
         </div>
 
         <div class="nav-section">
+          <div class="nav-section-title">Integraciones</div>
+          <a href="#mercadoLibre" class="nav-item" data-section="mercadoLibre">
+            <i class="fas fa-store"></i>
+            <span>MercadoLibre</span>
+            <span class="badge" id="mlStatusBadge" style="display:none; background:var(--warning);">Conectado</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
           <div class="nav-section-title">Sistema</div>
           <a href="#settings" class="nav-item" data-section="settings">
             <i class="fas fa-cog"></i>
@@ -1653,6 +1662,66 @@
             </div>
           </div>
 
+        </div>
+        </section>
+
+        <!-- MercadoLibre Panel -->
+        <section id="section-mercadoLibre" class="settings-panel">
+          <div class="section-header">
+            <h2 class="section-title">MercadoLibre</h2>
+            <div class="header-right">
+              <button class="btn-primary" id="btnConnectML" style="display:none;">
+                <i class="fas fa-link"></i> Conectar MercadoLibre
+              </button>
+              <button class="btn-primary" id="btnImportML" style="display:none;">
+                <i class="fas fa-download"></i> Importar de ML
+              </button>
+              <button class="btn-secondary" id="btnSyncML" style="display:none;">
+                <i class="fas fa-sync"></i> Sincronizar
+              </button>
+            </div>
+          </div>
+
+          <div class="section-header">
+            <div id="mlStatus" style="flex:1;">
+              <span class="badge badge-inactive">Desconectado</span>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:24px;">
+            <h3 style="margin-bottom:16px;"><i class="fas fa-history"></i> Historial de Sincronización</h3>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Propiedad</th>
+                    <th>Acción</th>
+                    <th>ML Item ID</th>
+                    <th>Detalle</th>
+                  </tr>
+                </thead>
+                <tbody id="mlSyncLogBody">
+                  <tr><td colspan="5" class="empty-state">Cargando historial...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:24px;">
+            <h3 style="margin-bottom:16px;"><i class="fas fa-cogs"></i> Acciones</h3>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+              <button class="btn-primary" id="btnPublishAllML" style="display:none;">
+                <i class="fas fa-upload"></i> Publicar todas en ML
+              </button>
+              <button class="btn-secondary" id="btnPauseAllML" style="display:none;">
+                <i class="fas fa-pause"></i> Pausar todas en ML
+              </button>
+              <button class="btn-secondary" id="btnActivateAllML" style="display:none;">
+                <i class="fas fa-play"></i> Activar todas en ML
+              </button>
+            </div>
+          </div>
         </section>
       </div>
     </main>
@@ -1747,6 +1816,9 @@
       </form>
       <div class="modal-footer">
         <button type="button" class="btn-secondary" id="cancelPropertyModal">Cancelar</button>
+        <button type="button" class="btn-secondary" id="btnSyncPropertyML" style="display:none;">
+          <i class="fas fa-store"></i> Sincronizar con ML
+        </button>
         <button type="submit" form="propertyForm" class="btn-primary" id="savePropertyBtn">
           <i class="fas fa-save"></i> Guardar
         </button>

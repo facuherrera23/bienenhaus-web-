@@ -18,6 +18,11 @@ let editingAgentId = null;
 let uploadedPropertyImages = [];
 let uploadedAgentAvatar = null;
 
+// MercadoLibre State
+let mlConnected = false;
+let mlUserId = null;
+let mlTokenExpiresAt = null;
+
 // ================================================================
 // UTILITIES
 // ================================================================
@@ -175,7 +180,8 @@ function navigate(section) {
     properties: 'Propiedades',
     agents: 'Agentes',
     'settings-content': 'Textos del Sitio',
-    settings: 'Configuración'
+    settings: 'Configuración',
+    mercadoLibre: 'MercadoLibre'
   };
   document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
   document.getElementById('breadcrumbCurrent').textContent = titles[section] || 'Dashboard';
@@ -188,6 +194,7 @@ function navigate(section) {
     case 'agents': loadAgents(); break;
     case 'settings-content': loadContentEditor(); break;
     case 'settings': loadSettings(); break;
+    case 'mercadoLibre': loadMercadoLibre(); break;
   }
 }
 
@@ -871,6 +878,230 @@ async function saveSettings() {
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-save"></i> Guardar Configuración';
+  }
+}
+
+// ================================================================
+// MERCADOLIBRE INTEGRATION
+// ================================================================
+
+// Load MercadoLibre connection status
+async function loadMercadoLibre() {
+  updateMercadoLibreUI();
+  
+  // Check connection status
+  try {
+    const { data: creds } = await supabase
+      .from('ml_credenciales')
+      .select('ml_user_id, expires_at')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single();
+    
+    if (creds) {
+      mlConnected = true;
+      mlUserId = creds.ml_user_id;
+      mlTokenExpiresAt = creds.expires_at;
+      updateMercadoLibreUI();
+    } else {
+      mlConnected = false;
+      updateMercadoLibreUI();
+    }
+  } catch (e) {
+    console.warn('ML status check:', e);
+    mlConnected = false;
+    updateMercadoLibreUI();
+  }
+  
+  // Load sync log
+  loadMLSyncLog();
+}
+
+function updateMercadoLibreUI() {
+  const statusEl = document.getElementById('mlStatus');
+  const connectBtn = document.getElementById('btnConnectML');
+  const importBtn = document.getElementById('btnImportML');
+  const syncBtn = document.getElementById('btnSyncML');
+  
+  if (statusEl) {
+    if (mlConnected) {
+      const exp = mlTokenExpiresAt ? new Date(mlTokenExpiresAt).toLocaleString('es-AR') : 'desconocido';
+      statusEl.innerHTML = `<span class="badge badge-active">Conectado</span> <small>Usuario: ${mlUserId} · Expira: ${exp}</small>`;
+      if (connectBtn) connectBtn.style.display = 'none';
+      if (importBtn) importBtn.style.display = 'inline-flex';
+      if (syncBtn) syncBtn.style.display = 'inline-flex';
+    } else {
+      statusEl.innerHTML = `<span class="badge badge-inactive">Desconectado</span>`;
+      if (connectBtn) connectBtn.style.display = 'inline-flex';
+      if (importBtn) importBtn.style.display = 'none';
+      if (syncBtn) syncBtn.style.display = 'none';
+    }
+  }
+}
+
+// Connect to MercadoLibre (OAuth)
+async function connectMercadoLibre() {
+  const btn = document.getElementById('btnConnectML');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
+  }
+  
+  try {
+    // Call Edge Function to get auth URL
+    const { data, error } = await supabase.functions.invoke('ml-oauth-callback', {
+      body: {}
+    });
+    
+    if (error) throw error;
+    
+    if (data.authUrl) {
+      // Store state for CSRF validation
+      const state = data.state;
+      sessionStorage.setItem('ml_oauth_state', state);
+      
+      // Redirect to ML OAuth
+      window.location.href = data.authUrl;
+    }
+  } catch (e) {
+    console.error('ML Connect error:', e);
+    showToast(`Error: ${e.message}`, 'error');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-link"></i> Conectar MercadoLibre';
+    }
+  }
+}
+
+// Handle OAuth callback (called from redirect)
+async function handleMLCallback() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  const state = urlParams.get('state');
+  const storedState = sessionStorage.getItem('ml_oauth_state');
+  
+  if (!code || !state || state !== storedState) {
+    showToast('Error de autenticación: estado inválido', 'error');
+    return;
+  }
+  
+  sessionStorage.removeItem('ml_oauth_state');
+  
+  try {
+    showToast('Completando conexión...', 'info');
+    
+    const { data, error } = await supabase.functions.invoke('ml-oauth-callback', {
+      body: { code, state }
+    });
+    
+    if (error) throw error;
+    
+    if (data.success) {
+      showToast('¡Cuenta de MercadoLibre conectada!', 'success');
+      mlConnected = true;
+      mlUserId = data.user_id;
+      mlTokenExpiresAt = data.expires_at;
+      updateMercadoLibreUI();
+    } else {
+      throw new Error(data.error || 'Error desconocido');
+    }
+  } catch (e) {
+    console.error('ML Callback error:', e);
+    showToast(`Error: ${e.message}`, 'error');
+  }
+}
+
+// Import properties from MercadoLibre
+async function importFromMercadoLibre() {
+  const btn = document.getElementById('btnImportML');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importando...';
+  }
+  
+  try {
+    showToast('Importando propiedades de MercadoLibre...', 'info');
+    
+    const { data, error } = await supabase.functions.invoke('ml-import', {
+      body: {}
+    });
+    
+    if (error) throw error;
+    
+    showToast(`Importación completada: ${data.imported} nuevas, ${data.updated} actualizadas, ${data.errors} errores`, 'success');
+    
+    // Reload properties
+    await loadProperties();
+    await loadMLSyncLog();
+    
+  } catch (e) {
+    console.error('ML Import error:', e);
+    showToast(`Error: ${e.message}`, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-download"></i> Importar de ML';
+    }
+  }
+}
+
+// Sync property to MercadoLibre
+async function syncPropertyToML(propertyId, action = 'publish') {
+  const prop = propertiesCache.find(p => p.id === propertyId);
+  if (!prop) return;
+  
+  try {
+    const { data, error } = await supabase.functions.invoke('ml-publish', {
+      body: { propertyId, action }
+    });
+    
+    if (error) throw error;
+    
+    showToast(`Propiedad ${action === 'publish' ? 'publicada' : action} en MercadoLibre`, 'success');
+    
+    // Reload properties to get updated ML data
+    await loadProperties();
+    await loadMLSyncLog();
+    
+  } catch (e) {
+    console.error('ML Sync error:', e);
+    showToast(`Error: ${e.message}`, 'error');
+  }
+}
+
+// Load ML Sync Log
+async function loadMLSyncLog() {
+  const tbody = document.getElementById('mlSyncLogBody');
+  if (!tbody) return;
+  
+  tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Cargando historial...</td></tr>';
+  
+  try {
+    const { data, error } = await supabase
+      .from('ml_sync_log')
+      .select('*, propiedades(titulo)')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    
+    if (error) throw error;
+    
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No hay historial de sincronización</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = data.map(log => `
+      <tr>
+        <td>${new Date(log.created_at).toLocaleString('es-AR')}</td>
+        <td>${log.propiedades?.titulo || 'N/A'}</td>
+        <td><span class="badge badge-${log.accion === 'error' ? 'danger' : log.accion === 'import' ? 'info' : 'success'}">${log.accion}</span></td>
+        <td>${log.ml_item_id || '—'}</td>
+        <td>${log.detalle ? JSON.stringify(log.detalle).substring(0, 100) : '—'}</td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    console.error('Load ML Sync Log error:', e);
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Error cargando historial</td></tr>';
   }
 }
 
