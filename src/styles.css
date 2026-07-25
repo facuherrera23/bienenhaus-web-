@@ -226,6 +226,100 @@ nav:hover { box-shadow: var(--shadow-lg); }
 .paginacion button:hover:not(.activa) { background: var(--gray-100); border-color: var(--gray-300); }
 .paginacion .nav-btn { font-weight: 600; }
 
+/* ================================================================
+   BULK ACTIONS BAR
+   ================================================================ */
+.bulk-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-shadow: var(--shadow-md);
+  animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bulk-count {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.bulk-actions .btn-bulk {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+  white-space: nowrap;
+}
+
+.bulk-actions .btn-bulk-primary {
+  background: white;
+  color: var(--primary);
+}
+
+.bulk-actions .btn-bulk-primary:hover {
+  background: var(--gray-100);
+  transform: translateY(-1px);
+}
+
+.bulk-actions .btn-bulk-secondary {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.bulk-actions .btn-bulk-secondary:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.bulk-actions .btn-bulk-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.bulk-actions .btn-bulk-danger:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.table-container th:first-child,
+.table-container td:first-child {
+  width: 48px;
+  text-align: center;
+  padding: 12px 8px;
+}
+
+.table-container th:first-child input[type="checkbox"],
+.table-container td:first-child input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 /* Botón "Cargar más" (modo infinito) */
 .btn-cargar-mas { background: var(--primary); color: white; border: none; padding: 14px 36px; border-radius: 60px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 10px; box-shadow: var(--shadow-md); }
 .btn-cargar-mas:hover:not(:disabled) { background: var(--primary-light); transform: translateY(-2px); box-shadow: var(--shadow-lg); }

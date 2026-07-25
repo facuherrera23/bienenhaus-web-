@@ -1222,6 +1222,9 @@
             <table>
               <thead>
                 <tr>
+                  <th style="width: 48px;">
+                    <input type="checkbox" id="selectAllProperties" aria-label="Seleccionar todas las propiedades">
+                  </th>
                   <th>Imagen</th>
                   <th>Título</th>
                   <th>Ubicación</th>
@@ -1233,9 +1236,37 @@
                 </tr>
               </thead>
               <tbody id="propertiesTableBody">
-                <tr><td colspan="8" class="empty-state">Cargando propiedades...</td></tr>
+                <tr><td colspan="9" class="empty-state">Cargando propiedades...</td></tr>
               </tbody>
             </table>
+            
+            <!-- Bulk Actions Bar (hidden by default) -->
+            <div id="bulkActionsBar" class="bulk-actions-bar" style="display: none;">
+              <span id="bulkSelectionCount" class="bulk-count">0 seleccionadas</span>
+              <div class="bulk-actions">
+                <button type="button" class="btn-bulk btn-bulk-primary" onclick="bulkActionProperties('publish')">
+                  <i class="fas fa-eye"></i> Publicar
+                </button>
+                <button type="button" class="btn-bulk btn-bulk-secondary" onclick="bulkActionProperties('unpublish')">
+                  <i class="fas fa-eye-slash"></i> Despublicar
+                </button>
+                <button type="button" class="btn-bulk btn-bulk-primary" onclick="bulkActionProperties('feature')">
+                  <i class="fas fa-star"></i> Destacar
+                </button>
+                <button type="button" class="btn-bulk btn-bulk-secondary" onclick="bulkActionProperties('unfeature')">
+                  <i class="fas fa-star-o"></i> Quitar Destacado
+                </button>
+                <button type="button" class="btn-bulk btn-bulk-secondary" onclick="bulkActionProperties('changeOperation')">
+                  <i class="fas fa-exchange-alt"></i> Cambiar Operación
+                </button>
+                <button type="button" class="btn-bulk btn-bulk-danger" onclick="bulkActionProperties('delete')">
+                  <i class="fas fa-trash"></i> Eliminar
+                </button>
+                <button type="button" class="btn-bulk btn-bulk-secondary" onclick="clearBulkSelection()">
+                  <i class="fas fa-times"></i> Cancelar
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 

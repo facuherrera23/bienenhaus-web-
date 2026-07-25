@@ -390,6 +390,8 @@ async function loadRecentActivity() {
 // ================================================================
 // PROPIEDADES - TABLA
 // ================================================================
+let selectedPropertyIds = new Set();
+
 function renderPropertiesTable(filter = '') {
   const tbody = document.getElementById('propertiesTableBody');
   let filtered = propertiesCache;
@@ -403,12 +405,15 @@ function renderPropertiesTable(filter = '') {
   }
   
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay propiedades</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No hay propiedades</td></tr>';
     return;
   }
   
   tbody.innerHTML = filtered.map(p => `
-    <tr>
+    <tr data-id="${p.id}">
+      <td>
+        <input type="checkbox" class="row-checkbox" value="${p.id}" ${selectedPropertyIds.has(p.id) ? 'checked' : ''}>
+      </td>
       <td>
         <img src="${p.imagen_principal || 'https://via.placeholder.com/80x60?text=Sin+imagen'}" 
              alt="${p.titulo}" style="width: 60px; height: 45px; object-fit: cover; border-radius: var(--radius);">
@@ -426,6 +431,9 @@ function renderPropertiesTable(filter = '') {
       </td>
     </tr>
   `).join('');
+  
+  // Re-attach checkbox listeners
+  attachRowCheckboxListeners();
 }
 
 function filterProperties() {
@@ -443,9 +451,293 @@ function filterProperties() {
   renderPropertiesTable(filtered);
 }
 
-// ================================================================
-// AGENTES - TABLA
-// ================================================================
+// Checkbox listeners for bulk actions
+function attachRowCheckboxListeners() {
+  document.querySelectorAll('.row-checkbox').forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      const id = parseInt(e.target.value);
+      if (e.target.checked) {
+        selectedPropertyIds.add(id);
+      } else {
+        selectedPropertyIds.delete(id);
+      }
+      updateBulkActionsBar();
+      
+      // Update select all checkbox
+      const selectAll = document.getElementById('selectAllProperties');
+      if (selectAll) {
+        const visibleCheckboxes = document.querySelectorAll('.row-checkbox');
+        const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+        selectAll.checked = checkedCount === visibleCheckboxes.length && visibleCheckboxes.length > 0;
+        selectAll.indeterminate = checkedCount > 0 && checkedCount < visibleCheckboxes.length;
+      }
+    });
+  });
+  
+  // Select all checkbox
+  const selectAll = document.getElementById('selectAllProperties');
+  if (selectAll) {
+    selectAll.addEventListener('change', (e) => {
+      document.querySelectorAll('.row-checkbox').forEach(cb => {
+        cb.checked = e.target.checked;
+        const id = parseInt(cb.value);
+        if (e.target.checked) {
+          selectedPropertyIds.add(id);
+        } else {
+          selectedPropertyIds.delete(id);
+        }
+      });
+      updateBulkActionsBar();
+    });
+  }
+}
+
+// Bulk Actions Bar
+function updateBulkActionsBar() {
+  const bar = document.getElementById('bulkActionsBar');
+  const count = selectedPropertyIds.size;
+  
+  if (count === 0) {
+    if (bar) bar.style.display = 'none';
+    return;
+  }
+  
+  if (!bar) {
+    createBulkActionsBar();
+  } else {
+    bar.style.display = 'flex';
+    bar.querySelector('.bulk-count').textContent = `${selectedPropertyIds.size} seleccionad${selectedPropertyIds.size === 1 ? 'a' : 'os'}`;
+  }
+}
+
+function createBulkActionsBar() {
+  const section = document.getElementById('section-properties');
+  if (!section) return;
+  
+  const tableContainer = section.querySelector('.table-container');
+  if (!tableContainer) return;
+  
+  const bar = document.createElement('div');
+  bar.id = 'bulkActionsBar';
+  bar.style.cssText = `
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 20px;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius) var(--radius) 0 0;
+    margin-bottom: -1px;
+    z-index: 10;
+    box-shadow: var(--shadow-md);
+  `;
+  
+  bar.innerHTML = `
+    <span class="bulk-count">0 seleccionados</span>
+    <div class="bulk-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button class="bulk-btn" onclick="bulkPublish()" title="Publicar">
+        <i class="fas fa-globe"></i> Publicar
+      </button>
+      <button class="bulk-btn" onclick="bulkUnpublish()" title="Despublicar">
+        <i class="fas fa-eye-slash"></i> Despublicar
+      </button>
+      <button class="bulk-btn" onclick="bulkFeature()" title="Marcar como destacada">
+        <i class="fas fa-star"></i> Destacar
+      </button>
+      <button class="bulk-btn" onclick="bulkUnfeature()" title="Quitar destacado">
+        <i class="fas fa-star-half-alt"></i> Quitar destacado
+      </button>
+      <button class="bulk-btn" onclick="bulkChangeOperation('venta')" title="Cambiar a Venta">
+        <i class="fas fa-tag"></i> Cambiar a Venta
+      </button>
+      <button class="bulk-btn" onclick="bulkChangeOperation('alquiler')" title="Cambiar a Alquiler">
+        <i class="fas fa-home"></i> Cambiar a Alquiler
+      </button>
+      <button class="bulk-btn bulk-btn-danger" onclick="bulkDelete()" title="Eliminar">
+        <i class="fas fa-trash"></i> Eliminar
+      </button>
+      <button class="bulk-btn bulk-btn-secondary" onclick="clearSelection()" title="Limpiar selección">
+        <i class="fas fa-times"></i> Limpiar
+      </button>
+    </div>
+  `;
+  
+  // Insert before table container
+  const tableContainer2 = document.querySelector('#section-properties .table-container');
+  if (tableContainer2) {
+    tableContainer2.parentNode.insertBefore(bar, tableContainer2);
+  }
+  
+  // Add styles for bulk buttons
+  if (!document.getElementById('bulk-actions-styles')) {
+    const style = document.createElement('style');
+    style.id = 'bulk-actions-styles';
+    style.textContent = `
+      .bulk-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+      }
+      .bulk-btn:not(.bulk-btn-secondary) {
+        background: white;
+        color: var(--primary);
+      }
+      .bulk-btn:not(.bulk-btn-secondary):hover {
+        background: var(--gray-100);
+      }
+      .bulk-btn.bulk-btn-danger {
+        background: var(--danger);
+        color: white;
+      }
+      .bulk-btn.bulk-btn-danger:hover {
+        background: #b91c1c;
+      }
+      .bulk-btn.bulk-btn-secondary {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+      }
+      .bulk-btn.bulk-btn-secondary:hover {
+        background: rgba(255,255,255,0.3);
+      }
+      @media (max-width: 768px) {
+        #bulkActionsBar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .bulk-actions {
+          justify-content: center;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
+// Bulk Action Functions
+async function bulkAction(action, data = {}) {
+  const ids = Array.from(selectedPropertyIds);
+  if (ids.length === 0) return;
+  
+  try {
+    const { error } = await supabase
+      .from('propiedades')
+      .update({ ...data, updated_at: new Date().toISOString() })
+      .in('id', ids);
+    
+    if (error) throw error;
+    
+    showToast(`${ids.length} propiedad${ids.length === 1 ? '' : 'es'} ${getActionPastTense(action)}`, 'success');
+    clearSelection();
+    await loadProperties();
+  } catch (e) {
+    console.error(`Bulk ${action} error:`, e);
+    showToast(`Error al ${getActionInfinitive(action)}: ${e.message}`, 'error');
+  }
+}
+
+function getActionPastTense(action) {
+  const tenses = {
+    publish: 'publicada',
+    unpublish: 'despublicada',
+    feature: 'destacada',
+    unfeature: 'no destacada',
+    changeOperation: 'cambiada de operación',
+    delete: 'eliminada'
+  };
+  return tenses[action] || 'actualizada';
+}
+
+function getActionInfinitive(action) {
+  const infinitives = {
+    publish: 'publicar',
+    unpublish: 'despublicar',
+    feature: 'destacar',
+    unfeature: 'quitar destacado',
+    changeOperation: 'cambiar operación',
+    delete: 'eliminar'
+  };
+  return infinitives[action] || 'realizar acción';
+}
+
+async function bulkPublish() {
+  await bulkAction('publish', { ml_status: 'published', ml_last_sync: new Date().toISOString() });
+}
+
+async function bulkUnpublish() {
+  await bulkAction('unpublish', { ml_status: 'draft', ml_last_sync: new Date().toISOString() });
+}
+
+async function bulkFeature() {
+  await bulkAction('feature', { destacado: true });
+}
+
+async function bulkUnfeature() {
+  await bulkAction('unfeature', { destacado: false });
+}
+
+async function bulkChangeOperation(operacion) {
+  await bulkAction('changeOperation', { operacion });
+}
+
+async function bulkDelete() {
+  if (!confirm(`¿Eliminar ${selectedPropertyIds.size} propiedad${selectedPropertyIds.size === 1 ? '' : 'es'}? Esta acción no se puede deshacer.`)) {
+    return;
+  }
+  
+  const ids = Array.from(selectedPropertyIds);
+  try {
+    // Delete images first
+    const { data: images } = await supabase
+      .from('imagenes')
+      .select('cloudinary_public_id')
+      .in('propiedad_id', ids);
+    
+    if (images?.length) {
+      for (const img of images) {
+        if (img.cloudinary_public_id) {
+          // TODO: Delete from Cloudinary via signed request
+        }
+      }
+    }
+    
+    const { error } = await supabase
+      .from('propiedades')
+      .delete()
+      .in('id', ids);
+    
+    if (error) throw error;
+    
+    showToast(`${ids.length} propiedad${ids.length === 1 ? '' : 'es'} eliminada${ids.length === 1 ? '' : 's'}`, 'success');
+    clearSelection();
+    await loadProperties();
+  } catch (e) {
+    console.error('Bulk delete error:', e);
+    showToast(`Error al eliminar: ${e.message}`, 'error');
+  }
+}
+
+function clearSelection() {
+  selectedPropertyIds.clear();
+  document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+  const selectAll = document.getElementById('selectAllProperties');
+  if (selectAll) {
+    selectAll.checked = false;
+    selectAll.indeterminate = false;
+  }
+  updateBulkActionsBar();
+  // Re-render to uncheck visual checkboxes
+  renderPropertiesTable();
+}
 function renderAgentsTable() {
   const tbody = document.getElementById('agentsTableBody');
   
