@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Bienenhaus Propiedades - Agencia inmobiliaria en Córdoba, Argentina.">
+  <meta name="author" content="Bienenhaus Propiedades">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bienenhaus.com.ar/">
+  <meta property="og:title" content="Bienenhaus · Propiedades en Córdoba">
+  <meta property="og:description" content="Encuentra tu próximo hogar con Bienenhaus Propiedades. Expertos en el mercado inmobiliario de Córdoba.">
+  <meta property="og:image" content="https://bienenhaus.com.ar/og-image.jpg">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Bienenhaus · Propiedades en Córdoba">
+  <meta name="twitter:description" content="Encuentra tu próximo hogar con Bienenhaus Propiedades.">
+
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    "name": "Bienenhaus Propiedades",
+    "description": "Agencia inmobiliaria en Córdoba, Argentina",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Córdoba",
+      "addressCountry": "AR"
+    },
+    "telephone": "+54 351 123-4567",
+    "email": "bienenhaus.propiedades@gmail.com",
+    "url": "https://bienenhaus.com.ar"
+  }
+  </script>
+
+  <title>Bienenhaus · Propiedades en Córdoba</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+  <!-- Skip Link (Accesibilidad) -->
+  <a class="skip-link" href="#catalogo">Saltar al contenido principal</a>
+
+  <!-- Spinner de carga global -->
+  <div class="spinner-overlay" id="spinnerOverlay" role="status" aria-live="polite">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="contenedor">
+    <!-- NAVEGACIÓN -->
+    <nav role="navigation" aria-label="Navegación principal">
+      <div class="logo">
+        <i class="fas fa-building" aria-hidden="true"></i>
+        <span>Bienen</span>haus
+      </div>
+      <div class="nav-links">
+        <a href="#">Inicio</a>
+        <a href="#catalogo">Propiedades</a>
+        <a href="#quienes-somos">Quiénes somos</a>
+        <a href="#servicios">Servicios</a>
+        <a href="#equipo">Equipo</a>
+        <a href="#oficinas">Oficinas</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contacto" class="nav-cta"><i class="fas fa-envelope" aria-hidden="true"></i> Contacto</a>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero" id="hero" role="banner">
+      <div class="hero-content">
+        <div class="hero-badge-top">
+          <i class="fas fa-crown" aria-hidden="true"></i> CPI. 1834 · Córdoba · Argentina
+        </div>
+        <h1>
+          Encuentra tu <span class="highlight">hogar</span> o la<br>
+          inversión que <span class="highlight">buscas</span>
+        </h1>
+        <p>Más de <span id="heroCount">300</span> propiedades en venta y alquiler. Asesoría profesional, tasación sin compromiso y video tours 360°.</p>
+
+        <div class="hero-badges">
+          <span class="hero-badge"><i class="fas fa-check-circle" aria-hidden="true"></i> Sin comisiones ocultas</span>
+          <span class="hero-badge"><i class="fas fa-shield-alt" aria-hidden="true"></i> Garantía legal</span>
+          <span class="hero-badge"><i class="fas fa-video" aria-hidden="true"></i> Video tours 360°</span>
+          <span class="hero-badge"><i class="fas fa-clock" aria-hidden="true"></i> Respuesta en 24h</span>
+        </div>
+
+        <div class="hero-cta-group">
+          <a href="#catalogo" class="btn-hero-primary"><i class="fas fa-search" aria-hidden="true"></i> Ver propiedades</a>
+          <a href="#contacto" class="btn-hero-secondary"><i class="fas fa-comment-dots" aria-hidden="true"></i> Solicitar asesoría</a>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat"><div class="number" id="statPropiedades">Cargando...</div><div class="label">Propiedades activas</div></div>
+          <div class="stat"><div class="number">1.200+</div><div class="label">Operaciones cerradas</div></div>
+          <div class="stat"><div class="number">98%</div><div class="label">Satisfacción clientes</div></div>
+          <div class="stat"><div class="number">18+</div><div class="label">Años de experiencia</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FILTRO DE BÚSQUEDA -->
+    <div class="filtro-busqueda" role="search">
+      <div class="filtro-grupo">
+        <label for="tipoOperacion"><i class="fas fa-tag" aria-hidden="true"></i> Operación</label>
+        <select id="tipoOperacion">
+          <option value="venta">Venta</option>
+          <option value="alquiler">Alquiler</option>
+          <option value="ambos" selected>Ambos</option>
+        </select>
+      </div>
+      <div class="filtro-grupo">
+        <label for="tipoPropiedadFiltro"><i class="fas fa-building" aria-hidden="true"></i> Tipo</label>
+        <select id="tipoPropiedadFiltro">
+          <option value="todos" selected>Todos</option>
+          <option value="piso">Piso/Apartamento</option>
+          <option value="chalet">Chalet/Casa</option>
+          <option value="atico">Ático</option>
+          <option value="local">Local/Oficina</option>
+          <option value="terreno">Terreno/Solar</option>
+        </select>
+      </div>
+      <div class="filtro-grupo">
+        <label for="precioMin"><i class="fas fa-dollar-sign" aria-hidden="true"></i> Min</label>
+        <input type="number" id="precioMin" placeholder="0" min="0" step="5000" value="0">
+      </div>
+      <div class="filtro-grupo">
+        <label for="precioMax"><i class="fas fa-dollar-sign" aria-hidden="true"></i> Max</label>
+        <input type="number" id="precioMax" placeholder="900.000" min="0" step="10000" value="900000">
+      </div>
+      <div class="filtro-grupo">
+        <label for="habitaciones"><i class="fas fa-bed" aria-hidden="true"></i> Hab.</label>
+        <select id="habitaciones">
+          <option value="0">Cualquiera</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4+</option>
+        </select>
+      </div>
+      <div class="filtro-grupo">
+        <label for="metrosMin"><i class="fas fa-arrows-alt" aria-hidden="true"></i> m² min</label>
+        <input type="number" id="metrosMin" placeholder="0" min="0" step="10" value="0">
+      </div>
+      <div class="filtro-acciones">
+        <button class="btn-filtrar" id="btnFiltrar"><i class="fas fa-search" aria-hidden="true"></i> Buscar</button>
+        <button class="btn-limpiar" id="btnLimpiar"><i class="fas fa-undo" aria-hidden="true"></i> Limpiar</button>
+      </div>
+    </div>
+
+    <!-- CATÁLOGO DE PROPIEDADES -->
+    <section class="catalogo" id="catalogo" role="main">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:24px;">
+        <h2 style="font-size:2.2rem;font-weight:800;"><i class="fas fa-home" aria-hidden="true"></i> Propiedades destacadas</h2>
+        <span class="resultados" id="contadorPropiedades" style="background:var(--gray-100);padding:6px 20px;border-radius:40px;font-weight:500;font-size:0.9rem;color:var(--gray-700);">Cargando...</span>
+      </div>
+      <div class="grid-propiedades" id="gridPropiedades" role="list"></div>
+      <div class="paginacion" id="paginacion" role="navigation"></div>
+    </section>
+
+    <!-- MODAL DETALLE PROPIEDAD -->
+    <div class="detalle-overlay" id="detalleOverlay" role="dialog" aria-modal="true" aria-labelledby="detalle-titulo">
+      <div class="detalle-modal" id="detalleModal">
+        <button class="detalle-close" id="detalleClose" aria-label="Cerrar detalles"><i class="fas fa-times" aria-hidden="true"></i></button>
+        <div class="detalle-imagen-principal" id="detalleImagen">
+          <span class="badge-op-detalle" id="detalleBadge">VENTA</span>
+        </div>
+        <div class="detalle-galeria-mini" id="detalleGaleria" role="list"></div>
+        <div class="detalle-grid">
+          <div class="detalle-info">
+            <h2 id="detalle-titulo">Nombre de la propiedad</h2>
+            <div class="detalle-ubicacion"><i class="fas fa-map-pin" aria-hidden="true"></i> <span id="detalleUbicacion">Ubicación</span></div>
+            <div class="detalle-precio"><span id="detalleSimbolo">$</span> <span id="detallePrecio">0</span> <span class="sub-moneda" id="detalleSubMoneda" style="font-size:0.8rem;font-weight:400;color:var(--gray-500);display:block;">Pesos argentinos</span></div>
+            <div class="detalle-caracteristicas" id="detalleCaracteristicas"></div>
+            <div class="detalle-tags" id="detalleTags"></div>
+            <div style="margin:20px 0;background:var(--gray-900);border-radius:var(--radius);padding:40px 20px;text-align:center;color:white;">
+              <i class="fas fa-play-circle" style="font-size:3rem;color:var(--accent);" aria-hidden="true"></i>
+              <p><strong>Video informativo 360°</strong><br>Recorrido virtual de la propiedad</p>
+            </div>
+          </div>
+          <div>
+            <div class="detalle-contacto">
+              <h4><i class="fas fa-phone-alt" aria-hidden="true"></i> ¿Te interesa?</h4>
+              <p style="font-size:0.9rem;color:var(--gray-600);margin-bottom:12px;">Contacta con nuestro equipo.</p>
+              <a href="#" class="contacto-item" id="detalleWhatsApp"><i class="fab fa-whatsapp" aria-hidden="true"></i> WhatsApp</a>
+              <a href="#" class="contacto-item" id="detalleEmail"><i class="fas fa-envelope" aria-hidden="true"></i> bienenhaus.propiedades@gmail.com</a>
+              <a href="#" class="contacto-item" id="detalleTelefono"><i class="fas fa-phone-alt" aria-hidden="true"></i> +54 351 123-4567</a>
+              <button class="btn-contactar-detalle" id="detalleContactar"><i class="fas fa-paper-plane" aria-hidden="true"></i> Quiero más información</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POR QUÉ ELEGIRNOS -->
+    <section class="seccion" id="porque-elegirnos">
+      <h2><i class="fas fa-star" aria-hidden="true"></i> ¿Por qué elegir Bienenhaus?</h2>
+      <p class="subtitulo" style="font-size:1.05rem;color:var(--gray-600);max-width:780px;margin-bottom:20px;">Expertos en el mercado inmobiliario de Córdoba y Argentina.</p>
+      <div class="porque-grid">
+        <div class="porque-item"><div class="icono" style="font-size:2.5rem;">🏆</div><h4>18+ años de experiencia</h4><p>Más de 1.200 operaciones</p></div>
+        <div class="porque-item"><div class="icono" style="font-size:2.5rem;">📋</div><h4>Asesoramiento personalizado</h4><p>Te acompañamos en cada paso</p></div>
+        <div class="porque-item"><div class="icono" style="font-size:2.5rem;">🔒</div><h4>Transparencia total</h4><p>Sin comisiones ocultas</p></div>
+        <div class="porque-item"><div class="icono" style="font-size:2.5rem;">📱</div><h4>Tecnología de vanguardia</h4><p>Video tours 360°</p></div>
+        <div class="porque-item"><div class="icono" style="font-size:2.5rem;">⚡</div><h4>Respuesta en 24h</h4><p>Rapidez y eficiencia</p></div>
+        <div class="porque-item"><div class="icono" style="font-size:2.5rem;">🏛️</div><h4>Garantía legal</h4><p>Asesoría jurídica integral</p></div>
+      </div>
+    </section>
+
+    <!-- QUIÉNES SOMOS -->
+    <section class="seccion" id="quienes-somos">
+      <h2><i class="fas fa-flag" aria-hidden="true"></i> Quiénes somos</h2>
+      <p class="subtitulo"><strong>Bienenhaus Propiedades</strong> es una agencia inmobiliaria con más de 18 años de experiencia en el mercado de Córdoba y Argentina. Ofrecemos un servicio integral: venta, alquiler, tasación y asesoramiento legal. <strong>CPI. 1834</strong></p>
+      <div class="valores-grid">
+        <div class="valor-item"><i class="fas fa-handshake" aria-hidden="true"></i><h4>Confianza</h4><p>Relaciones transparentes</p></div>
+        <div class="valor-item"><i class="fas fa-rocket" aria-hidden="true"></i><h4>Agilidad</h4><p>Procesos eficientes</p></div>
+        <div class="valor-item"><i class="fas fa-gavel" aria-hidden="true"></i><h4>Legalidad</h4><p>Asesoría jurídica</p></div>
+        <div class="valor-item"><i class="fas fa-chart-line" aria-hidden="true"></i><h4>Rentabilidad</h4><p>Maximizamos tu inversión</p></div>
+        <div class="valor-item"><i class="fas fa-user-tie" aria-hidden="true"></i><h4>Asesoramiento</h4><p>Personalizado</p></div>
+        <div class="valor-item"><i class="fas fa-shield-alt" aria-hidden="true"></i><h4>Seguridad</h4><p>Operaciones garantizadas</p></div>
+      </div>
+    </section>
+
+    <!-- SERVICIOS -->
+    <section class="seccion" id="servicios">
+      <h2><i class="fas fa-concierge-bell" aria-hidden="true"></i> Nuestros servicios</h2>
+      <p class="subtitulo">Soluciones inmobiliarias integrales para cada necesidad.</p>
+      <div class="servicios-grid">
+        <div class="servicio-item"><i class="fas fa-home" aria-hidden="true"></i><h4>Venta de propiedades</h4><p>Vende al mejor precio del mercado</p></div>
+        <div class="servicio-item"><i class="fas fa-key" aria-hidden="true"></i><h4>Alquiler de viviendas</h4><p>Encuentra el inquilino ideal</p></div>
+        <div class="servicio-item"><i class="fas fa-calculator" aria-hidden="true"></i><h4>Tasación</h4><p>Valoración precisa y certificada</p></div>
+        <div class="servicio-item"><i class="fas fa-hand-holding-usd" aria-hidden="true"></i><h4>Asesoría financiera</h4><p>La mejor financiación</p></div>
+        <div class="servicio-item"><i class="fas fa-file-signature" aria-hidden="true"></i><h4>Gestión legal</h4><p>Trámites sin complicaciones</p></div>
+        <div class="servicio-item"><i class="fas fa-camera" aria-hidden="true"></i><h4>Video tours 360°</h4><p>Visitas virtuales</p></div>
+      </div>
+    </section>
+
+    <!-- EQUIPO - DINÁMICO DESDE SUPABASE -->
+    <section class="seccion" id="equipo">
+      <h2><i class="fas fa-users" aria-hidden="true"></i> Nuestro equipo</h2>
+      <p class="subtitulo">Agentes especializados con amplia experiencia en el mercado de Córdoba.</p>
+      <div class="equipo-grid" id="equipoGrid">
+        <div style="grid-column:1/-1; text-align:center; padding:40px;">
+          <div class="spinner" style="margin:0 auto;"></div>
+          <p style="margin-top:12px; color:var(--gray-500);">Cargando equipo...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- OFICINAS -->
+    <section class="seccion" id="oficinas">
+      <h2><i class="fas fa-map-marked-alt" aria-hidden="true"></i> Nuestras oficinas</h2>
+      <p class="subtitulo">Estamos presentes en las principales ciudades de Argentina, con base en Córdoba.</p>
+      <div class="oficinas-grid">
+        <div class="oficina-item"><i class="fas fa-building" aria-hidden="true"></i><h4>Córdoba</h4><p>Oficina principal</p><div class="direccion" style="font-size:0.8rem;color:var(--gray-500);margin-top:4px;">Av. General Paz 123 · Córdoba</div></div>
+        <div class="oficina-item"><i class="fas fa-building" aria-hidden="true"></i><h4>Buenos Aires</h4><p>Oficina satélite</p><div class="direccion" style="font-size:0.8rem;color:var(--gray-500);margin-top:4px;">Av. Corrientes 456 · CABA</div></div>
+        <div class="oficina-item"><i class="fas fa-building" aria-hidden="true"></i><h4>Mendoza</h4><p>Oficina satélite</p><div class="direccion" style="font-size:0.8rem;color:var(--gray-500);margin-top:4px;">Av. San Martín 789 · Mendoza</div></div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="seccion" id="faq">
+      <h2><i class="fas fa-question-circle" aria-hidden="true"></i> Preguntas frecuentes</h2>
+      <p class="subtitulo">Resolvemos las dudas más comunes.</p>
+      <div class="faq-grid">
+        <div class="faq-item"><h4><i class="fas fa-chevron-right" aria-hidden="true"></i> ¿Cómo puedo tasar mi propiedad?</h4><p>Solicita una tasación gratuita a través de nuestro formulario de contacto.</p></div>
+        <div class="faq-item"><h4><i class="fas fa-chevron-right" aria-hidden="true"></i> ¿Cuánto tarda el proceso de venta?</h4><p>En promedio 1-3 meses. El 85% se vende en menos de 60 días.</p></div>
+        <div class="faq-item"><h4><i class="fas fa-chevron-right" aria-hidden="true"></i> ¿Qué comisiones cobran?</h4><p>Trabajamos con un porcentaje fijo y transparente. Consulta nuestras condiciones.</p></div>
+        <div class="faq-item"><h4><i class="fas fa-chevron-right" aria-hidden="true"></i> ¿Ofrecen alquiler temporal?</h4><p>Sí, ofrecemos alquiler temporal y de larga duración.</p></div>
+        <div class="faq-item"><h4><i class="fas fa-chevron-right" aria-hidden="true"></i> ¿Cómo son los video tours 360°?</h4><p>Visitas virtuales profesionales desde cualquier dispositivo.</p></div>
+        <div class="faq-item"><h4><i class="fas fa-chevron-right" aria-hidden="true"></i> ¿Qué garantías ofrecen?</h4><p>Garantía legal, asesoramiento y seguimiento personalizado.</p></div>
+      </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section class="seccion" id="contacto">
+      <h2><i class="fas fa-envelope" aria-hidden="true"></i> Contacta con nosotros</h2>
+      <p class="subtitulo">¿Quieres vender, alquilar, comprar o tasar tu propiedad? Cuéntanos tu caso.</p>
+
+      <div class="info-contacto-grid">
+        <div class="info-contacto-item"><i class="fas fa-phone-alt" aria-hidden="true"></i><div class="text"><strong>Teléfono</strong>+54 351 123-4567</div></div>
+        <div class="info-contacto-item"><i class="fas fa-envelope" aria-hidden="true"></i><div class="text"><strong>Email</strong>bienenhaus.propiedades@gmail.com</div></div>
+        <div class="info-contacto-item"><i class="fas fa-map-marker-alt" aria-hidden="true"></i><div class="text"><strong>Cobertura</strong>Córdoba · Argentina</div></div>
+        <div class="info-contacto-item"><i class="fas fa-clock" aria-hidden="true"></i><div class="text"><strong>Horario</strong>Lun-Vie 9-20h · Sáb 10-14h</div></div>
+        <div class="info-contacto-item"><i class="fas fa-whatsapp" aria-hidden="true"></i><div class="text"><strong>WhatsApp</strong>+54 9 351 123-4567</div></div>
+        <div class="info-contacto-item"><i class="fas fa-globe" aria-hidden="true"></i><div class="text"><strong>Web</strong>www.bienenhaus.com.ar</div></div>
+      </div>
+
+      <form class="form-contacto" id="formContacto" novalidate>
+        <div class="form-group" id="grupo-nombre">
+          <label for="nombre">Nombre completo <span class="req" style="color:var(--danger);">*</span></label>
+          <input type="text" id="nombre" placeholder="Ej: Ana Pérez" required>
+          <div class="error-mensaje">Por favor ingresa tu nombre</div>
+        </div>
+        <div class="form-group" id="grupo-email">
+          <label for="email">Email <span class="req" style="color:var(--danger);">*</span></label>
+          <input type="email" id="email" placeholder="tucorreo@ejemplo.com" required>
+          <div class="error-mensaje">Ingresa un email válido</div>
+        </div>
+        <div class="form-group" id="grupo-telefono">
+          <label for="telefono">Teléfono <span class="req" style="color:var(--danger);">*</span></label>
+          <input type="tel" id="telefono" placeholder="+54 9 351 123-4567" required>
+          <div class="error-mensaje">Ingresa un teléfono válido</div>
+        </div>
+        <div class="form-group" id="grupo-motivo">
+          <label for="motivo">Motivo principal <span class="req" style="color:var(--danger);">*</span></label>
+          <select id="motivo" required>
+            <option value="">Selecciona</option>
+            <option value="vender">Vender propiedad</option>
+            <option value="alquilar">Alquilar propiedad</option>
+            <option value="comprar">Comprar propiedad</option>
+            <option value="tasar">Tasar propiedad</option>
+            <option value="asesoria">Asesoría general</option>
+          </select>
+          <div class="error-mensaje">Selecciona un motivo</div>
+        </div>
+        <div class="form-group" id="grupo-tipoPropiedad">
+          <label for="tipoPropiedad">Tipo de propiedad</label>
+          <select id="tipoPropiedad">
+            <option value="">Selecciona</option>
+            <option value="piso">Piso/Apartamento</option>
+            <option value="chalet">Chalet/Casa</option>
+            <option value="atico">Ático</option>
+            <option value="local">Local/Oficina</option>
+            <option value="terreno">Terreno/Solar</option>
+          </select>
+        </div>
+        <div class="full form-group" id="grupo-mensaje">
+          <label for="mensaje">Mensaje</label>
+          <textarea id="mensaje" placeholder="Describe lo que buscas..."></textarea>
+        </div>
+        <div class="full checkbox-group">
+          <label><input type="checkbox" id="checkPrivacidad" required> Acepto la política de privacidad <span class="req" style="color:var(--danger);">*</span></label>
+          <label><input type="checkbox" id="newsletter"> Recibir novedades</label>
+          <label><input type="checkbox" id="contactWhatsapp"> Prefiero WhatsApp</label>
+          <label><input type="checkbox" id="contactLlamada"> Prefiero llamada</label>
+        </div>
+        <div class="form-success" id="formSuccess">
+          <i class="fas fa-check-circle" style="font-size:1.5rem;margin-right:10px;" aria-hidden="true"></i>
+          ¡Mensaje enviado! Un agente te contactará pronto.
+        </div>
+        <button type="submit" class="btn-enviar" id="btnEnviar"><i class="fas fa-paper-plane" aria-hidden="true"></i> Enviar mensaje</button>
+      </form>
+    </section>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h3><i class="fas fa-building" aria-hidden="true"></i> <span style="color:var(--accent);">Bienen</span>haus</h3>
+        <p>Comprometidos con tu hogar desde 2008. <strong>CPI. 1834</strong> · Córdoba, Argentina.</p>
+        <div class="social-footer">
+          <a href="https://instagram.com/bienenhaus.prop" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram" aria-hidden="true"></i></a>
+          <a href="https://facebook.com/Bienenhaus.prop" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
+          <a href="https://www.youtube.com/@BienenhausPropiedades" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fab fa-youtube" aria-hidden="true"></i></a>
+          <a href="https://www.tiktok.com/@bienenhaus.prop" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><i class="fab fa-tiktok" aria-hidden="true"></i></a>
+          <a href="mailto:bienenhaus.propiedades@gmail.com" aria-label="Email"><i class="fas fa-envelope" aria-hidden="true"></i></a>
+          <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp" aria-hidden="true"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Enlaces rápidos</h4>
+        <ul>
+          <li><a href="#catalogo"><i class="fas fa-chevron-right" aria-hidden="true"></i> Propiedades</a></li>
+          <li><a href="#quienes-somos"><i class="fas fa-chevron-right" aria-hidden="true"></i> Quiénes somos</a></li>
+          <li><a href="#servicios"><i class="fas fa-chevron-right" aria-hidden="true"></i> Servicios</a></li>
+          <li><a href="#equipo"><i class="fas fa-chevron-right" aria-hidden="true"></i> Equipo</a></li>
+          <li><a href="#oficinas"><i class="fas fa-chevron-right" aria-hidden="true"></i> Oficinas</a></li>
+          <li><a href="#contacto"><i class="fas fa-chevron-right" aria-hidden="true"></i> Contacto</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Servicios</h4>
+        <ul>
+          <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Venta de propiedades</a></li>
+          <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Alquiler de viviendas</a></li>
+          <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Tasación profesional</a></li>
+          <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Asesoría financiera</a></li>
+          <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Gestión legal</a></li>
+        </ul>
+      </div>
+      <div class="footer-col footer-newsletter">
+        <h4>Newsletter</h4>
+        <p>Recibe las últimas propiedades y ofertas.</p>
+        <form id="footerNewsletter" onsubmit="event.preventDefault(); alert('✅ ¡Te has suscrito correctamente!'); this.reset();">
+          <div class="newsletter-input">
+            <input type="email" placeholder="Tu email" required>
+            <button type="submit" class="btn-subscribe">Suscribir</button>
+          </div>
+        </form>
+        <p style="margin-top:14px;font-size:0.8rem;opacity:0.6;">Sin spam. Puedes darte de baja.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 <strong>Bienenhaus Propiedades</strong> · CPI. 1834 · Córdoba · Argentina</span>
+      <div class="footer-links">
+        <a href="#">Aviso legal</a>
+        <a href="#">Política de cookies</a>
+        <a href="#">Política de privacidad</a>
+        <a href="#">Términos y condiciones</a>
+        <a href="#">Mapa web</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- COOKIE BANNER -->
+  <div class="cookie-banner" id="cookieBanner" role="alert">
+    <p><i class="fas fa-cookie-bite" style="margin-right:10px;" aria-hidden="true"></i> Utilizamos cookies para mejorar tu experiencia. Al continuar, aceptas nuestra <a href="#">política de cookies</a>.</p>
+    <div class="cookie-buttons">
+      <button class="btn-cookie-aceptar" id="cookieAceptar">Aceptar</button>
+      <button class="btn-cookie-rechazar" id="cookieRechazar">Rechazar</button>
+    </div>
+  </div>
+
+  <!-- BOTONES FLOTANTES -->
+  <div class="whatsapp-overlay" id="whatsappOverlay"></div>
+  <div class="floating-buttons">
+    <button class="btn-subir" id="btnSubir" aria-label="Subir al inicio">
+      <i class="fas fa-arrow-up" aria-hidden="true"></i>
+    </button>
+    <button class="btn-whatsapp-flotante" id="whatsappFloat" aria-label="Contactar por WhatsApp">
+      <i class="fab fa-whatsapp" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <!-- MODAL WHATSAPP -->
+  <div class="whatsapp-modal" id="whatsappModal" role="dialog" aria-labelledby="whatsappModalTitle">
+    <div class="modal-header">
+      <h3 id="whatsappModalTitle"><i class="fab fa-whatsapp" aria-hidden="true"></i> Contacta por WhatsApp</h3>
+      <button class="modal-close" id="whatsappClose" aria-label="Cerrar">&times;</button>
+    </div>
+    <p>Déjanos tus datos y te contactaremos en menos de 5 minutos.</p>
+    <form id="whatsappForm">
+      <div class="form-group">
+        <label for="waNombre">Nombre completo <span class="req" style="color:var(--danger);">*</span></label>
+        <input type="text" id="waNombre" placeholder="Ej: Ana Pérez" required>
+      </div>
+      <div class="form-group">
+        <label for="waTelefono">Teléfono <span class="req" style="color:var(--danger);">*</span></label>
+        <input type="tel" id="waTelefono" placeholder="+54 9 351 123-4567" required>
+      </div>
+      <div class="form-group">
+        <label for="waMotivo">Motivo de contacto</label>
+        <input type="text" id="waMotivo" placeholder="Vender, comprar, alquilar...">
+      </div>
+      <button type="submit" class="btn-whatsapp-enviar">
+        <i class="fab fa-whatsapp" aria-hidden="true"></i> Enviar y contactar
+      </button>
+      <p class="mensaje-info" style="font-size:0.75rem;color:var(--gray-500);margin-top:10px;text-align:center;">Tu información será tratada con confidencialidad.</p>
+    </form>
+  </div>
+
+  <!-- PANEL DE ADMINISTRACIÓN (solo se carga si se importa admin.js) -->
+  <div id="adminPanel" role="dialog" aria-modal="true" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:10000; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); padding:20px; overflow-y:auto;">
+    <div class="admin-container" style="max-width:1000px; margin:0 auto; background:white; border-radius:var(--radius-xl); padding:40px; position:relative;">
+      <button class="admin-close" onclick="cerrarAdmin()" aria-label="Cerrar panel" style="position:absolute; top:16px; right:20px; background:none; border:none; font-size:2rem; cursor:pointer; color:var(--gray-500);">&times;</button>
+      <h2 style="font-size:2rem; font-weight:800; margin-bottom:8px;">🛠️ Panel de Administración</h2>
+      <p style="color:var(--gray-600); margin-bottom:24px;">Gestiona propiedades y agentes de la plataforma.</p>
+      <div class="admin-tabs" style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+        <button class="active" onclick="cambiarTabAdmin('propiedades')" style="padding:10px 24px; border:1px solid var(--gray-200); border-radius:60px; background:var(--primary); color:white; cursor:pointer; font-weight:600; transition:var(--transition);">Propiedades</button>
+        <button onclick="cambiarTabAdmin('agentes')" style="padding:10px 24px; border:1px solid var(--gray-200); border-radius:60px; background:var(--gray-50); cursor:pointer; font-weight:600; transition:var(--transition);">Agentes</button>
+      </div>
+      <div class="admin-tab-content active" id="tabPropiedades" style="display:block;">
+        <button class="btn-admin btn-admin-success" onclick="mostrarFormPropiedad()" style="margin-bottom:16px; padding:8px 16px; border:none; border-radius:40px; font-weight:600; cursor:pointer; font-size:0.8rem; transition:var(--transition); background:var(--success); color:white;"><i class="fas fa-plus"></i> Nueva Propiedad</button>
+        <div id="formPropiedad" style="display:none;" class="admin-form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; background:var(--gray-50); padding:24px; border-radius:var(--radius); margin-bottom:24px; border:1px solid var(--gray-200);">
+          <h3 style="grid-column:1/-1; margin-bottom:8px;" id="formPropTitulo">Nueva Propiedad</h3>
+          <div><label>Título *</label><input type="text" id="propTitulo" placeholder="Ej: Ático dúplex con terraza"></div>
+          <div><label>Precio *</label><input type="number" id="propPrecio" placeholder="425000"></div>
+          <div><label>Moneda</label><select id="propMoneda"><option value="ARS">ARS (Pesos)</option><option value="USD">USD (Dólares)</option></select></div>
+          <div><label>Operación *</label><select id="propOperacion"><option value="venta">Venta</option><option value="alquiler">Alquiler</option></select></div>
+          <div><label>Ubicación *</label><input type="text" id="propUbicacion" placeholder="Córdoba"></div>
+          <div><label>Tipo *</label><select id="propTipo"><option value="piso">Piso/Apartamento</option><option value="chalet">Chalet/Casa</option><option value="atico">Ático</option><option value="local">Local/Oficina</option><option value="terreno">Terreno/Solar</option></select></div>
+          <div><label>Habitaciones</label><input type="number" id="propHabitaciones" placeholder="3"></div>
+          <div><label>Baños</label><input type="number" id="propBanos" placeholder="2"></div>
+          <div><label>m²</label><input type="number" id="propM2" placeholder="95"></div>
+          <div><label>Antigüedad</label><select id="propAntiguedad"><option value="nuevo">Nuevo</option><option value="reformado">Reformado</option><option value="viejo">Viejo</option></select></div>
+          <div><label>Destacado</label><select id="propDestacado"><option value="false">No</option><option value="true">Sí</option></select></div>
+          <div class="full" style="grid-column:1/-1;"><label>Características (separadas por coma)</label><input type="text" id="propCaracteristicas" placeholder="ascensor, terraza, garaje"></div>
+          <div class="full" style="grid-column:1/-1;"><label>Descripción</label><textarea id="propDescripcion" placeholder="Descripción detallada de la propiedad..."></textarea></div>
+          <div class="full" style="grid-column:1/-1;"><label>Imágenes (máximo 15)</label><input type="file" id="propImagenes" accept="image/*" multiple><div id="propImagenesPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div></div>
+          <div class="full" style="grid-column:1/-1; display:flex; gap:12px;"><button class="btn-admin btn-admin-success" onclick="guardarPropiedad()"><i class="fas fa-save"></i> Guardar</button><button class="btn-admin" onclick="cerrarFormPropiedad()" style="background:var(--gray-200);color:var(--gray-700);">Cancelar</button></div>
+        </div>
+        <div id="listaPropiedadesAdmin"><p>Cargando propiedades...</p></div>
+      </div>
+      <div class="admin-tab-content" id="tabAgentes" style="display:none;">
+        <button class="btn-admin btn-admin-success" onclick="mostrarFormAgente()" style="margin-bottom:16px; padding:8px 16px; border:none; border-radius:40px; font-weight:600; cursor:pointer; font-size:0.8rem; transition:var(--transition); background:var(--success); color:white;"><i class="fas fa-plus"></i> Nuevo Agente</button>
+        <div id="formAgente" style="display:none;" class="admin-form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; background:var(--gray-50); padding:24px; border-radius:var(--radius); margin-bottom:24px; border:1px solid var(--gray-200);">
+          <h3 style="grid-column:1/-1; margin-bottom:8px;" id="formAgenteTitulo">Nuevo Agente</h3>
+          <div><label>Nombre *</label><input type="text" id="agenteNombre" placeholder="Laura"></div>
+          <div><label>Apellido *</label><input type="text" id="agenteApellido" placeholder="Gómez"></div>
+          <div><label>Especialidad *</label><input type="text" id="agenteEspecialidad" placeholder="Venta · Lujo"></div>
+          <div><label>Email</label><input type="email" id="agenteEmail" placeholder="laura@bienenhaus.com"></div>
+          <div><label>Teléfono</label><input type="text" id="agenteTelefono" placeholder="+54 9 351 123-4567"></div>
+          <div><label>Orden</label><input type="number" id="agenteOrden" placeholder="1" value="99"></div>
+          <div class="full" style="grid-column:1/-1;"><label>Descripción</label><textarea id="agenteDescripcion" placeholder="Descripción del agente..."></textarea></div>
+          <div class="full" style="grid-column:1/-1;"><label>Avatar (imagen)</label><input type="file" id="agenteAvatar" accept="image/*"><div id="agenteAvatarPreview" style="width:60px;height:60px;border-radius:50%;background:var(--gray-200);display:flex;align-items:center;justify-content:center;font-size:2rem;margin-top:8px;overflow:hidden;"><span>👤</span></div></div>
+          <div class="full" style="grid-column:1/-1; display:flex; gap:12px;"><button class="btn-admin btn-admin-success" onclick="guardarAgente()"><i class="fas fa-save"></i> Guardar</button><button class="btn-admin" onclick="cerrarFormAgente()" style="background:var(--gray-200);color:var(--gray-700);">Cancelar</button></div>
+        </div>
+        <div id="listaAgentesAdmin"><p>Cargando agentes...</p></div>
+      </div>
+      <button class="btn-admin" onclick="cerrarAdmin()" style="background:var(--gray-200);color:var(--gray-700);margin-top:24px;padding:12px 32px;">Cerrar Panel</button>
+    </div>
+  </div>
+
+  <!-- Botón para abrir admin (oculto por defecto, se muestra con Ctrl+Shift+A) -->
+  <button id="btnAdmin" onclick="abrirAdmin()" style="display:none; position:fixed; bottom:100px; left:30px; z-index:999; background:var(--primary); color:white; border:none; padding:12px 20px; border-radius:60px; font-weight:600; cursor:pointer; box-shadow:var(--shadow-lg);"><i class="fas fa-user-cog"></i> Admin</button>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
