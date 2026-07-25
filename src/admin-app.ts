@@ -889,19 +889,14 @@ async function saveSettings() {
 async function loadMercadoLibre() {
   updateMercadoLibreUI();
   
-  // Check connection status
+  // Check connection status via Edge Function (avoids RLS issues)
   try {
-    const { data: creds } = await supabase
-      .from('ml_credenciales')
-      .select('ml_user_id, expires_at')
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .single();
+    const { data, error } = await supabase.functions.invoke('ml-status')
     
-    if (creds) {
+    if (!error && data?.connected) {
       mlConnected = true;
-      mlUserId = creds.ml_user_id;
-      mlTokenExpiresAt = creds.expires_at;
+      mlUserId = data.user_id;
+      mlTokenExpiresAt = data.expires_at;
       updateMercadoLibreUI();
     } else {
       mlConnected = false;
