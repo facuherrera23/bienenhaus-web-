@@ -256,10 +256,11 @@ function crearPanelAdmin() {
       cerrarAdmin();
     }
 
-    // Login form
-    if (e.target.closest('#adminLoginForm')) {
+    // Login form - click en botón submit
+    const loginForm = e.target.closest('#adminLoginForm');
+    if (loginForm) {
       e.preventDefault();
-      handleLogin(e.target);
+      handleLogin(loginForm);
     }
 
     // Logout
