@@ -5,18 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Redirigiendo...</title>
   <script>
-    // SPA redirect para GitHub Pages
-    // Preserva la ruta y query string al redirigir a index.html
+    // SPA redirect para GitHub Pages (Project site)
+    // Preserva la ruta y query string al redirigir a index.html con base path
     (function() {
       var path = window.location.pathname;
       var search = window.location.search;
       var hash = window.location.hash;
       
-      // Si ya estamos en index.html, no redirigir (evitar loop)
-      if (path === '/' || path === '/index.html') return;
+      // Base path del proyecto en GitHub Pages
+      var basePath = '/bienenhaus-web-';
       
-      // Construir URL de destino
-      var destination = '/index.html' + search + hash;
+      // Si ya estamos en index.html con base path, no redirigir (evitar loop)
+      if (path === basePath || path === basePath + '/') return;
+      
+      // Construir URL de destino con base path
+      var destination = basePath + '/index.html' + search + hash;
       
       // Guardar la ruta original en sessionStorage para que la app la recupere
       try {
@@ -29,6 +32,6 @@
   </script>
 </head>
 <body>
-  <p>Redirigiendo a <a href="/">inicio</a>...</p>
+  <p>Redirigiendo a <a href="/bienenhaus-web-/">inicio</a>...</p>
 </body>
 </html>
