@@ -144,10 +144,41 @@ nav:hover { box-shadow: var(--shadow-lg); }
 .btn-limpiar { background: transparent; border: 1px solid var(--gray-200); padding: 12px 28px; border-radius: 60px; font-weight: 500; cursor: pointer; transition: var(--transition); color: var(--gray-600); }
 .btn-limpiar:hover { background: var(--gray-100); border-color: var(--gray-300); }
 
+/* Filtros avanzados colapsables */
+.btn-filtros-toggle {
+  background: var(--gray-100); border: 1px solid var(--gray-200); padding: 10px 20px; border-radius: 60px; font-weight: 500; cursor: pointer; transition: var(--transition); color: var(--gray-600); display: flex; align-items: center; gap: 6px;
+}
+.btn-filtros-toggle:hover { background: var(--gray-200); border-color: var(--gray-300); }
+.btn-filtros-toggle[aria-expanded="true"] { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+.btn-filtros-toggle[aria-expanded="true"] #iconoFiltros { transform: rotate(180deg); }
+
+.filtros-avanzados {
+  display: flex; flex-wrap: wrap; gap: 12px; width: 100%; padding-top: 12px; border-top: 1px solid var(--gray-200); margin-top: 8px;
+  animation: slideDown 0.25s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.filtros-avanzados[hidden] { display: none; }
+.filtro-checkbox label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; color: var(--gray-700); }
+.filtro-checkbox input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+/* Video tour badge */
+.badge-video { position: absolute; top: 12px; left: 12px; background: var(--danger); color: white; font-size: 0.55rem; padding: 3px 10px; border-radius: 40px; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 4px; }
+
 /* ================================================================
    CATÁLOGO
    ================================================================ */
 .grid-propiedades { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; margin: 24px 0 32px; }
+
+@media (max-width: 600px) {
+  .grid-propiedades { grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); gap: 20px; }
+}
+
+@media (max-width: 900px) and (min-width: 601px) {
+  .grid-propiedades { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
+}
 
 .tarjeta-propiedad {
   background: white; border-radius: var(--radius-lg); padding: 20px 22px 24px;
@@ -473,4 +504,12 @@ nav:hover { box-shadow: var(--shadow-lg); }
 @media (max-width: 480px) {
   .hero h1 { font-size: 1.8rem; }
   .hero-badges { flex-direction: column; }
+}
+
+@media (max-width: 320px) {
+  .grid-propiedades { grid-template-columns: 1fr; }
+  .tarjeta-img { height: 160px; }
+  .hero h1 { font-size: 1.5rem; }
+  .filtro-grupo select, .filtro-grupo input { padding: 10px 14px; font-size: 0.9rem; }
+  .btn-filtrar, .btn-limpiar { padding: 10px 20px; font-size: 0.9rem; }
 }

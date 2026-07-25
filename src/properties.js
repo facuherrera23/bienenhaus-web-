@@ -14,6 +14,10 @@ export const itemsPorPagina = 6;
 export let propiedadActual = null;
 let propEditandoId = null;
 
+// Cache en memoria para evitar requests duplicados
+const propiedadesCache = new Map();
+let currentAbortController = null;
+
 // ================================================================
 // UTILIDADES
 // ================================================================
@@ -42,14 +46,44 @@ export function toggleFavorito(id) {
   const idx = favs.indexOf(id);
   idx > -1 ? favs.splice(idx, 1) : favs.push(id);
   setFavoritos(favs);
-  renderizarPropiedades();
+  // Re-render solo la página actual, sin resetear paginación
+  // Actualiza solo los botones de favorito en las tarjetas visibles
+  const grid = document.getElementById('gridPropiedades');
+  if (grid) {
+    const cards = grid.querySelectorAll('.tarjeta-propiedad');
+    cards.forEach(card => {
+      const cardId = parseInt(card.dataset.id);
+      const btn = card.querySelector('.favorito');
+      if (btn) {
+        const isFav = getFavoritos().includes(cardId);
+        btn.classList.toggle('activo', isFav);
+        btn.querySelector('i').className = isFav ? 'fas fa-heart' : 'far fa-heart';
+        btn.setAttribute('aria-label', isFav ? 'Quitar favorito' : 'Añadir favorito');
+      }
+    });
+  }
 }
 
 // ================================================================
-// OBTENER PROPIEDADES (con filtros server-side)
+// OBTENER PROPIEDADES (con filtros server-side + cache + abort)
 // ================================================================
 export async function obtenerPropiedades(filtros = {}) {
   const spinner = document.getElementById('spinnerOverlay');
+  
+  // Cancelar request anterior si existe
+  if (currentAbortController) {
+    currentAbortController.abort();
+  }
+  currentAbortController = new AbortController();
+  
+  // Generar clave de cache
+  const cacheKey = JSON.stringify(filtros);
+  const cached = propiedadesCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < 5 * 60 * 1000) { // 5 min TTL
+    propiedadesData = cached.data;
+    return propiedadesData;
+  }
+  
   try {
     spinner?.classList.add('active');
     let query = supabase.from('propiedades').select('*, imagenes(url, cloudinary_public_id, orden, es_principal)');
@@ -60,8 +94,42 @@ export async function obtenerPropiedades(filtros = {}) {
     if (filtros.precio_max && filtros.precio_max > 0) query = query.lte('precio', filtros.precio_max);
     if (filtros.habitaciones && filtros.habitaciones > 0) query = query.gte('habitaciones', filtros.habitaciones);
     if (filtros.metros_min && filtros.metros_min > 0) query = query.gte('m2', filtros.metros_min);
+    // Filtros avanzados
+    if (filtros.banos_min && filtros.banos_min > 0) query = query.gte('banos', filtros.banos_min);
+    if (filtros.antiguedad && filtros.antiguedad !== 'todas') query = query.eq('antiguedad', filtros.antiguedad);
+    if (filtros.cochera) query = query.eq('cochera', true);
+    if (filtros.balcon) query = query.eq('balcon', true);
+    if (filtros.pileta) query = query.eq('pileta', true);
+    if (filtros.amueblado) query = query.eq('amueblado', true);
+    if (filtros.mascotas) query = query.eq('mascotas', true);
+    if (filtros.gastos_comunes_max && filtros.gastos_comunes_max > 0) query = query.lte('expensas', filtros.gastos_comunes_max);
 
-    query = query.order('destacado', { ascending: false });
+    // Ordenamiento
+    const ordenar = filtros.ordenar || 'destacado';
+    switch (ordenar) {
+      case 'precio_asc':
+        query = query.order('precio', { ascending: true });
+        break;
+      case 'precio_desc':
+        query = query.order('precio', { ascending: false });
+        break;
+      case 'm2_desc':
+        query = query.order('m2', { ascending: false });
+        break;
+      case 'm2_asc':
+        query = query.order('m2', { ascending: true });
+        break;
+      case 'nuevas':
+        query = query.order('created_at', { ascending: false });
+        break;
+      case 'antiguas':
+        query = query.order('created_at', { ascending: true });
+        break;
+      case 'destacado':
+      default:
+        query = query.order('destacado', { ascending: false });
+        break;
+    }
 
     const { data, error } = await query;
     if (error) throw error;
@@ -73,6 +141,9 @@ export async function obtenerPropiedades(filtros = {}) {
       galeria: p.imagenes?.sort((a, b) => a.orden - b.orden).map(i => i.url) || []
     }));
 
+    // Cachear resultado
+    propiedadesCache.set(cacheKey, { data: propiedadesData, timestamp: Date.now() });
+
     // Actualizar contadores en hero y catálogo
     const countEl = document.getElementById('statPropiedades');
     const heroCount = document.getElementById('heroCount');
@@ -81,6 +152,10 @@ export async function obtenerPropiedades(filtros = {}) {
 
     return propiedadesData;
   } catch (e) {
+    if (e.name === 'AbortError') {
+      console.debug('Request abortado:', e.message);
+      return propiedadesData;
+    }
     console.error('Error obteniendo propiedades:', e);
     return [];
   } finally {
@@ -131,6 +206,7 @@ export function renderizarPropiedades() {
       ? `<img src="${p.imagen_principal}" alt="${p.titulo}" loading="lazy">`
       : `<span style="font-size:3rem;opacity:0.3;">🏠</span>`;
     const chars = p.caracteristicas?.map(c => `<span style="background:var(--gray-100);padding:2px 10px;border-radius:40px;font-size:0.65rem;color:var(--gray-600);">${c}</span>`).join(' ') || '';
+    const videoBadge = p.video_url ? '<span class="badge-video"><i class="fas fa-play-circle"></i> Video tour</span>' : '';
 
     return `
       <div class="tarjeta-propiedad" data-id="${p.id}">
@@ -140,6 +216,7 @@ export function renderizarPropiedades() {
         <div class="tarjeta-img">
           ${imgHtml}
           ${p.destacado ? '<span class="badge-destacado">⭐ Destacado</span>' : ''}
+          ${videoBadge}
           <span class="badge-op ${badgeClass}">${badgeText}</span>
         </div>
         <h3>${p.titulo}</h3>
@@ -198,8 +275,90 @@ function attachPropertyEvents() {
   );
 }
 
+function buildContactMessage(prop, monedaInfo) {
+  return `Hola Bienenhaus! 👋\n\nMe interesa la propiedad: ${prop.titulo}\nUbicación: ${prop.ubicacion}\nPrecio: ${monedaInfo.texto}\n\n¡Gracias!`;
+}
+
+function whatsappLink(msg) {
+  return `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+}
+
+function emailLinkHref(prop, msg) {
+  return `mailto:bienenhaus.propiedades@gmail.com?subject=${encodeURIComponent('Consulta sobre ' + prop.titulo)}&body=${encodeURIComponent(msg)}`;
+}
+
 // ================================================================
-// MODAL DETALLE
+// MODAL DETALLE - HELPERS PUROS
+// ================================================================
+function buildGalleryImages(prop) {
+  const gallery = prop.galeria && prop.galeria.length > 0 ? [...prop.galeria] : [];
+  if (prop.imagen_principal && !gallery.includes(prop.imagen_principal)) {
+    gallery.unshift(prop.imagen_principal);
+  }
+  return gallery;
+}
+
+function renderGallery(galeriaEl, images, prop, imgEl, badgeEl, badgeText, isAlquiler) {
+  galeriaEl.innerHTML = images.map((im, i) => 
+    `<div class="mini-img ${i === 0 ? 'activa' : ''}" data-img="${im}" role="listitem"><img src="${im}" alt="Imagen ${i+1}" loading="lazy"></div>`
+  ).join('');
+
+  galeriaEl.querySelectorAll('.mini-img').forEach(el => el.addEventListener('click', function() {
+    galeriaEl.querySelectorAll('.mini-img').forEach(e => e.classList.remove('activa'));
+    this.classList.add('activa');
+    imgEl.innerHTML = `<img src="${this.dataset.img}" alt="${prop.titulo}">`;
+    const b = document.createElement('span');
+    b.className = 'badge-op-detalle' + (isAlquiler ? ' alquiler' : '');
+    b.textContent = badgeText;
+    imgEl.appendChild(b);
+  }));
+}
+
+function renderPrice(prop, monedaInfo) {
+  document.getElementById('detalleSimbolo').textContent = monedaInfo.simbolo;
+  document.getElementById('detallePrecio').textContent = prop.precio.toLocaleString('es-AR');
+  document.getElementById('detalleSubMoneda').textContent = monedaInfo.label;
+}
+
+function renderCharacteristics(prop) {
+  document.getElementById('detalleCaracteristicas').innerHTML = `
+    <div class="caract-item"><i class="fas fa-bed"></i><span>${prop.habitaciones} hab.</span></div>
+    <div class="caract-item"><i class="fas fa-bath"></i><span>${prop.banos} baños</span></div>
+    <div class="caract-item"><i class="fas fa-arrows-alt"></i><span>${prop.m2} m²</span></div>
+    <div class="caract-item"><i class="fas fa-calendar-alt"></i><span>${prop.antiguedad}</span></div>
+    <div class="caract-item"><i class="fas fa-building"></i><span>${prop.tipo}</span></div>
+  `;
+  document.getElementById('detalleTags').innerHTML = prop.caracteristicas?.map(c => `<span class="tag">${c}</span>`).join('') || '';
+}
+
+function renderDetailImage(img, badge, prop, isVenta) {
+  const badgeText = isVenta ? 'VENTA' : 'ALQUILER';
+  img.innerHTML = prop.imagen_principal ? `<img src="${prop.imagen_principal}" alt="${prop.titulo}">` : '<span style="font-size:4rem;">🏠</span>';
+  badge.textContent = badgeText;
+  badge.className = 'badge-op-detalle' + (!isVenta ? ' alquiler' : '');
+  img.appendChild(badge);
+}
+
+function renderDetailContacts(prop, monedaInfo) {
+  const msg = buildContactMessage(prop, monedaInfo);
+  const waLink = document.getElementById('detalleWhatsApp');
+  waLink.href = whatsappLink(msg);
+  waLink.target = '_blank';
+  document.getElementById('detalleEmail').href = emailLinkHref(prop, msg);
+}
+
+function setupDetailFocusTrap() {
+  const focusable = document.getElementById('detalleClose');
+  focusable?.focus();
+}
+
+function openDetailModal() {
+  document.getElementById('detalleOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+// ================================================================
+// MODAL DETALLE - MAIN
 // ================================================================
 export function abrirDetalle(id) {
   const prop = propiedadesData.find(p => p.id === id);
@@ -211,57 +370,23 @@ export function abrirDetalle(id) {
   const galeria = document.getElementById('detalleGaleria');
   const isVenta = prop.operacion === 'venta';
   const badgeText = isVenta ? 'VENTA' : 'ALQUILER';
+  const isAlquiler = !isVenta;
   const monedaInfo = formatearPrecio(prop.precio, prop.moneda || 'ARS', prop.operacion);
 
-  img.innerHTML = prop.imagen_principal ? `<img src="${prop.imagen_principal}" alt="${prop.titulo}">` : '<span style="font-size:4rem;">🏠</span>';
-  badge.textContent = badgeText;
-  badge.className = 'badge-op-detalle' + (prop.operacion === 'alquiler' ? ' alquiler' : '');
-  img.appendChild(badge);
+  renderDetailImage(img, badge, prop, isVenta);
 
-  const galImgs = prop.galeria && prop.galeria.length > 0 ? prop.galeria : [];
-  galeria.innerHTML = galImgs.map((im, i) => `<div class="mini-img ${i === 0 ? 'activa' : ''}" data-img="${im}" role="listitem"><img src="${im}" alt="Imagen ${i+1}" loading="lazy"></div>`).join('');
-
-  galeria.querySelectorAll('.mini-img').forEach(el => el.addEventListener('click', function() {
-    galeria.querySelectorAll('.mini-img').forEach(e => e.classList.remove('activa'));
-    this.classList.add('activa');
-    img.innerHTML = `<img src="${this.dataset.img}" alt="${prop.titulo}">`;
-    const b = document.createElement('span');
-    b.className = 'badge-op-detalle' + (prop.operacion === 'alquiler' ? ' alquiler' : '');
-    b.textContent = badgeText;
-    img.appendChild(b);
-  }));
+  const galImgs = buildGalleryImages(prop);
+  renderGallery(galeria, galImgs, prop, img, badge, badgeText, isAlquiler);
 
   document.getElementById('detalle-titulo').textContent = prop.titulo;
   document.getElementById('detalleUbicacion').textContent = prop.ubicacion;
-  document.getElementById('detalleSimbolo').textContent = monedaInfo.simbolo;
-  document.getElementById('detallePrecio').textContent = prop.precio.toLocaleString('es-AR');
-  document.getElementById('detalleSubMoneda').textContent = monedaInfo.label;
+  renderPrice(prop, monedaInfo);
+  renderCharacteristics(prop);
 
-  document.getElementById('detalleCaracteristicas').innerHTML = `
-    <div class="caract-item"><i class="fas fa-bed"></i><span>${prop.habitaciones} hab.</span></div>
-    <div class="caract-item"><i class="fas fa-bath"></i><span>${prop.banos} baños</span></div>
-    <div class="caract-item"><i class="fas fa-arrows-alt"></i><span>${prop.m2} m²</span></div>
-    <div class="caract-item"><i class="fas fa-calendar-alt"></i><span>${prop.antiguedad}</span></div>
-    <div class="caract-item"><i class="fas fa-building"></i><span>${prop.tipo}</span></div>
-  `;
-  document.getElementById('detalleTags').innerHTML = prop.caracteristicas?.map(c => `<span class="tag">${c}</span>`).join('') || '';
+  renderDetailContacts(prop, monedaInfo);
 
-  // WhatsApp deep link
-  const msg = `Hola Bienenhaus! 👋\n\nMe interesa la propiedad: ${prop.titulo}\nUbicación: ${prop.ubicacion}\nPrecio: ${monedaInfo.texto}\n\n¡Gracias!`;
-  const waLink = document.getElementById('detalleWhatsApp');
-  waLink.href = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-  waLink.target = '_blank';
-
-  // Email link
-  document.getElementById('detalleEmail').href = `mailto:bienenhaus.propiedades@gmail.com?subject=Consulta sobre ${prop.titulo}&body=${encodeURIComponent(msg)}`;
-
-  document.getElementById('detalleOverlay').classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
-
-export function cerrarDetalle() {
-  document.getElementById('detalleOverlay').classList.remove('active');
-  document.body.style.overflow = '';
+  openDetailModal();
+  setupDetailFocusTrap();
 }
 
 // ================================================================
@@ -274,9 +399,20 @@ export async function aplicarFiltros() {
     precio_min: parseInt(document.getElementById('precioMin').value) || 0,
     precio_max: parseInt(document.getElementById('precioMax').value) || 0,
     habitaciones: parseInt(document.getElementById('habitaciones').value) || 0,
-    metros_min: parseInt(document.getElementById('metrosMin').value) || 0
+    metros_min: parseInt(document.getElementById('metrosMin').value) || 0,
+    // Filtros avanzados
+    banos_min: parseInt(document.getElementById('banosMin')?.value) || 0,
+    antiguedad: document.getElementById('antiguedadFiltro')?.value || 'todas',
+    cochera: document.getElementById('filtroCochera')?.checked || false,
+    balcon: document.getElementById('filtroBalcon')?.checked || false,
+    pileta: document.getElementById('filtroPileta')?.checked || false,
+    amueblado: document.getElementById('filtroAmueblado')?.checked || false,
+    mascotas: document.getElementById('filtroMascotas')?.checked || false,
+    gastos_comunes_max: parseInt(document.getElementById('gastosComunesMax')?.value) || 0,
+    // Ordenamiento
+    ordenar: document.getElementById('ordenarPor')?.value || 'destacado'
   };
-  paginaActual = 1;
+  paginaActual = 1; // Reset paginación al cambiar filtros
   await obtenerPropiedades(filtros);
   renderizarPropiedades();
 }
@@ -288,6 +424,24 @@ export function limpiarFiltros() {
   document.getElementById('precioMax').value = '900000';
   document.getElementById('habitaciones').value = '0';
   document.getElementById('metrosMin').value = '0';
+  document.getElementById('banosMin').value = '0';
+  document.getElementById('antiguedadFiltro').value = 'todas';
+  document.getElementById('filtroCochera').checked = false;
+  document.getElementById('filtroBalcon').checked = false;
+  document.getElementById('filtroPileta').checked = false;
+  document.getElementById('filtroAmueblado').checked = false;
+  document.getElementById('filtroMascotas').checked = false;
+  document.getElementById('gastosComunesMax').value = '0';
+  document.getElementById('ordenarPor').value = 'destacado';
+  // Colapsar filtros avanzados
+  const adv = document.getElementById('filtrosAvanzados');
+  const btn = document.getElementById('btnFiltrosAvanzados');
+  const icon = document.getElementById('iconoFiltros');
+  if (adv && !adv.hidden) {
+    adv.hidden = true;
+    btn.setAttribute('aria-expanded', 'false');
+    icon.style.transform = 'rotate(0deg)';
+  }
   aplicarFiltros();
 }
 

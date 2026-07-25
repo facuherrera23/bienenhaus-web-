@@ -150,6 +150,68 @@
         <label for="metrosMin"><i class="fas fa-arrows-alt" aria-hidden="true"></i> m² min</label>
         <input type="number" id="metrosMin" placeholder="0" min="0" step="10" value="0">
       </div>
+      
+      <!-- Filtros avanzados colapsables -->
+      <div class="filtro-grupo filtro-toggle">
+        <button type="button" id="btnFiltrosAvanzados" class="btn-filtros-toggle" aria-expanded="false" aria-controls="filtrosAvanzados">
+          <i class="fas fa-sliders-h"></i> Más filtros <i class="fas fa-chevron-down" id="iconoFiltros"></i>
+        </button>
+      </div>
+      
+      <div class="filtros-avanzados" id="filtrosAvanzados" hidden>
+        <div class="filtro-grupo">
+          <label for="banosMin"><i class="fas fa-bath" aria-hidden="true"></i> Baños min</label>
+          <select id="banosMin">
+            <option value="0">Cualquiera</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3+</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label for="antiguedadFiltro"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Antigüedad</label>
+          <select id="antiguedadFiltro">
+            <option value="todas">Todas</option>
+            <option value="nuevo">Nuevo</option>
+            <option value="reformado">Reformado</option>
+            <option value="viejo">A reformar</option>
+          </select>
+        </div>
+        <div class="filtro-grupo filtro-checkbox">
+          <label><input type="checkbox" id="filtroCochera"> <i class="fas fa-car" aria-hidden="true"></i> Cochera</label>
+        </div>
+        <div class="filtro-grupo filtro-checkbox">
+          <label><input type="checkbox" id="filtroBalcon"> <i class="fas fa-window-maximize" aria-hidden="true"></i> Balcón</label>
+        </div>
+        <div class="filtro-grupo filtro-checkbox">
+          <label><input type="checkbox" id="filtroPileta"> <i class="fas fa-swimming-pool" aria-hidden="true"></i> Pileta</label>
+        </div>
+        <div class="filtro-grupo filtro-checkbox">
+          <label><input type="checkbox" id="filtroAmueblado"> <i class="fas fa-couch" aria-hidden="true"></i> Amueblado</label>
+        </div>
+        <div class="filtro-grupo filtro-checkbox">
+          <label><input type="checkbox" id="filtroMascotas"> <i class="fas fa-paw" aria-hidden="true"></i> Mascotas</label>
+        </div>
+        <div class="filtro-grupo">
+          <label for="gastosComunesMax"><i class="fas fa-receipt" aria-hidden="true"></i> Expensas máx</label>
+          <input type="number" id="gastosComunesMax" placeholder="Sin límite" min="0" step="1000" value="0">
+        </div>
+      </div>
+      
+      <!-- Ordenamiento -->
+      <div class="filtro-grupo">
+        <label for="ordenarPor"><i class="fas fa-sort" aria-hidden="true"></i> Ordenar</label>
+        <select id="ordenarPor">
+          <option value="destacado">Destacados primero</option>
+          <option value="precio_asc">Precio: menor a mayor</option>
+          <option value="precio_desc">Precio: mayor a menor</option>
+          <option value="m2_desc">Superficie: mayor a menor</option>
+          <option value="m2_asc">Superficie: menor a mayor</option>
+          <option value="nuevas">Más nuevas</option>
+          <option value="antiguas">Más antiguas</option>
+        </select>
+      </div>
+      
       <div class="filtro-acciones">
         <button class="btn-filtrar" id="btnFiltrar"><i class="fas fa-search" aria-hidden="true"></i> Buscar</button>
         <button class="btn-limpiar" id="btnLimpiar"><i class="fas fa-undo" aria-hidden="true"></i> Limpiar</button>

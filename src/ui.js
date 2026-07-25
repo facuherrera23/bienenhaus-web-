@@ -49,6 +49,44 @@ export function initFiltros() {
     const { limpiarFiltros } = await import('./properties.js');
     limpiarFiltros();
   });
+
+  // Toggle filtros avanzados
+  const btnFiltrosAvanzados = document.getElementById('btnFiltrosAvanzados');
+  const filtrosAvanzados = document.getElementById('filtrosAvanzados');
+  const iconoFiltros = document.getElementById('iconoFiltros');
+  
+  btnFiltrosAvanzados?.addEventListener('click', () => {
+    const isHidden = filtrosAvanzados.hidden;
+    filtrosAvanzados.hidden = !isHidden;
+    btnFiltrosAvanzados.setAttribute('aria-expanded', String(isHidden));
+    iconoFiltros.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+  });
+
+  // S1.1: Auto-filter on select change + ensure paginaActual reset
+  const filterSelects = [
+    'tipoOperacion',
+    'tipoPropiedadFiltro',
+    'precioMin',
+    'precioMax',
+    'habitaciones',
+    'metrosMin',
+    'banosMin',
+    'antiguedadFiltro',
+    'filtroCochera',
+    'filtroBalcon',
+    'filtroPileta',
+    'filtroAmueblado',
+    'filtroMascotas',
+    'gastosComunesMax',
+    'ordenarPor'
+  ].map(id => document.getElementById(id)).filter(Boolean);
+
+  filterSelects.forEach(el => {
+    el.addEventListener('change', async () => {
+      const { aplicarFiltros } = await import('./properties.js');
+      await aplicarFiltros();
+    });
+  });
 }
 
 // ================================================================

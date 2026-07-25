@@ -217,7 +217,13 @@ async function loadProperties() {
       .select('*, imagenes(url, cloudinary_public_id, orden, es_principal)')
       .order('created_at', { ascending: false });
     
-    if (error) throw error;
+    if (error) {
+      // RLS error detection
+      if (error.code === '42501' || error.message?.includes('row-level security')) {
+        throw new Error('Error de permisos (RLS): Verifica que la service_role key esté configurada en Edge Functions');
+      }
+      throw error;
+    }
     propertiesCache = (data || []).map(p => ({
       ...p,
       imagenes: p.imagenes || [],
@@ -230,7 +236,10 @@ async function loadProperties() {
     updateNavBadges();
   } catch (e) {
     console.error('Error loading properties:', e);
-    showToast('Error cargando propiedades', 'error');
+    const msg = e.message?.includes('RLS') || e.message?.includes('42501') 
+      ? 'Error de permisos (RLS): Configura service_role key en Edge Functions' 
+      : 'Error cargando propiedades';
+    showToast(msg, 'error');
   }
 }
 
@@ -548,6 +557,11 @@ function closePropertyModal() {
   document.getElementById('propertyModal').classList.remove('active');
   editingPropertyId = null;
   uploadedPropertyImages = [];
+  // Limpiar preview y file input
+  const preview = document.getElementById('propImagesPreview');
+  const fileInput = document.getElementById('propImages');
+  if (preview) preview.innerHTML = '';
+  if (fileInput) fileInput.value = '';
 }
 
 async function saveProperty(e) {
@@ -573,8 +587,33 @@ async function saveProperty(e) {
     const descripcion = document.getElementById('propDescription').value.trim();
     const files = document.getElementById('propImages').files;
     
-    if (!titulo || !precio || !ubicacion) {
-      showToast('Completa título, precio y ubicación', 'error');
+    // Validación client-side completa
+    const errors = [];
+    if (!titulo) errors.push('Título es requerido');
+    if (!precio || precio <= 0) errors.push('Precio debe ser un número mayor a 0');
+    if (!ubicacion) errors.push('Ubicación es requerida');
+    if (!['ARS', 'USD'].includes(moneda)) errors.push('Moneda inválida');
+    if (!['venta', 'alquiler'].includes(operacion)) errors.push('Operación inválida');
+    if (!['piso', 'chalet', 'atico', 'local', 'terreno'].includes(tipo)) errors.push('Tipo de propiedad inválido');
+    if (habitaciones < 0 || habitaciones > 20) errors.push('Habitaciones debe estar entre 0 y 20');
+    if (banos < 0 || banos > 20) errors.push('Baños debe estar entre 0 y 20');
+    if (m2 < 0 || m2 > 10000) errors.push('Metros cuadrados debe estar entre 0 y 10000');
+    if (!['nuevo', 'reformado', 'viejo'].includes(antiguedad)) errors.push('Antigüedad inválida');
+    if (files.length > 15) errors.push('Máximo 15 imágenes permitidas');
+    
+    // Validar archivos de imagen
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file.type.match(/^image\/(jpeg|png|webp|jpg)$/)) {
+        errors.push(`Archivo ${file.name}: solo JPG, PNG, WebP permitidos`);
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        errors.push(`Archivo ${file.name}: máximo 10MB`);
+      }
+    }
+    
+    if (errors.length > 0) {
+      showToast(errors.join('\n'), 'error');
       btn.disabled = false;
       btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
       return;
@@ -1198,9 +1237,44 @@ function renderPropertyImagePreviews() {
   uploadedPropertyImages.forEach((file, i) => {
     const url = URL.createObjectURL(file);
     const div = document.createElement('div');
-    div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:var(--radius);overflow:hidden;border:2px solid var(--gray-200);' + (i===0?'border-color:var(--accent);':'');
-    div.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;"><span style="position:absolute;top:2px;right:2px;background:var(--gray-900);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span>`;
+    div.draggable = true;
+    div.dataset.index = i;
+    div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:var(--radius);overflow:hidden;border:2px solid var(--gray-200);cursor:grab;' + (i===0?'border-color:var(--accent);':'');
+    div.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;"><span style="position:absolute;top:2px;right:2px;background:var(--gray-900);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span><button type="button" class="remove-img" data-index="${i}" style="position:absolute;bottom:2px;right:2px;background:rgba(220,38,38,0.9);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;">×</button>`;
     preview.appendChild(div);
+  });
+  
+  // Drag & drop reorder
+  let draggedIndex = -1;
+  preview.querySelectorAll('[draggable]').forEach(el => {
+    el.addEventListener('dragstart', (e) => {
+      draggedIndex = parseInt(e.target.dataset.index);
+      e.target.style.opacity = '0.5';
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('dragend', (e) => {
+      e.target.style.opacity = '1';
+    });
+    el.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    });
+    el.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const targetIndex = parseInt(e.target.closest('[draggable]')?.dataset.index || '-1');
+      if (draggedIndex !== -1 && targetIndex !== -1 && draggedIndex !== targetIndex) {
+        const [removed] = uploadedPropertyImages.splice(draggedIndex, 1);
+        uploadedPropertyImages.splice(targetIndex, 0, removed);
+        renderPropertyImagePreviews();
+      }
+    });
+    // Remove button
+    el.querySelector('.remove-img')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(e.target.dataset.index);
+      uploadedPropertyImages.splice(idx, 1);
+      renderPropertyImagePreviews();
+    });
   });
 }
 

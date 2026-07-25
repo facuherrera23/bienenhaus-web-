@@ -39,6 +39,15 @@ CREATE TABLE IF NOT EXISTS propiedades (
   destacado BOOLEAN DEFAULT FALSE,
   caracteristicas TEXT[],
   descripcion TEXT,
+  -- Campos extra para filtros avanzados y UX premium
+  video_url TEXT,
+  cochera BOOLEAN DEFAULT FALSE,
+  balcon BOOLEAN DEFAULT FALSE,
+  pileta BOOLEAN DEFAULT FALSE,
+  amueblado BOOLEAN DEFAULT FALSE,
+  mascotas BOOLEAN DEFAULT FALSE,
+  gastos_comunes NUMERIC DEFAULT 0,
+  expensas NUMERIC DEFAULT 0,
   -- MercadoLibre sync fields
   ml_item_id TEXT UNIQUE,
   ml_status TEXT,
@@ -54,6 +63,20 @@ CREATE INDEX IF NOT EXISTS idx_prop_tipo ON propiedades(tipo);
 CREATE INDEX IF NOT EXISTS idx_prop_precio ON propiedades(precio);
 CREATE INDEX IF NOT EXISTS idx_prop_destacado ON propiedades(destacado DESC);
 CREATE INDEX IF NOT EXISTS idx_prop_created ON propiedades(created_at DESC);
+-- Índices para MercadoLibre sync
+CREATE INDEX IF NOT EXISTS idx_prop_ml_item_id ON propiedades(ml_item_id);
+CREATE INDEX IF NOT EXISTS idx_prop_ml_status ON propiedades(ml_status);
+CREATE INDEX IF NOT EXISTS idx_prop_ml_last_sync ON propiedades(ml_last_sync DESC);
+-- Índices para filtros avanzados
+CREATE INDEX IF NOT EXISTS idx_prop_cochera ON propiedades(cochera);
+CREATE INDEX IF NOT EXISTS idx_prop_balcon ON propiedades(balcon);
+CREATE INDEX IF NOT EXISTS idx_prop_pileta ON propiedades(pileta);
+CREATE INDEX IF NOT EXISTS idx_prop_amueblado ON propiedades(amueblado);
+CREATE INDEX IF NOT EXISTS idx_prop_mascotas ON propiedades(mascotas);
+
+-- Trigger para updated_at
+CREATE TRIGGER update_propiedades_updated_at BEFORE UPDATE ON propiedades
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ================================================================
 -- TABLA: imagenes (1:N propiedades)
