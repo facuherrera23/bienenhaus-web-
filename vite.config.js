@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/bienenhaus-web-/',
+  base: '/',
   root: '.',
   publicDir: 'public',
   build: {
