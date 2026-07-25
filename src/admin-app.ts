@@ -171,7 +171,8 @@ function navigate(section) {
     item.classList.toggle('active', item.dataset.section === section);
   });
   
-  document.querySelectorAll('.settings-panel').forEach(panel => {
+  // Only toggle top-level section panels (id starts with "section-")
+  document.querySelectorAll('.settings-panel[id^="section-"]').forEach(panel => {
     panel.classList.toggle('active', panel.id === `section-${section}`);
   });
   
