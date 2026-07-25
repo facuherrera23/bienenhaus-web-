@@ -171,8 +171,7 @@ INSERT INTO contenido_sitio (clave, valor, descripcion) VALUES
 ('seo_keywords', '"inmobiliaria cordoba, venta pisos, alquiler viviendas, bienenhaus propiedades"', 'Keywords SEO'),
 ('seo_og_image', '"https://bienenhaus.com.ar/og-image.jpg"', 'Open Graph image'),
 ('seo_twitter_card', '"summary_large_image"', 'Twitter card type'),
-('seo_schema', '{"@context":"https://schema.org","@type":"RealEstateAgent","name":"Bienenhaus Propiedades","description":"Agencia inmobiliaria profesional con más de 18 años de experiencia en el mercado argentino","address":{"@type":"PostalAddress","addressLocality":"Córdoba","addressCountry":"AR"},"telephone":"+54 351 123-4567","email":"bienenhaus.propiedades@gmail.com","url":"https://bienenhaus.com.ar"}', 'Schema.org JSON-LD'),
-
+('seo_schema', '{"@context":"https://schema.org","@type":"RealEstateAgent","name":"Bienenhaus Propiedades","description":"Agencia inmobiliaria profesional con más de 18 años de experiencia en el mercado argentino","address":{"@type":"PostalAddress","addressLocality":"Córdoba","addressCountry":"AR"},"telephone":"+54 351 123-4567","email":"bienenhaus.propiedades@gmail.com","url":"https://bienenhaus.com.ar"}', 'Schema.org JSON-LD')
 ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor, updated_at = NOW();
 
 -- ================================================================
