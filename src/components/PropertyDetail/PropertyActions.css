@@ -1,0 +1,326 @@
+/* ================================================================
+   PROPERTY ACTIONS - Botones de acción en el detalle
+   ================================================================ */
+
+.property-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-gray-200);
+  box-shadow: var(--shadow-sm);
+  margin-top: var(--space-4);
+}
+
+.property-actions__primary {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.property-actions__secondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.property-actions__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.property-actions__btn:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.property-actions__primary .property-actions__btn {
+  flex: 1;
+  min-height: 52px;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+}
+
+.property-actions__btn--whatsapp {
+  background: #25D366;
+  color: var(--color-white);
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.property-actions__btn--whatsapp:hover {
+  background: #1DA851;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.property-actions__btn--whatsapp:active {
+  transform: translateY(0);
+}
+
+.property-actions__btn--whatsapp i {
+  font-size: 1.25rem;
+}
+
+.property-actions__btn--whatsapp.active {
+  background: #128C3E;
+}
+
+.property-actions__secondary .property-actions__btn {
+  background: var(--color-white);
+  color: var(--color-primary);
+  border: 2px solid var(--color-gray-200);
+}
+
+.property-actions__secondary .property-actions__btn:hover {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.property-actions__secondary .property-actions__btn.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-white);
+}
+
+.property-actions__secondary .property-actions__btn.active:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.property-actions__secondary .property-actions__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-200);
+  color: var(--color-gray-400);
+}
+
+.property-actions__btn i {
+  font-size: 1rem;
+}
+
+.property-actions__btn--info {
+  background: var(--color-info-light);
+  color: var(--color-info);
+  border-color: var(--color-info);
+}
+
+.property-actions__btn--info:hover {
+  background: var(--color-info);
+  color: var(--color-white);
+}
+
+.property-actions__btn--danger {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.property-actions__btn--danger:hover {
+  background: var(--color-danger);
+  color: var(--color-white);
+}
+
+.property-actions__btn--success {
+  background: var(--color-success-light);
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.property-actions__btn--success:hover {
+  background: var(--color-success);
+  color: var(--color-white);
+}
+
+.property-actions__btn--warning {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.property-actions__btn--warning:hover {
+  background: var(--color-warning);
+  color: var(--color-white);
+}
+
+/* Share Modal */
+.share-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: fadeIn var(--transition-fast) ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.share-modal {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  max-width: 400px;
+  width: 100%;
+  box-shadow: var(--shadow-xl);
+  animation: slideInUp var(--transition-normal) ease-out;
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.share-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.share-modal__header h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.share-modal__close {
+  background: var(--color-gray-100);
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray-400);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 1.25rem;
+}
+
+.share-modal__close:hover {
+  background: var(--color-gray-200);
+  color: var(--color-gray-700);
+}
+
+.share-modal__close:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.share-modal__body {
+  padding: var(--space-6);
+}
+
+.share-modal__body > p {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  margin: 0 0 var(--space-4);
+}
+
+.share-modal__options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.share-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  background: var(--color-gray-50);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--color-gray-700);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.share-option:hover {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.share-option i {
+  font-size: 1.5rem;
+}
+
+@media (max-width: 480px) {
+  .share-modal__options {
+    grid-template-columns: 1fr;
+  }
+}
+
+.property-actions__primary .property-actions__btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.property-actions__primary .property-actions__btn i {
+  font-size: 1.125rem;
+}
+
+/* Focus visible for accessibility */
+.property-actions__btn:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.property-actions__btn--whatsapp:focus-visible {
+  outline-color: #1da851;
+}
+
+.property-actions__btn--secondary:focus-visible {
+  outline-color: var(--color-accent);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .property-actions__btn,
+  .share-modal {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* High contrast */
+@media (prefers-contrast: high) {
+  .property-actions__secondary .property-actions__btn {
+    border-width: 3px;
+  }
+  
+  .property-actions__btn--whatsapp {
+    border: 2px solid var(--color-white);
+  }
+}

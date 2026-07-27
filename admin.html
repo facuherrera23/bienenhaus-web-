@@ -8,985 +8,14 @@
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Cropper.js CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
-
-  <style>
-    /* ================================================================
-       ADMIN STYLES - Estilos completos para admin.html
-       ================================================================ */
-    :root {
-      --primary: #0b2b4a;
-      --primary-light: #1a4066;
-      --primary-dark: #061a2e;
-      --accent: #1f6ed4;
-      --accent-hover: #1a5fb8;
-      --accent-light: #e8eff9;
-      --success: #0d7a5f;
-      --warning: #d97706;
-      --danger: #dc2626;
-      --gray-50: #f8fafc;
-      --gray-100: #f1f5f9;
-      --gray-200: #e2e8f0;
-      --gray-300: #cbd5e1;
-      --gray-400: #94a3b8;
-      --gray-500: #64748b;
-      --gray-600: #475569;
-      --gray-700: #334155;
-      --gray-800: #1e293b;
-      --gray-900: #0f172a;
-      --radius: 12px;
-      --radius-lg: 16px;
-      --radius-xl: 24px;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
-      --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
-      --shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
-      --shadow-xl: 0 20px 60px rgba(0,0,0,0.10);
-      --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      --sidebar-width: 280px;
-      --header-height: 70px;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { font-size: 16px; }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--gray-50);
-      color: var(--gray-900);
-      line-height: 1.6;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ================================================================
-       LOGIN PAGE
-       ================================================================ */
-    .login-page {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, var(--accent) 100%);
-      position: relative;
-      overflow: hidden;
-    }
-    .login-page::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -10%;
-      width: 800px;
-      height: 800px;
-      background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-    .login-page::after {
-      content: '';
-      position: absolute;
-      bottom: -30%;
-      left: -10%;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-
-    .login-container {
-      width: 100%;
-      max-width: 440px;
-      background: white;
-      border-radius: var(--radius-xl);
-      padding: 48px 40px;
-      box-shadow: var(--shadow-xl);
-      position: relative;
-      z-index: 1;
-    }
-
-    .login-header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    .login-logo {
-      width: 72px;
-      height: 72px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 28px;
-      color: white;
-    }
-    .login-header h1 {
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 8px;
-      letter-spacing: -0.5px;
-    }
-    .login-header p {
-      color: var(--gray-600);
-      font-size: 0.95rem;
-    }
-
-    .login-form {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .form-group label {
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--gray-700);
-    }
-    .form-group input {
-      padding: 14px 18px;
-      border: 2px solid var(--gray-200);
-      border-radius: var(--radius);
-      font-size: 1rem;
-      font-family: inherit;
-      transition: var(--transition);
-      background: var(--gray-50);
-    }
-    .form-group input:focus {
-      outline: none;
-      border-color: var(--accent);
-      background: white;
-      box-shadow: 0 0 0 4px rgba(31,110,212,0.1);
-    }
-    .form-group input::placeholder {
-      color: var(--gray-400);
-    }
-    .form-group input.error {
-      border-color: var(--danger);
-    }
-
-    .login-error {
-      display: none;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #dc2626;
-      padding: 12px 16px;
-      border-radius: var(--radius);
-      font-size: 0.9rem;
-      text-align: center;
-    }
-    .login-error.visible { display: block; }
-
-    .btn-login {
-      padding: 16px 24px;
-      border: none;
-      border-radius: var(--radius);
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: var(--transition);
-      background: var(--primary);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 8px;
-    }
-    .btn-login:hover {
-      background: var(--primary-light);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-    .btn-login:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .login-footer {
-      margin-top: 24px;
-      text-align: center;
-      padding-top: 24px;
-      border-top: 1px solid var(--gray-200);
-    }
-    .login-footer p {
-      color: var(--gray-500);
-      font-size: 0.85rem;
-    }
-    .login-footer a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-    .login-footer a:hover { text-decoration: underline; }
-
-    /* ================================================================
-       DASHBOARD LAYOUT
-       ================================================================ */
-    .dashboard-page {
-      display: flex;
-      min-height: 100vh;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: var(--sidebar-width);
-      background: white;
-      border-right: 1px solid var(--gray-200);
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100vh;
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      transition: var(--transition);
-    }
-    .sidebar-header {
-      padding: 24px 20px;
-      border-bottom: 1px solid var(--gray-200);
-    }
-    .sidebar-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .sidebar-logo-icon {
-      width: 44px;
-      height: 44px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      color: white;
-    }
-    .sidebar-logo-text {
-      font-weight: 800;
-      font-size: 1.1rem;
-      color: var(--primary);
-      letter-spacing: -0.5px;
-    }
-    .sidebar-nav {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-    }
-    .nav-section {
-      margin-bottom: 24px;
-    }
-    .nav-section-title {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--gray-500);
-      padding: 0 12px;
-      margin-bottom: 10px;
-    }
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
-      border-radius: var(--radius);
-      color: var(--gray-600);
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 0.95rem;
-      transition: var(--transition);
-      margin-bottom: 4px;
-    }
-    .nav-item:hover {
-      background: var(--gray-100);
-      color: var(--primary);
-    }
-    .nav-item.active {
-      background: var(--accent-light);
-      color: var(--accent);
-    }
-    .nav-item i {
-      width: 22px;
-      text-align: center;
-      font-size: 1.1rem;
-    }
-    .nav-item .badge {
-      margin-left: auto;
-      background: var(--accent);
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 10px;
-    }
-
-    .sidebar-footer {
-      padding: 20px;
-      border-top: 1px solid var(--gray-200);
-    }
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      background: var(--gray-50);
-      border-radius: var(--radius);
-    }
-    .user-avatar {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 700;
-      font-size: 1rem;
-    }
-    .user-details {
-      flex: 1;
-      min-width: 0;
-    }
-    .user-name {
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--gray-900);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .user-role {
-      font-size: 0.75rem;
-      color: var(--gray-500);
-    }
-    .btn-logout {
-      width: 100%;
-      margin-top: 12px;
-      padding: 10px;
-      background: transparent;
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius);
-      color: var(--gray-600);
-      font-weight: 500;
-      cursor: pointer;
-      transition: var(--transition);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .btn-logout:hover {
-      background: var(--gray-100);
-      border-color: var(--gray-300);
-      color: var(--gray-900);
-    }
-
-    /* Main Content */
-    .main-content {
-      flex: 1;
-      margin-left: var(--sidebar-width);
-      min-height: 100vh;
-      background: var(--gray-50);
-      transition: var(--transition);
-    }
-
-    .header {
-      height: var(--header-height);
-      background: white;
-      border-bottom: 1px solid var(--gray-200);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 32px;
-      position: sticky;
-      top: 0;
-      z-index: 50;
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .page-title {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--primary);
-      letter-spacing: -0.5px;
-    }
-    .breadcrumb {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      color: var(--gray-500);
-    }
-    .breadcrumb a { color: var(--accent); text-decoration: none; }
-    .breadcrumb a:hover { text-decoration: underline; }
-    .breadcrumb span { color: var(--gray-400); }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .header-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: var(--radius);
-      border: 1px solid var(--gray-200);
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--gray-600);
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    .header-btn:hover {
-      background: var(--gray-50);
-      border-color: var(--gray-300);
-      color: var(--gray-900);
-    }
-
-    .content {
-      padding: 32px;
-    }
-
-    /* ================================================================
-       CARDS & GRIDS
-       ================================================================ */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 24px;
-      margin-bottom: 32px;
-    }
-    .stat-card {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      border: 1px solid var(--gray-200);
-      box-shadow: var(--shadow-sm);
-      transition: var(--transition);
-    }
-    .stat-card:hover {
-      box-shadow: var(--shadow-md);
-      border-color: var(--gray-300);
-    }
-    .stat-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-    }
-    .stat-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: var(--radius);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-    }
-    .stat-icon.blue { background: var(--accent-light); color: var(--accent); }
-    .stat-icon.green { background: #ecfdf5; color: var(--success); }
-    .stat-icon.orange { background: #fff7ed; color: var(--warning); }
-    .stat-icon.purple { background: #faf5ff; color: #8b5cf6; }
-    .stat-trend {
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 20px;
-    }
-    .stat-trend.up { background: #ecfdf5; color: var(--success); }
-    .stat-trend.down { background: #fef2f2; color: var(--danger); }
-    .stat-value {
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: var(--primary);
-      line-height: 1.1;
-      margin-bottom: 4px;
-    }
-    .stat-label {
-      font-size: 0.85rem;
-      color: var(--gray-500);
-      font-weight: 500;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-    .section-title {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: var(--primary);
-    }
-    .btn-primary {
-      padding: 12px 24px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: var(--radius);
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: var(--transition);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn-primary:hover {
-      background: var(--primary-light);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-    .btn-secondary {
-      padding: 12px 24px;
-      background: white;
-      color: var(--primary);
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius);
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: var(--transition);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn-secondary:hover {
-      background: var(--gray-50);
-      border-color: var(--gray-300);
-    }
-    .btn-danger {
-      padding: 10px 16px;
-      background: var(--danger);
-      color: white;
-      border: none;
-      border-radius: var(--radius);
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    .btn-danger:hover { background: #b91c1c; }
-
-    /* Table */
-    .table-container {
-      background: white;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--gray-200);
-      overflow: hidden;
-    }
-    .table-header {
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--gray-200);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-    .search-box {
-      position: relative;
-      width: 300px;
-    }
-    .search-box input {
-      width: 100%;
-      padding: 10px 14px 10px 44px;
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius);
-      font-size: 0.9rem;
-      background: var(--gray-50);
-      transition: var(--transition);
-    }
-    .search-box input:focus {
-      outline: none;
-      border-color: var(--accent);
-      background: white;
-      box-shadow: 0 0 0 3px rgba(31,110,212,0.1);
-    }
-    .search-box i {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--gray-400);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 16px 24px;
-      text-align: left;
-      border-bottom: 1px solid var(--gray-100);
-    }
-    th {
-      background: var(--gray-50);
-      font-weight: 600;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--gray-500);
-      white-space: nowrap;
-    }
-    td {
-      font-size: 0.9rem;
-      color: var(--gray-700);
-    }
-    tr:hover td {
-      background: var(--gray-50);
-    }
-    tr:last-child td { border-bottom: none; }
-
-    .badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-    .badge-sale { background: var(--accent-light); color: var(--accent); }
-    .badge-rent { background: #ecfdf5; color: var(--success); }
-    .badge-featured { background: #fffbeb; color: var(--warning); }
-    .badge-active { background: #ecfdf5; color: var(--success); }
-    .badge-inactive { background: #fef2f2; color: var(--danger); }
-    .badge-draft { background: var(--gray-100); color: var(--gray-500); }
-    .badge-published { background: #ecfdf5; color: var(--success); }
-
-    .action-btns {
-      display: flex;
-      gap: 8px;
-    }
-    .action-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: var(--radius);
-      border: 1px solid var(--gray-200);
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--gray-600);
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    .action-btn:hover {
-      background: var(--gray-100);
-      border-color: var(--gray-300);
-      color: var(--gray-900);
-    }
-    .action-btn.delete:hover {
-      background: #fef2f2;
-      border-color: #fecaca;
-      color: var(--danger);
-    }
-
-    /* Empty state */
-    .empty-state {
-      text-align: center;
-      padding: 60px 24px;
-      color: var(--gray-500);
-    }
-    .empty-state i {
-      font-size: 3rem;
-      color: var(--gray-300);
-      margin-bottom: 16px;
-      display: block;
-    }
-    .empty-state h3 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--gray-700);
-      margin-bottom: 8px;
-    }
-    .empty-state p {
-      font-size: 0.9rem;
-      margin-bottom: 20px;
-    }
-
-    /* ================================================================
-       MODALS
-       ================================================================ */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    .modal-overlay.active { display: flex; }
-
-    .modal {
-      background: white;
-      border-radius: var(--radius-xl);
-      max-width: 900px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: var(--shadow-xl);
-      animation: slideIn 0.3s ease;
-    }
-    @keyframes slideIn {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    .modal-header {
-      padding: 24px;
-      border-bottom: 1px solid var(--gray-200);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .modal-title {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: var(--primary);
-    }
-    .modal-close {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 1px solid var(--gray-200);
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--gray-600);
-      cursor: pointer;
-      transition: var(--transition);
-      font-size: 1.25rem;
-    }
-    .modal-close:hover {
-      background: var(--gray-100);
-      border-color: var(--gray-300);
-      color: var(--gray-900);
-    }
-
-    .modal-body {
-      padding: 24px;
-    }
-    .modal-footer {
-      padding: 20px 24px;
-      border-top: 1px solid var(--gray-200);
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-    .form-group.full { grid-column: 1 / -1; }
-    .form-group textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
-
-    /* ================================================================
-       SETTINGS TABS
-       ================================================================ */
-    .settings-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-      border-bottom: 1px solid var(--gray-200);
-      padding-bottom: 8px;
-      flex-wrap: wrap;
-    }
-    .settings-tab {
-      padding: 10px 20px;
-      border: none;
-      background: transparent;
-      color: var(--gray-500);
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      position: relative;
-      transition: var(--transition);
-    }
-    .settings-tab::after {
-      content: '';
-      position: absolute;
-      bottom: -8px;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: var(--accent);
-      border-radius: 3px 3px 0 0;
-      transform: scaleX(0);
-      transition: var(--transition);
-    }
-    .settings-tab:hover { color: var(--gray-700); }
-    .settings-tab.active {
-      color: var(--accent);
-    }
-    .settings-tab.active::after {
-      transform: scaleX(1);
-    }
-
-    .settings-panel { display: none; }
-    .settings-panel.active { display: block; animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    .settings-section {
-      margin-bottom: 32px;
-    }
-    .settings-section-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--gray-200);
-    }
-
-    /* Image upload */
-    .image-upload {
-      border: 2px dashed var(--gray-300);
-      border-radius: var(--radius-lg);
-      padding: 40px;
-      text-align: center;
-      cursor: pointer;
-      transition: var(--transition);
-      position: relative;
-    }
-    .image-upload:hover {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    .image-upload.dragover {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    .image-upload.has-image {
-      border-style: solid;
-      border-color: var(--gray-200);
-      padding: 0;
-    }
-    .image-upload img {
-      max-width: 100%;
-      max-height: 300px;
-      border-radius: var(--radius);
-    }
-    .image-upload i {
-      font-size: 3rem;
-      color: var(--gray-400);
-      margin-bottom: 16px;
-      display: block;
-    }
-    .image-upload p {
-      color: var(--gray-600);
-      margin-bottom: 8px;
-    }
-    .image-upload small {
-      color: var(--gray-400);
-    }
-
-    /* Switch */
-    .switch {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: relative;
-      width: 52px;
-      height: 28px;
-      background: var(--gray-300);
-      border-radius: 14px;
-      transition: var(--transition);
-      cursor: pointer;
-    }
-    .slider::before {
-      content: '';
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 22px;
-      height: 22px;
-      background: white;
-      border-radius: 50%;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      transition: var(--transition);
-    }
-    input:checked + .slider { background: var(--accent); }
-    input:checked + .slider::before { transform: translateX(24px); }
-
-    /* ================================================================
-       RESPONSIVE
-       ================================================================ */
-    @media (max-width: 1024px) {
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .form-row { grid-template-columns: 1fr; }
-      .search-box { width: 200px; }
-    }
-    @media (max-width: 768px) {
-      .sidebar { transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
-      .main-content { margin-left: 0; }
-      .header { padding: 0 20px; }
-      .content { padding: 20px; }
-      .stats-grid { grid-template-columns: 1fr; }
-      .table-header { flex-direction: column; align-items: stretch; }
-      .search-box { width: 100%; }
-      th, td { padding: 12px 16px; }
-      .form-row { grid-template-columns: 1fr; }
-      .modal { margin: 12px; max-height: calc(100vh - 24px); }
-    }
-    @media (max-width: 480px) {
-      .login-container { padding: 32px 24px; }
-      .stat-value { font-size: 2rem; }
-      .header { padding: 0 16px; }
-      .content { padding: 16px; }
-    }
-
-    /* Print */
-    @media print {
-      .sidebar, .header, .btn-primary, .action-btns { display: none !important; }
-      .main-content { margin-left: 0; }
-      .table-container { border: none; }
-    }
-
-    /* Utility */
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-    .text-center { text-align: center; }
-    .text-danger { color: var(--danger); }
-    .text-success { color: var(--success); }
-    .text-muted { color: var(--gray-500); }
-    .d-none { display: none !important; }
-    .d-block { display: block !important; }
-    .d-flex { display: flex !important; }
-    .justify-between { justify-content: space-between !important; }
-    .align-center { align-items: center !important; }
-    .gap-2 { gap: 8px !important; }
-    .gap-4 { gap: 16px !important; }
-    .mt-4 { margin-top: 16px !important; }
-    .mb-4 { margin-bottom: 16px !important; }
-  </style>
+  <!-- Admin Styles -->
+  <link rel="stylesheet" href="/src/styles/admin.css">
+  <!-- Main Entry Point -->
+  <script type="module" src="/src/admin/main.ts"></script>
 </head>
 <body class="login-page" id="app">
   <!-- ================================================================
@@ -1201,9 +230,14 @@
         <section id="section-properties" class="settings-panel">
           <div class="section-header">
             <h2 class="section-title">Propiedades</h2>
-            <button class="btn-primary" id="btnNewProperty">
-              <i class="fas fa-plus"></i> Nueva Propiedad
-            </button>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-secondary" id="btnImportExport">
+                <i class="fas fa-file-import"></i> Importar / Exportar
+              </button>
+              <button class="btn-primary" id="btnNewProperty">
+                <i class="fas fa-plus"></i> Nueva Propiedad
+              </button>
+            </div>
           </div>
           <div class="table-container">
             <div class="table-header">
@@ -1899,93 +933,192 @@
      ================================================================ -->
   <!-- Property Modal -->
   <div class="modal-overlay" id="propertyModal" role="dialog" aria-modal="true" aria-labelledby="propertyModalTitle">
-    <div class="modal">
+    <div class="modal" style="max-width: 980px;">
       <div class="modal-header">
         <h2 class="modal-title" id="propertyModalTitle">Nueva Propiedad</h2>
         <button class="modal-close" id="closePropertyModal" aria-label="Cerrar">&times;</button>
       </div>
+      
+      <!-- Property Modal Tabs -->
+      <div class="modal-tabs" role="tablist">
+        <button class="modal-tab active" data-tab="basic" role="tab" aria-selected="true"><i class="fas fa-home"></i> Básico</button>
+        <button class="modal-tab" data-tab="details" role="tab" aria-selected="false"><i class="fas fa-list"></i> Detalles</button>
+        <button class="modal-tab" data-tab="images" role="tab" aria-selected="false"><i class="fas fa-images"></i> Imágenes</button>
+        <button class="modal-tab" data-tab="seo" role="tab" aria-selected="false"><i class="fas fa-search"></i> SEO</button>
+        <button class="modal-tab" data-tab="mercadolibre" role="tab" aria-selected="false"><i class="fas fa-store"></i> MercadoLibre</button>
+        <button class="modal-tab" data-tab="history" role="tab" aria-selected="false"><i class="fas fa-history"></i> Historial</button>
+      </div>
+      
       <form id="propertyForm" class="modal-body">
         <input type="hidden" id="propertyId">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Título *</label>
-            <input type="text" id="propTitle" required placeholder="Ej: Ático dúplex con terraza">
+        
+        <!-- Tab: Básico -->
+        <div class="modal-tabpanel active" id="panel-basic" role="tabpanel">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Título *</label>
+              <input type="text" id="propTitle" required placeholder="Ej: Ático dúplex con terraza">
+            </div>
+            <div class="form-group">
+              <label>Precio *</label>
+              <input type="number" id="propPrice" required placeholder="425000" min="0" step="1000">
+            </div>
           </div>
-          <div class="form-group">
-            <label>Precio *</label>
-            <input type="number" id="propPrice" required placeholder="425000" min="0" step="1000">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Moneda</label>
+              <select id="propCurrency">
+                <option value="ARS">ARS (Pesos)</option>
+                <option value="USD">USD (Dólares)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Operación *</label>
+              <select id="propOperation" required>
+                <option value="venta">Venta</option>
+                <option value="alquiler">Alquiler</option>
+              </select>
+            </div>
           </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Moneda</label>
-            <select id="propCurrency">
-              <option value="ARS">ARS (Pesos)</option>
-              <option value="USD">USD (Dólares)</option>
-            </select>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ubicación *</label>
+              <input type="text" id="propLocation" required placeholder="Córdoba">
+            </div>
+            <div class="form-group">
+              <label>Tipo *</label>
+              <select id="propType" required>
+                <option value="piso">Piso/Apartamento</option>
+                <option value="chalet">Chalet/Casa</option>
+                <option value="atico">Ático</option>
+                <option value="local">Local/Oficina</option>
+                <option value="terreno">Terreno/Solar</option>
+              </select>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Operación *</label>
-            <select id="propOperation" required>
-              <option value="venta">Venta</option>
-              <option value="alquiler">Alquiler</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Ubicación *</label>
-            <input type="text" id="propLocation" required placeholder="Córdoba">
-          </div>
-          <div class="form-group">
-            <label>Tipo *</label>
-            <select id="propType" required>
-              <option value="piso">Piso/Apartamento</option>
-              <option value="chalet">Chalet/Casa</option>
-              <option value="atico">Ático</option>
-              <option value="local">Local/Oficina</option>
-              <option value="terreno">Terreno/Solar</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Habitaciones</label><input type="number" id="propRooms" placeholder="3" min="0"></div>
-          <div class="form-group"><label>Baños</label><input type="number" id="propBaths" placeholder="2" min="0"></div>
-          <div class="form-group"><label>m²</label><input type="number" id="propM2" placeholder="95" min="0"></div>
-          <div class="form-group"><label>Antigüedad</label><select id="propAge"><option value="nuevo">Nuevo</option><option value="reformado" selected>Reformado</option><option value="viejo">Viejo</option></select></div>
-        </div>
-        <div class="form-group full">
-          <label>Destacada</label>
-          <div class="switch">
-            <input type="checkbox" id="propFeatured">
-            <span class="slider"></span>
-            <label style="cursor: pointer; font-weight: 500;">Marcar como destacada</label>
+          <div class="form-group full">
+            <label>Destacada</label>
+            <div class="switch">
+              <input type="checkbox" id="propFeatured">
+              <span class="slider"></span>
+              <label style="cursor: pointer; font-weight: 500;">Marcar como destacada</label>
+            </div>
           </div>
         </div>
-        <div class="form-group full">
-          <label>Características (separadas por coma)</label>
-          <input type="text" id="propFeatures" placeholder="ascensor, terraza, garaje, piscina, quincho">
-        </div>
-        <div class="form-group full">
-          <label>Descripción</label>
-          <textarea id="propDescription" rows="4" placeholder="Descripción detallada de la propiedad..."></textarea>
-        </div>
-        <div class="form-group full">
-          <label>Imágenes (máximo 15)</label>
-          <div class="image-upload" id="propImageUpload">
-            <input type="file" id="propImages" accept="image/*" multiple style="display: none;">
-            <i class="fas fa-cloud-upload-alt"></i>
-            <p>Click o arrastra para subir imágenes</p>
-            <small>JPG, PNG, WebP · Máx. 10MB cada una</small>
+        
+        <!-- Tab: Detalles -->
+        <div class="modal-tabpanel" id="panel-details" role="tabpanel" hidden>
+          <div class="form-row">
+            <div class="form-group"><label>Habitaciones</label><input type="number" id="propRooms" placeholder="3" min="0"></div>
+            <div class="form-group"><label>Baños</label><input type="number" id="propBaths" placeholder="2" min="0"></div>
+            <div class="form-group"><label>m²</label><input type="number" id="propM2" placeholder="95" min="0"></div>
+            <div class="form-group"><label>Antigüedad</label><select id="propAge"><option value="nuevo">Nuevo</option><option value="reformado" selected>Reformado</option><option value="viejo">Viejo</option></select></div>
           </div>
-          <div id="propImagesPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;"></div>
+          <div class="form-group full">
+            <label>Características (separadas por coma)</label>
+            <input type="text" id="propFeatures" placeholder="ascensor, terraza, garaje, piscina, quincho">
+          </div>
+          <div class="form-group full">
+            <label>Descripción</label>
+            <textarea id="propDescription" rows="6" placeholder="Descripción detallada de la propiedad..."></textarea>
+          </div>
+        </div>
+        
+        <!-- Tab: Imágenes -->
+        <div class="modal-tabpanel" id="panel-images" role="tabpanel" hidden>
+          <div class="form-group full">
+            <label>Imágenes (máximo 15, arrastra para reordenar)</label>
+            <div class="image-upload" id="propImageUpload">
+              <input type="file" id="propImages" accept="image/*" multiple style="display: none;">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <p>Click o arrastra para subir imágenes</p>
+              <small>JPG, PNG, WebP · Máx. 10MB cada una</small>
+            </div>
+            <div id="propImagesPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;"></div>
+          </div>
+        </div>
+        
+        <!-- Tab: SEO -->
+        <div class="modal-tabpanel" id="panel-seo" role="tabpanel" hidden>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Meta Title</label>
+              <input type="text" id="propSeoTitle" placeholder="Título para buscadores (máx. 60 chars)" maxlength="60">
+            </div>
+            <div class="form-group">
+              <label>Meta Description</label>
+              <input type="text" id="propSeoDesc" placeholder="Descripción para buscadores (máx. 160 chars)" maxlength="160">
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Keywords (separadas por coma)</label>
+            <input type="text" id="propSeoKeywords" placeholder="piso, venta, córdoba, ático, terraza">
+          </div>
+          <div class="form-group full">
+            <label>OG Image URL</label>
+            <input type="url" id="propSeoOgImage" placeholder="https://...">
+          </div>
+          <div class="form-group full">
+            <label>Schema.org JSON-LD (opcional)</label>
+            <textarea id="propSeoSchema" rows="6" placeholder='{"@context":"https://schema.org","@type":"RealEstateListing",...}'></textarea>
+          </div>
+        </div>
+        
+        <!-- Tab: MercadoLibre -->
+        <div class="modal-tabpanel" id="panel-mercadolibre" role="tabpanel" hidden>
+          <div class="form-group full">
+            <div class="switch">
+              <input type="checkbox" id="propMlEnabled">
+              <span class="slider"></span>
+              <label style="cursor: pointer; font-weight: 500;">Sincronizar con MercadoLibre</label>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>ML Item ID</label>
+              <input type="text" id="propMlItemId" placeholder="MLA123456789" readonly style="background: var(--gray-100);">
+            </div>
+            <div class="form-group">
+              <label>Estado en ML</label>
+              <select id="propMlStatus" disabled>
+                <option value="draft">Borrador</option>
+                <option value="published">Publicada</option>
+                <option value="paused">Pausada</option>
+                <option value="closed">Cerrada</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Última sincronización</label>
+            <input type="text" id="propMlLastSync" readonly style="background: var(--gray-100);" placeholder="Nunca sincronizada">
+          </div>
+          <div class="form-group full" style="margin-top: 16px;">
+            <button type="button" class="btn-secondary" id="btnSyncPropertyML" style="display:none;">
+              <i class="fas fa-sync"></i> Sincronizar ahora
+            </button>
+            <button type="button" class="btn-primary" id="btnPublishPropertyML" style="display:none;">
+              <i class="fas fa-upload"></i> Publicar en MercadoLibre
+            </button>
+          </div>
+        </div>
+        
+        <!-- Tab: Historial -->
+        <div class="modal-tabpanel" id="panel-history" role="tabpanel" hidden>
+          <div class="form-group full">
+            <label>Historial de cambios</label>
+            <div id="propertyHistoryLog" style="max-height:400px;overflow-y:auto;">
+              <div class="empty-state" style="padding:40px 20px;">
+                <i class="fas fa-history"></i>
+                <h4>No hay historial disponible</h4>
+                <p>El historial de cambios aparecerá aquí después de guardar la propiedad.</p>
+              </div>
+            </div>
+            <small class="text-muted">Los cambios se registran automáticamente al guardar la propiedad.</small>
+          </div>
         </div>
       </form>
       <div class="modal-footer">
         <button type="button" class="btn-secondary" id="cancelPropertyModal">Cancelar</button>
-        <button type="button" class="btn-secondary" id="btnSyncPropertyML" style="display:none;">
-          <i class="fas fa-store"></i> Sincronizar con ML
-        </button>
         <button type="submit" form="propertyForm" class="btn-primary" id="savePropertyBtn">
           <i class="fas fa-save"></i> Guardar
         </button>
@@ -2064,6 +1197,6 @@
   <!-- Toast Container -->
   <div id="toastContainer" style="position: fixed; bottom: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 12px;"></div>
 
-  <script type="module" src="/src/admin-app.ts"></script>
+  <script type="module" src="/src/admin/main.ts"></script>
 </body>
 </html>

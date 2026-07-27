@@ -1,0 +1,156 @@
+# ================================================================
+# CI/CD PIPELINE - Bienenhaus Propiedades
+# ================================================================
+# Corre en: push a main, PRs a main, y manual (workflow_dispatch)
+# Jobs: test → build → audit → deploy (solo main)
+# Lint & TypeCheck: solo local (no bloquean CI)
+# ================================================================
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.x'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ================================================================
+  # UNIT TESTS
+  # ================================================================
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Vitest
+        run: npm run test
+
+  # ================================================================
+  # BUILD
+  # ================================================================
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_CLOUDINARY_CLOUD_NAME: ${{ secrets.VITE_CLOUDINARY_CLOUD_NAME }}
+          VITE_WHATSAPP_NUMBER: ${{ secrets.VITE_WHATSAPP_NUMBER }}
+          VITE_ADMIN_EMAIL: ${{ secrets.VITE_ADMIN_EMAIL }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
+
+  # ================================================================
+  # SECURITY AUDIT
+  # ================================================================
+  audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Check for vulnerable dependencies
+        run: |
+          if npm audit --audit-level=high --json | jq -e '.metadata.vulnerabilities.high > 0 or .metadata.vulnerabilities.critical > 0' > /dev/null; then
+            echo "❌ High/Critical vulnerabilities found"
+            exit 1
+          else
+            echo "✅ No high/critical vulnerabilities"
+          fi
+
+  # ================================================================
+  # DEPLOY TO GITHUB PAGES (only main branch)
+  # ================================================================
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [build, audit]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

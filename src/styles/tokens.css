@@ -1,0 +1,198 @@
+/* ================================================================
+   DESIGN TOKENS - Shared Design System
+   Usado por landing (global.css) + admin (admin.css)
+   ================================================================ */
+:root {
+  /* Brand Colors - Azul Bienenhaus */
+  --color-brand-950: #030812;
+  --color-brand-900: #071428;
+  --color-brand-800: #0b2340;
+  --color-brand-700: #0f3460;
+  --color-brand-600: #164a8a;
+  --color-brand-500: #1f6ed4;
+  --color-brand-400: #3b82f6;
+  --color-brand-300: #60a5fa;
+  --color-brand-200: #93c5fd;
+  --color-brand-100: #dbeafe;
+  --color-brand-50:  #eff6ff;
+
+  /* Neutral Warm - No grises fríos */
+  --color-neutral-950: #0a0a0b;
+  --color-neutral-900: #131316;
+  --color-neutral-800: #1e1e22;
+  --color-neutral-700: #2a2a2f;
+  --color-neutral-600: #3a3a40;
+  --color-neutral-500: #52525b;
+  --color-neutral-400: #71717a;
+  --color-neutral-300: #a1a1aa;
+  --color-neutral-200: #d4d4d8;
+  --color-neutral-100: #e4e4e7;
+  --color-neutral-50:  #fafafa;
+
+  /* Semantic Aliases (legacy compat) */
+  --primary: var(--color-brand-800);
+  --primary-light: var(--color-brand-700);
+  --primary-dark: var(--color-brand-900);
+  --accent: var(--color-brand-500);
+  --accent-hover: var(--color-brand-600);
+  --accent-light: var(--color-brand-100);
+  --success: #0d7a5f;
+  --warning: #d97706;
+  --danger: #dc2626;
+
+  --gray-50: var(--color-neutral-50);
+  --gray-100: var(--color-neutral-100);
+  --gray-200: var(--color-neutral-200);
+  --gray-300: var(--color-neutral-300);
+  --gray-400: var(--color-neutral-400);
+  --gray-500: var(--color-neutral-500);
+  --gray-600: var(--color-neutral-600);
+  --gray-700: var(--color-neutral-700);
+  --gray-800: var(--color-neutral-800);
+  --gray-900: var(--color-neutral-900);
+
+  /* Surface & Borders */
+  --surface-1: var(--color-neutral-950);
+  --surface-2: var(--color-neutral-900);
+  --surface-3: var(--color-neutral-800);
+  --surface-elevated: rgba(30, 41, 59, 0.8);
+  --border-default: var(--color-neutral-700);
+  --border-hover: var(--color-neutral-600);
+  --border-focus: var(--accent);
+
+  /* Radius */
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
+  --shadow-xl: 0 20px 60px rgba(0,0,0,0.10);
+  --shadow-glass: 0 8px 32px rgba(0,0,0,0.37), inset 0 1px 0 rgba(255,255,255,0.05);
+  --shadow-glass-lg: 0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+  --shadow-glow: 0 0 40px rgba(59,130,246,0.15);
+  --shadow-glow-lg: 0 0 80px rgba(59,130,246,0.25), 0 0 120px rgba(251,191,36,0.1);
+  --shadow-inner-glow: inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.2);
+
+  /* Transitions */
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Z-Index */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 1000;
+  --z-toast: 1100;
+  --z-tooltip: 1200;
+
+  /* Layout */
+  --sidebar-width: 280px;
+  --header-height: 70px;
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Animations */
+  --animation-fade-in: fadeIn 0.3s ease-out;
+  --animation-slide-up: slideUp 0.4s ease-out;
+  --animation-slide-down: slideDown 0.3s ease-out;
+  --animation-scale-in: scaleIn 0.2s ease-out;
+  --animation-pulse: pulse 2s ease-in-out infinite;
+  --animation-spin: spin 1s linear infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ================================================================
+   RESET BASE
+   ================================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--gray-50);
+  color: var(--gray-900);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400);
+}

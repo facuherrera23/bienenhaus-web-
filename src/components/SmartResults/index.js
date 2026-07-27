@@ -1,0 +1,1 @@
+export { default as SmartResults } from './SmartResults.jsx';

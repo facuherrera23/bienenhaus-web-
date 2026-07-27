@@ -1,0 +1,542 @@
+/* ================================================================
+   CONVERSION UX - CTA, WhatsApp, Price Alerts, Sticky CTA
+   ================================================================ */
+
+.conversion-ux__sticky-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-white);
+  border-top: 1px solid var(--color-gray-200);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  gap: var(--space-3);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  z-index: var(--z-fixed);
+  animation: slideUp var(--transition-normal) ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.conversion-ux__sticky-cta .btn {
+  flex: 1;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+@media (max-width: 768px) {
+  .conversion-ux__sticky-cta {
+    display: flex;
+  }
+  
+  .property-grid {
+    padding-bottom: 100px;
+  }
+}
+
+/* ================================================================
+   WHATSAPP MODAL
+   ================================================================ */
+
+.conversion-ux__modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  animation: fadeIn var(--transition-fast) ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.conversion-ux__modal {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  max-width: 400px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl);
+  animation: slideInUp var(--transition-normal) ease-out;
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.conversion-ux__modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.conversion-ux__modal-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.conversion-ux__modal-close {
+  background: none;
+  border: none;
+  font-size: var(--font-size-2xl);
+  color: var(--color-gray-400);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+}
+
+.conversion-ux__modal-close:hover {
+  color: var(--color-gray-700);
+  background: var(--color-gray-100);
+}
+
+.conversion-ux__modal-context {
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.conversion-ux__modal-form {
+  padding: var(--space-6);
+}
+
+.conversion-ux__form-group {
+  margin-bottom: var(--space-4);
+}
+
+.conversion-ux__form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.conversion-ux__label {
+  display: block;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  margin-bottom: var(--space-2);
+}
+
+.conversion-ux__label .required {
+  color: var(--color-danger);
+  margin-left: var(--space-1);
+}
+
+.conversion-ux__modal-form input,
+.conversion-ux__modal-form select,
+.conversion-ux__modal-form textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  transition: all var(--transition-fast);
+  background: var(--color-gray-50);
+  color: var(--color-gray-900);
+}
+
+.conversion-ux__modal-form input:focus,
+.conversion-ux__modal-form select:focus,
+.conversion-ux__modal-form textarea:focus {
+  border-color: var(--color-accent);
+  outline: none;
+  background: var(--color-white);
+  box-shadow: 0 0 0 3px rgba(31, 110, 212, 0.08);
+}
+
+.conversion-ux__modal-form textarea {
+  border-radius: var(--radius-lg);
+  min-height: 120px;
+  resize: vertical;
+}
+
+.conversion-ux__modal-form input::placeholder,
+.conversion-ux__modal-form textarea::placeholder {
+  color: var(--color-gray-400);
+}
+
+.conversion-ux__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.conversion-ux__privacy {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  text-align: center;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.conversion-ux__privacy i {
+  color: var(--color-success);
+}
+
+/* Success State */
+.conversion-ux__modal-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-8) var(--space-6);
+}
+
+.conversion-ux__success-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--color-success-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+  animation: scaleIn var(--transition-normal) ease-out;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.conversion-ux__success-icon i {
+  font-size: 2.5rem;
+  color: var(--color-success);
+}
+
+.conversion-ux__modal-success h3 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  margin: 0 0 var(--space-2);
+}
+
+.conversion-ux__modal-success p {
+  color: var(--color-gray-600);
+  margin: 0;
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+}
+
+/* Error State */
+.conversion-ux__error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-danger-light);
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-4);
+  animation: slideIn var(--transition-fast) ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ================================================================
+   PRICE ALERT MODAL
+   ================================================================ */
+
+.conversion-ux__modal--alert {
+  max-width: 480px;
+}
+
+.conversion-ux__modal-context {
+  margin-bottom: var(--space-6);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  padding: var(--space-4);
+  background: var(--color-accent-light);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.conversion-ux__modal-form {
+  padding: var(--space-6);
+}
+
+.conversion-ux__modal-form .conversion-ux__form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 640px) {
+  .conversion-ux__modal-form .conversion-ux__form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.conversion-ux__form-group {
+  margin-bottom: var(--space-4);
+}
+
+.conversion-ux__label {
+  display: block;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  margin-bottom: var(--space-2);
+}
+
+.conversion-ux__label .required {
+  color: var(--color-danger);
+  margin-left: var(--space-1);
+}
+
+.conversion-ux__modal-form input,
+.conversion-ux__modal-form select,
+.conversion-ux__modal-form textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  transition: all var(--transition-fast);
+  background: var(--color-gray-50);
+  color: var(--color-gray-900);
+}
+
+.conversion-ux__modal-form input:focus,
+.conversion-ux__modal-form select:focus,
+.conversion-ux__modal-form textarea:focus {
+  border-color: var(--color-accent);
+  outline: none;
+  background: var(--color-white);
+  box-shadow: 0 0 0 3px rgba(31, 110, 212, 0.08);
+}
+
+.conversion-ux__modal-form input::placeholder,
+.conversion-ux__modal-form textarea::placeholder {
+  color: var(--color-gray-400);
+}
+
+.conversion-ux__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.conversion-ux__privacy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  text-align: center;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-gray-200);
+  flex-wrap: wrap;
+}
+
+/* ================================================================
+   FLOATING WHATSAPP BUTTON
+   ================================================================ */
+
+.conversion-ux__floating-whatsapp {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: var(--z-fixed);
+}
+
+.conversion-ux__floating-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #25D366;
+  color: var(--color-white);
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-normal);
+  position: relative;
+  animation: pulseWhatsApp 2s infinite;
+}
+
+@keyframes pulseWhatsApp {
+  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+
+.conversion-ux__floating-btn:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-xl);
+}
+
+.conversion-ux__floating-btn:focus-visible {
+  outline: 3px solid #1da851;
+  outline-offset: 3px;
+}
+
+.conversion-ux__floating-tooltip {
+  position: absolute;
+  right: 70px;
+  bottom: 50%;
+  transform: translateY(50%);
+  background: var(--color-gray-900);
+  color: var(--color-white);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(50%) translateX(10px);
+  transition: all var(--transition-fast);
+  pointer-events: none;
+}
+
+.conversion-ux__floating-btn:hover .conversion-ux__floating-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(50%) translateX(0);
+}
+
+.conversion-ux__pulse {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  background: var(--color-danger);
+  border-radius: 50%;
+  border: 2px solid var(--color-white);
+  animation: pulseDot 1.5s infinite;
+}
+
+@keyframes pulseDot {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .conversion-ux__floating-btn,
+  .conversion-ux__pulse {
+    animation: none !important;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .conversion-ux__floating-whatsapp {
+    bottom: var(--space-4);
+    right: var(--space-4);
+  }
+  
+  .conversion-ux__floating-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+  
+  .conversion-ux__modal {
+    max-height: 85vh;
+    margin: var(--space-4);
+  }
+  
+  .conversion-ux__floating-tooltip {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .conversion-ux__modal-form .conversion-ux__form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .conversion-ux__modal-actions {
+    flex-direction: column-reverse;
+  }
+  
+  .conversion-ux__modal-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* High Contrast */
+@media (prefers-contrast: high) {
+  .conversion-ux__floating-btn {
+    border: 2px solid var(--color-white);
+  }
+  
+  .conversion-ux__modal {
+    border: 2px solid var(--color-gray-900);
+  }
+}
+
+/* Focus Visible */
+.conversion-ux__modal-close:focus-visible,
+.conversion-ux__modal-close:focus,
+.conversion-ux__floating-btn:focus-visible,
+.conversion-ux__modal-form input:focus-visible,
+.conversion-ux__modal-form select:focus-visible,
+.conversion-ux__modal-form textarea:focus-visible,
+.conversion-ux__modal-form button:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Print */
+@media print {
+  .conversion-ux__sticky-cta,
+  .conversion-ux__floating-whatsapp,
+  .conversion-ux__modal-overlay,
+  .conversion-ux__modal {
+    display: none !important;
+  }
+}

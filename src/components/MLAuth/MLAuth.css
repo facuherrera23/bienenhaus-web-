@@ -1,0 +1,111 @@
+/* ================================================================
+   ML AUTH COMPONENT STYLES
+   ================================================================ */
+
+.ml-auth {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ml-auth__connecting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-gray-600);
+}
+
+.ml-auth__connecting .spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-gray-200);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ml-auth__error {
+  background: var(--color-danger-light);
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+}
+
+.ml-auth__connected {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-success-light);
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius-lg);
+}
+
+.ml-auth__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.ml-auth__status .fa-check-circle {
+  font-size: 1.25rem;
+}
+
+.ml-auth__expires {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  margin: 0;
+}
+
+.ml-auth__connect-btn {
+  width: 100%;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+}
+
+.ml-auth__connect-btn .fa-mercadolibre {
+  font-size: 1.25rem;
+}
+
+.ml-auth__error {
+  background: var(--color-danger-light);
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+}
+
+.ml-auth .btn-danger {
+  width: 100%;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .ml-auth__connecting .spinner {
+    animation: none;
+  }
+}
+
+/* High contrast */
+@media (prefers-contrast: high) {
+  .ml-auth__connected {
+    border-width: 2px;
+  }
+}
