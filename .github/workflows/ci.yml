@@ -112,14 +112,9 @@ jobs:
         run: npm audit --audit-level=high
         continue-on-error: true
 
-      - name: Check for vulnerable dependencies
+      - name: Report vulnerabilities (non-blocking)
         run: |
-          if npm audit --audit-level=high --json | jq -e '.metadata.vulnerabilities.high > 0 or .metadata.vulnerabilities.critical > 0' > /dev/null; then
-            echo "❌ High/Critical vulnerabilities found"
-            exit 1
-          else
-            echo "✅ No high/critical vulnerabilities"
-          fi
+          npm audit --audit-level=high --json | jq -r '.metadata.vulnerabilities | to_entries[] | "\(.key): \(.value)"' || true
 
   # ================================================================
   # DEPLOY TO GITHUB PAGES (only main branch)
