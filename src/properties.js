@@ -12,7 +12,7 @@ export let propiedadesData = [];
 export let paginaActual = 1;
 export const itemsPorPagina = 6;
 export let propiedadActual = null;
-let propEditandoId = null;
+const propEditandoId = null;
 
 // Comparador de propiedades (máx 3)
 let propiedadesComparar = [];
@@ -475,7 +475,7 @@ export function getFavoritos() {
 }
 export function setFavoritos(f) { localStorage.setItem('favoritosBienenhaus', JSON.stringify(f)); }
 export function toggleFavorito(id) {
-  let favs = getFavoritos();
+  const favs = getFavoritos();
   const idx = favs.indexOf(id);
   idx > -1 ? favs.splice(idx, 1) : favs.push(id);
   setFavoritos(favs);

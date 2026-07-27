@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import preact from '@preact/preset-vite';
 
 export default defineConfig({
   base: '/',
@@ -15,14 +16,14 @@ export default defineConfig({
     rollupOptions: {
       input: { main: './index.html', admin: './admin.html' },
       output: {
-        manualChunks: {
-          vendor: ['@supabase/supabase-js', 'axios'],
-          'admin-vendor': ['cropperjs', 'xlsx'],
-          'admin-properties': ['./src/admin/features/properties/index.ts', './src/admin/shared/utils.ts'],
-          'admin-agents': ['./src/admin/features/agents/index.ts'],
-          'admin-content': ['./src/admin/features/content/index.ts'],
-          'admin-settings': ['./src/admin/features/settings/index.ts'],
-          'admin-mercadoLibre': ['./src/admin/features/mercadoLibre/index.ts']
+        manualChunks: (id) => {
+          if (id.includes('@supabase/supabase-js') || id.includes('axios')) return 'vendor';
+          if (id.includes('cropperjs') || id.includes('xlsx')) return 'admin-vendor';
+          if (id.includes('/admin/features/properties/') || id.includes('/admin/shared/utils.ts')) return 'admin-properties';
+          if (id.includes('/admin/features/agents/')) return 'admin-agents';
+          if (id.includes('/admin/features/content/')) return 'admin-content';
+          if (id.includes('/admin/features/settings/')) return 'admin-settings';
+          if (id.includes('/admin/features/mercadoLibre/')) return 'admin-mercadoLibre';
         }
       }
     }
@@ -30,6 +31,7 @@ export default defineConfig({
   server: { port: 3000, open: true, fs: { strict: false } },
   appType: 'spa',
   plugins: [
+    preact(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'robots.txt', 'og-image.svg'],

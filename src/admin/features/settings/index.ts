@@ -2,8 +2,8 @@
 // ADMIN SETTINGS FEATURE
 // ================================================================
 import { supabase } from '../../../supabase.js';
-import { CONFIG } from '../../../config.js';
 import { showToast } from '../../shared/utils.js';
+import { loadProperties, propertiesCache } from '../properties/index.js';
 
 export async function loadSettings(): Promise<void> {
   try {
@@ -12,7 +12,7 @@ export async function loadSettings(): Promise<void> {
   } catch (e) { console.warn('Settings load:', e); }
 }
 
-function updateMercadoLibreUI(creds: any): void {
+function updateMercadoLibreUI(creds: { ml_user_id: string; expires_at?: string } | null): void {
   const statusEl = document.getElementById('mlStatus');
   const connectBtn = document.getElementById('btnConnectML');
   const importBtn = document.getElementById('btnImportML');

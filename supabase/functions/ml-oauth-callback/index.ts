@@ -1,146 +1,167 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+// supabase/functions/ml-oauth-callback/index.ts
+// ML OAuth Callback - Handles ML redirect with PKCE verification
+
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-}
-
-const ML_AUTH_URL = "https://auth.mercadolibre.com.ar/authorization"
-const ML_TOKEN_URL = "https://api.mercadolibre.com/oauth/token"
-
-interface TokenResponse {
-  access_token: string
-  refresh_token: string
-  expires_in: number
-  token_type: string
-  scope: string
-  user_id: number
-}
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
-
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
-
-  const url = new URL(req.url)
-  const code = url.searchParams.get('code')
-  const state = url.searchParams.get('state')
-  const error = url.searchParams.get('error')
-
-  const storedState = req.headers.get('x-ml-state') || ''
-  const sessionState = url.searchParams.get('state') || ''
-
-  if (error) {
-    return new Response(
-      JSON.stringify({ error: `ML Auth error: ${error}` }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
-
-  if (!code) {
-    // Step 1: Initiate OAuth - redirect to ML
-    const clientId = Deno.env.get('ML_CLIENT_ID')
-    const redirectUri = Deno.env.get('ML_REDIRECT_URI')
-    const state = crypto.randomUUID()
-
-    if (!clientId || !redirectUri) {
-      return new Response(
-        JSON.stringify({ error: 'Missing ML_CLIENT_ID or ML_REDIRECT_URI' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const authUrl = `${ML_AUTH_URL}?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`
-
-    // Store state in a cookie for CSRF validation on callback
-    const headers = new Headers(corsHeaders)
-    headers.set('Set-Cookie', `ml_oauth_state=${state}; HttpOnly; Secure; SameSite=Lax; Max-Age=600; Path=/`)
-    headers.set('Content-Type', 'application/json')
-
-    return new Response(
-      JSON.stringify({ authUrl, state }),
-      { status: 200, headers }
-    )
-  }
-
-  // Step 2: Handle callback with code
-  if (storedState !== sessionState) {
-    return new Response(
-      JSON.stringify({ error: 'Invalid OAuth state (CSRF)' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
-
-  const clientId = Deno.env.get('ML_CLIENT_ID')
-  const clientSecret = Deno.env.get('ML_CLIENT_SECRET')
-  const redirectUri = Deno.env.get('ML_REDIRECT_URI')
-
-  if (!clientId || !clientSecret || !redirectUri) {
-    return new Response(
-      JSON.stringify({ error: 'Missing ML credentials' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Exchange code for tokens
-    const tokenRes = await fetch(ML_TOKEN_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        client_id: clientId,
-        client_secret: clientSecret,
-        redirect_uri: redirectUri,
-        code,
-      }),
-    })
-
-    if (!tokenRes.ok) {
-      const err = await tokenRes.json()
-      throw new Error(`Token exchange failed: ${err.error} - ${err.error_description}`)
+    const { code, state } = await req.json();
+    
+    if (!code || !state) {
+      return new Response(JSON.stringify({ error: 'Missing code or state' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
-    const tokens: TokenResponse = await tokenRes.json()
-    const expiresAt = new Date(Date.now() + tokens.expires_in * 1000)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Store credentials in DB
-    const { error: upsertError } = await supabase
-      .from('ml_credenciales')
-      .upsert({
-        ml_user_id: tokens.user_id,
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expires_at: expiresAt.toISOString(),
-        scope: tokens.scope,
-      }, { onConflict: 'ml_user_id' })
+    // Retrieve PKCE from database
+    const { data: pkceData, error: pkceError } = await supabase
+      .from('ml_oauth_pkce')
+      .select('code_verifier, user_id')
+      .eq('state', state)
+      .single();
 
-    if (upsertError) throw upsertError
+    if (pkceError || !pkceData) {
+      console.error('PKCE not found or expired:', pkceError);
+      return new Response(JSON.stringify({ error: 'Estado OAuth inválido o expirado' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
-    // Clear state cookie
-    const headers = new Headers(corsHeaders)
-    headers.set('Set-Cookie', 'ml_oauth_state=; HttpOnly; Secure; SameSite=Lax; Max-Age=0; Path=/')
+    const { code_verifier, user_id } = pkceData;
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        user_id: tokens.user_id,
-        expires_at: expiresAt.toISOString()
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  } catch (err) {
-    console.error('ML OAuth callback error:', err)
-    return new Response(
-      JSON.stringify({ error: err.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    // Exchange code for tokens
+    const mlAppId = Deno.env.get('ML_APP_ID');
+    const mlSecret = Deno.env.get('ML_SECRET');
+    const mlRedirectUri = Deno.env.get('ML_REDIRECT_URI');
+
+    const tokenResponse = await fetch('https://api.mercadolibre.com/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: mlAppId!,
+        client_secret: mlSecret!,
+        code,
+        code_verifier,
+        redirect_uri: mlRedirectUri!
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error('ML Token error:', errorText);
+      return new Response(JSON.stringify({ error: 'Error intercambiando código por tokens' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const tokens = await tokenResponse.json();
+
+    // Get ML user info
+    const userResponse = await fetch('https://api.mercadolibre.com/users/me', {
+      headers: {
+        'Authorization': `Bearer ${tokens.access_token}`
+      }
+    });
+
+    if (!userResponse.ok) {
+      return new Response(JSON.stringify({ error: 'Error obteniendo usuario ML' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const mlUser = await userResponse.json();
+
+    // Store tokens and user info
+    const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
+    
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        ml_connected: true,
+        ml_user_id: mlUser.id.toString(),
+        ml_access_token: tokens.access_token,
+        ml_refresh_token: tokens.refresh_token,
+        ml_token_expires_at: expiresAt,
+        ml_token_type: tokens.token_type,
+        ml_scope: tokens.scope
+      })
+      .eq('id', user_id);
+
+    if (updateError) {
+      console.error('Profile update error:', updateError);
+      return new Response(JSON.stringify({ error: 'Error guardando conexión' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Clean up PKCE
+    await supabase.from('ml_oauth_pkce').delete().eq('state', state);
+
+    return new Response(JSON.stringify({
+      connected: true,
+      user_id: mlUser.id.toString(),
+      expires_at: expiresAt
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error('ML OAuth callback error:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
-})
+});
+
+// PKCE Helpers
+function generateCodeVerifier() {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return base64urlencode(array);
+}
+
+async function generateCodeChallenge(verifier) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(verifier);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return base64urlencode(new Uint8Array(digest));
+}
+
+function generateState() {
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  return base64urlencode(array);
+}
+
+function base64urlencode(buffer) {
+  return btoa(String.fromCharCode(...buffer))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+}

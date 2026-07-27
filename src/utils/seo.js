@@ -134,9 +134,8 @@ export function generateJSONLD(type, data) {
       numberOfRooms: data.numberOfRooms,
       numberOfBathrooms: data.numberOfBathrooms,
       petsAllowed: data.petsAllowed
-    },
-    
-    BreadcrumbList: (breadcrumbs) => ({
+    }),
+    Organization: (data) => ({
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: breadcrumbs.map((crumb, index) => ({

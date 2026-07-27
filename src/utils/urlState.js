@@ -3,12 +3,6 @@
  * Handles: parsing, serialization, diffing, active filter detection
  */
 
-import { FILTER_DEFAULTS } from '../config.js';
-
-/**
- * Default filter configuration with metadata
- * @type {Object}
- */
 export const FILTER_DEFAULTS = {
   // Main filters
   operacion: 'ambos',           // 'venta' | 'alquiler' | 'ambos'

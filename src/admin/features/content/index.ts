@@ -2,18 +2,24 @@
 // ADMIN CONTENT FEATURE - Gestión de textos del sitio
 // ================================================================
 import { supabase } from '../../../supabase.js';
-import { showToast } from '../shared/utils.js';
 
-let contentCache: Record<string, any> = {};
+const contentCache: Record<string, any> = {};
+
+export function getContentCache(): Record<string, any> { return contentCache; }
+export function setContentCache(newCache: Record<string, any>): void {
+  Object.keys(contentCache).forEach(k => delete contentCache[k]);
+  Object.assign(contentCache, newCache);
+}
+export function clearContentCache(): void { Object.keys(contentCache).forEach(k => delete contentCache[k]); }
 
 function parsePipeArray(value: string, fields: string[]): Record<string, string>[] {
   if (!value) return [];
   return value.split('\n')
     .filter(line => line.trim())
-    .map(line => {
+    .map((line: string) => {
       const parts = line.split('|');
       const obj: Record<string, string> = {};
-      fields.forEach((field, i) => { obj[field] = parts[i]?.trim() || ''; });
+      fields.forEach((field: string, i: number) => { obj[field] = parts[i]?.trim() || ''; });
       return obj;
     });
 }
@@ -21,12 +27,12 @@ function parsePipeArray(value: string, fields: string[]): Record<string, string>
 // ================================================================
 // CARGAR CONTENIDO
 // ================================================================
-export async function loadContent(): Promise<void> {
+export async function loadContent(): Promise<Record<string, any>> {
   try {
     const { data, error } = await supabase.from('contenido_sitio').select('clave, valor');
     if (error) throw error;
-    contentCache = {};
-    (data || []).forEach(item => { contentCache[item.clave] = item.valor; });
+    clearContentCache();
+    (data || []).forEach((item: { clave: string; valor: any }) => { contentCache[item.clave] = item.valor; });
     renderAllContent();
     return contentCache;
   } catch (e) {
@@ -51,7 +57,7 @@ function renderAllContent(): void {
 function renderHeroBadge(value: any) { const el = document.getElementById('heroBadgeTop'); if (el) el.textContent = value; }
 function renderHeroTitulo(value: any) { const el = document.getElementById('heroTitulo'); if (el) el.innerHTML = value.replace(/\n/g, '<br>'); }
 function renderHeroSubtitulo(value: any) { const el = document.getElementById('heroSubtitulo'); if (el) el.textContent = value; }
-function renderHeroBadges(value: any) { const container = document.getElementById('heroBadges'); if (!container) return; const badges = Array.isArray(value) ? value : value.split('\n').filter(b => b.trim()); container.innerHTML = badges.map(badge => `<span class="hero-badge"><i class="fas fa-check-circle"></i> ${badge.trim()}</span>`).join(''); }
+function renderHeroBadges(value: any) { const container = document.getElementById('heroBadges'); if (!container) return; const badges = Array.isArray(value) ? value : value.split('\n').filter((b: string) => b.trim()); container.innerHTML = badges.map((badge: string) => `<span class="hero-badge"><i class="fas fa-check-circle"></i> ${badge.trim()}</span>`).join(''); }
 function renderHeroCtaPrimario(value: any) { const el = document.getElementById('heroCtaPrimario'); if (el) el.innerHTML = `<i class="fas fa-search"></i> ${value}`; }
 function renderHeroCtaSecundario(value: any) { const el = document.getElementById('heroCtaSecundario'); if (el) el.innerHTML = `<i class="fas fa-comment-dots"></i> ${value}`; }
 function renderHeroStats(value: any) {
@@ -239,8 +245,8 @@ async function cargarContenidoSitio(): Promise<Record<string, any>> {
   try {
     const { data, error } = await supabase.from('contenido_sitio').select('clave, valor');
     if (error) throw error;
-    contentCache = {};
-    (data || []).forEach(item => { contentCache[item.clave] = item.valor; });
+    clearContentCache();
+    (data || []).forEach((item: { clave: string; valor: any }) => { contentCache[item.clave] = item.valor; });
     renderAllContent();
     return contentCache;
   } catch (e) { console.error('Error cargando contenido:', e); return {}; }

@@ -1,0 +1,38 @@
+{
+  "name": "Bienenhaus Propiedades",
+  "short_name": "Bienenhaus",
+  "description": "Encuentra tu próximo hogar con Bienenhaus Propiedades. Expertos en el mercado inmobiliario de Córdoba.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b2b4a",
+  "theme_color": "#1f6ed4",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ver Propiedades",
+      "short_name": "Propiedades",
+      "description": "Ver propiedades en venta y alquiler",
+      "url": "/#catalogo",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Contactar",
+      "short_name": "Contacto",
+      "description": "Contactar con Bienenhaus",
+      "url": "/#contacto",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["business", "lifestyle"],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

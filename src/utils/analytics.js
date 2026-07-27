@@ -107,17 +107,16 @@ export function trackEvent(eventName, parameters = {}) {
   if (window.fbq) {
     // Map common event names to FB standard events
     const fbEventMap = {
-      'contact_form_submit': 'Contact',
-      'whatsapp_click': 'Contact',
-      'property_view': 'ViewContent',
-      'property_favorite': 'AddToWishlist',
-      'search_submit': 'Search',
-      'filter_change': 'Filter',
-      'cta_click': 'Click',
-      'price_alert_create': 'Lead',
-      'price_alert_trigger': 'Lead',
-      'contact_form_submit': 'Contact'
-    };
+'contact_form_submit': 'Contact',
+    'whatsapp_click': 'Contact',
+    'property_view': 'ViewContent',
+    'property_favorite': 'AddToWishlist',
+    'search_submit': 'Search',
+    'filter_change': 'Filter',
+    'cta_click': 'Click',
+    'price_alert_create': 'Lead',
+    'price_alert_trigger': 'Lead',
+  };
     const fbEvent = fbEventMap[eventName] || 'CustomEvent';
     window.fbq('track', fbEvent, enrichedParams);
   }

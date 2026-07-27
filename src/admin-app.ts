@@ -4,6 +4,8 @@
 import { supabase } from './supabase.js';
 import { CONFIG } from './config.js';
 import { uploadToCloudinary, validateImageFile } from './cloudinary.js';
+import Cropper from 'cropperjs';
+// Cropper CSS imported via admin.html
 
 // ================================================================
 // GLOBAL STATE
@@ -390,7 +392,7 @@ async function loadRecentActivity() {
 // ================================================================
 // PROPIEDADES - TABLA
 // ================================================================
-let selectedPropertyIds = new Set();
+const selectedPropertyIds = new Set();
 
 function renderPropertiesTable(filter = '') {
   const tbody = document.getElementById('propertiesTableBody');
@@ -409,6 +411,9 @@ function renderPropertiesTable(filter = '') {
     return;
   }
   
+  // Render header with resizable columns
+  renderTableHeader();
+  
   tbody.innerHTML = filtered.map(p => `
     <tr data-id="${p.id}">
       <td>
@@ -426,6 +431,7 @@ function renderPropertiesTable(filter = '') {
       <td>
         <div class="action-btns">
           <button class="action-btn" onclick="editProperty(${p.id})" title="Editar"><i class="fas fa-edit"></i></button>
+          <button class="action-btn" onclick="cloneProperty(${p.id})" title="Clonar"><i class="fas fa-copy"></i></button>
           <button class="action-btn delete" onclick="confirmDelete('property', ${p.id}, '${p.titulo.replace(/'/g, "\\'")}')" title="Eliminar"><i class="fas fa-trash"></i></button>
         </div>
       </td>
@@ -434,6 +440,9 @@ function renderPropertiesTable(filter = '') {
   
   // Re-attach checkbox listeners
   attachRowCheckboxListeners();
+  
+  // Initialize column resizing
+  initColumnResizing();
 }
 
 function filterProperties() {
@@ -451,46 +460,216 @@ function filterProperties() {
   renderPropertiesTable(filtered);
 }
 
-// Checkbox listeners for bulk actions
-function attachRowCheckboxListeners() {
-  document.querySelectorAll('.row-checkbox').forEach(cb => {
-    cb.addEventListener('change', (e) => {
-      const id = parseInt(e.target.value);
-      if (e.target.checked) {
-        selectedPropertyIds.add(id);
-      } else {
-        selectedPropertyIds.delete(id);
-      }
-      updateBulkActionsBar();
+// Column resizing functionality
+function initColumnResizing() {
+  const ths = document.querySelectorAll('#section-properties table thead th');
+  ths.forEach((th, index) => {
+    const handle = th.querySelector('.resize-handle');
+    if (!handle) return;
+    
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       
-      // Update select all checkbox
-      const selectAll = document.getElementById('selectAllProperties');
-      if (selectAll) {
-        const visibleCheckboxes = document.querySelectorAll('.row-checkbox');
-        const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
-        selectAll.checked = checkedCount === visibleCheckboxes.length && visibleCheckboxes.length > 0;
-        selectAll.indeterminate = checkedCount > 0 && checkedCount < visibleCheckboxes.length;
+      const startX = e.clientX;
+      const startWidth = th.offsetWidth;
+      const table = document.querySelector('#section-properties table');
+      
+      function onMouseMove(e) {
+        const newWidth = startWidth + (e.clientX - startX);
+        if (newWidth >= 40) { // Minimum width
+          th.style.width = newWidth + 'px';
+          th.style.minWidth = newWidth + 'px';
+          th.style.maxWidth = newWidth + 'px';
+          columnWidths[Array.from(th.parentElement.children).indexOf(th)] = newWidth;
+          
+          // Update corresponding body cells
+          const colIndex = Array.from(th.parentElement.children).indexOf(th);
+          document.querySelectorAll(`#propertiesTableBody tr td:nth-child(${colIndex + 1})`).forEach(td => {
+            td.style.width = newWidth + 'px';
+            td.style.minWidth = newWidth + 'px';
+            td.style.maxWidth = newWidth + 'px';
+          });
+        }
+      }
+      
+      function onMouseUp() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+      
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+    
+    handle.addEventListener('mousedown', onMouseDown);
+  });
+}
+
+// Inline editing functionality
+let editingCell = null;
+let originalValue = '';
+
+function initInlineEdit() {
+  document.querySelectorAll('.editable-cell').forEach(cell => {
+    cell.addEventListener('dblclick', startInlineEdit);
+    cell.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        saveInlineEdit(cell);
+      } else if (e.key === 'Escape') {
+        cancelInlineEdit(cell);
       }
     });
   });
+}
+
+function startInlineEdit(cell) {
+  if (editingCell) saveInlineEdit(editingCell);
   
-  // Select all checkbox
-  const selectAll = document.getElementById('selectAllProperties');
-  if (selectAll) {
-    selectAll.addEventListener('change', (e) => {
-      document.querySelectorAll('.row-checkbox').forEach(cb => {
-        cb.checked = e.target.checked;
-        const id = parseInt(cb.value);
-        if (e.target.checked) {
-          selectedPropertyIds.add(id);
-        } else {
-          selectedPropertyIds.delete(id);
-        }
-      });
-      updateBulkActionsBar();
-    });
+  editingCell = cell;
+  originalValue = cell.textContent.trim();
+  
+  const field = cell.dataset.field;
+  const type = cell.dataset.type || 'text';
+  const id = cell.dataset.id;
+  
+  cell.classList.add('editing');
+  cell.dataset.originalValue = cell.textContent.trim();
+  
+  let input;
+  if (cell.dataset.type === 'boolean') {
+    input = document.createElement('select');
+    input.innerHTML = `<option value="true">Sí</option><option value="false">No</option>`;
+    input.value = cell.textContent.trim().includes('Destacada') ? 'true' : 'false';
+  } else if (cell.dataset.type === 'number') {
+    input = document.createElement('input');
+    input.type = 'number';
+    input.step = '1000';
+    input.value = cell.textContent.replace(/[^\d]/g, '');
+  } else {
+    input = document.createElement('input');
+    input.type = 'text';
+    input.value = cell.textContent.trim();
+  }
+  
+  input.className = 'inline-edit-input';
+  input.style.cssText = 'width: 100%; padding: 4px 8px; border: 1px solid var(--accent); border-radius: 4px; font: inherit;';
+  
+  cell.innerHTML = '';
+  cell.appendChild(input);
+  input.focus();
+  input.select();
+  
+  input.addEventListener('blur', () => saveInlineEdit(cell));
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') saveInlineEdit(cell);
+    if (e.key === 'Escape') cancelInlineEdit(cell);
+  });
+}
+
+function saveInlineEdit(cell) {
+  if (!cell.classList.contains('editing')) return;
+  
+  const input = cell.querySelector('input, select');
+  if (!input) return;
+  
+  const newValue = input.value;
+  const field = cell.dataset.field;
+  const id = cell.dataset.id;
+  
+  // Validate
+  if (cell.dataset.type === 'number' && isNaN(parseFloat(newValue))) {
+    showToast('El valor debe ser un número', 'error');
+    return;
+  }
+  
+  // Update UI
+  const displayValue = formatDisplayValue(cell.dataset.field, newValue);
+  cell.textContent = displayValue;
+  cell.classList.remove('editing');
+  
+  // Save to server
+  updatePropertyField(cell.dataset.id, cell.dataset.field, newValue);
+  
+  editingCell = null;
+}
+
+function cancelInlineEdit(cell) {
+  if (!cell.classList.contains('editing')) return;
+  cell.textContent = cell.dataset.originalValue || originalValue;
+  cell.classList.remove('editing');
+  editingCell = null;
+}
+
+function formatDisplayValue(field, value) {
+  switch (field) {
+    case 'precio':
+      return formatPrice(parseFloat(value), 'ARS', 'venta'); // default
+    case 'destacado':
+      return value === 'true' || value === 'true' ? '<span class="badge badge-featured">Destacada</span>' : '<span class="badge badge-active">Normal</span>';
+    default:
+      return value;
   }
 }
+
+async function updatePropertyField(id, field, value) {
+  try {
+    let updateValue = value;
+    if (field === 'precio') updateValue = parseFloat(value);
+    else if (field === 'destacado') updateValue = value === 'true';
+    
+    const { error } = await supabase
+      .from('propiedades')
+      .update({ [field]: value, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    showToast('Cambio guardado', 'success');
+    
+    // Update local cache
+    const prop = propertiesCache.find(p => p.id === id);
+    if (prop) prop[field] = value;
+  } catch (e) {
+    console.error('Update error:', e);
+    showToast('Error al guardar: ' + e.message, 'error');
+  }
+}
+
+// Sticky header for table
+function initStickyTableHeader() {
+  const tableContainer = document.querySelector('.table-container');
+  if (!tableContainer) return;
+  
+  const thead = document.querySelector('#section-properties table thead');
+  if (!thead) return;
+  
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (!entry.isIntersecting) {
+        thead.classList.add('sticky-header');
+      } else {
+        thead.classList.remove('sticky-header');
+      }
+    }, {
+      root: document.querySelector('.table-container'),
+      threshold: 0
+    });
+    
+    observer.observe(document.querySelector('.table-container'));
+  }
+
+function initTableEnhancements() {
+  initStickyTableHeader();
+  // Column resizing is initialized per render
+}
+
+export { initTableEnhancements };
 
 // Bulk Actions Bar
 function updateBulkActionsBar() {
@@ -813,6 +992,12 @@ function openPropertyModal(property = null) {
   form.reset();
   document.getElementById('propImagesPreview').innerHTML = '';
   
+  // Reset tabs to first one
+  modal.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  modal.querySelectorAll('.modal-tabpanel').forEach(p => p.classList.remove('active'));
+  modal.querySelector('.modal-tab[data-tab="basic"]').classList.add('active');
+  modal.querySelector('#panel-basic').classList.add('active');
+  
   if (property) {
     title.textContent = 'Editar Propiedad';
     document.getElementById('propTitle').value = property.titulo || '';
@@ -829,6 +1014,24 @@ function openPropertyModal(property = null) {
     document.getElementById('propFeatures').value = (property.caracteristicas || []).join(', ');
     document.getElementById('propDescription').value = property.descripcion || '';
     
+    // SEO fields
+    document.getElementById('propSeoTitle').value = property.seo_titulo || '';
+    document.getElementById('propSeoDesc').value = property.seo_descripcion || '';
+    document.getElementById('propSeoKeywords').value = property.seo_keywords || '';
+    document.getElementById('propSeoOgImage').value = property.seo_og_image || '';
+    document.getElementById('propSeoSchema').value = property.seo_schema || '';
+    
+    // MercadoLibre fields
+    document.getElementById('propMlEnabled').checked = property.ml_enabled || false;
+    document.getElementById('propMlItemId').value = property.ml_item_id || '';
+    document.getElementById('propMlStatus').value = property.ml_status || 'draft';
+    document.getElementById('propMlLastSync').value = property.ml_last_sync ? new Date(property.ml_last_sync).toLocaleString('es-AR') : 'Nunca sincronizada';
+    
+    // Show/hide ML buttons based on connection
+    const mlConnected = document.getElementById('btnConnectML')?.style.display !== 'none';
+    document.getElementById('btnSyncPropertyML').style.display = mlConnected && property.ml_item_id ? 'inline-flex' : 'none';
+    document.getElementById('btnPublishPropertyML').style.display = mlConnected && !property.ml_item_id ? 'inline-flex' : 'none';
+    
     if (property.imagenes?.length) {
       const preview = document.getElementById('propImagesPreview');
       property.imagenes.sort((a,b) => a.orden - b.orden).forEach((img, i) => {
@@ -840,9 +1043,17 @@ function openPropertyModal(property = null) {
     }
   } else {
     title.textContent = 'Nueva Propiedad';
+    // Hide ML buttons for new properties
+    document.getElementById('btnSyncPropertyML').style.display = 'none';
+    document.getElementById('btnPublishPropertyML').style.display = 'none';
   }
   
   document.getElementById('propertyModal').classList.add('active');
+
+  // Load history if editing existing property
+  if (editingPropertyId) {
+    loadPropertyHistory(editingPropertyId);
+  }
 }
 
 function closePropertyModal() {
@@ -854,6 +1065,51 @@ function closePropertyModal() {
   const fileInput = document.getElementById('propImages');
   if (preview) preview.innerHTML = '';
   if (fileInput) fileInput.value = '';
+}
+
+// Load property history from audit log
+async function loadPropertyHistory(propertyId) {
+  const container = document.getElementById('propertyHistoryLog');
+  if (!container) return;
+  
+  container.innerHTML = '<div class="empty-state" style="padding:20px;"><i class="fas fa-spinner fa-spin"></i> Cargando historial...</div>';
+  
+  try {
+    const { data, error } = await supabase
+      .from('audit_log')
+      .select('*')
+      .eq('table_name', 'propiedades')
+      .eq('record_id', propertyId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    
+    if (error) throw error;
+    
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="empty-state" style="padding:40px 20px;"><i class="fas fa-history"></i><h4>No hay historial</h4><p>Los cambios se registrarán aquí después de guardar la propiedad.</p></div>';
+      return;
+    }
+    
+    container.innerHTML = data.map(log => `
+      <div style="border-bottom:1px solid var(--gray-100);padding:16px 0;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <span class="badge badge-${log.action === 'INSERT' ? 'success' : log.action === 'UPDATE' ? 'warning' : 'danger'}">${log.action}</span>
+          <span style="font-size:0.8rem;color:var(--gray-500);">${new Date(log.created_at).toLocaleString('es-AR')}</span>
+        </div>
+        <div style="font-size:0.85rem;color:var(--gray-600);margin-bottom:8px;">${log.user_email || 'Sistema'}</div>
+        ${log.old_data || log.new_data ? `
+          <div style="background:var(--gray-50);border-radius:var(--radius);padding:12px;font-size:0.8rem;overflow-x:auto;">
+            ${log.old_data ? `<div style="color:var(--danger);"><strong>Antes:</strong> ${JSON.stringify(log.old_data, null, 2).replace(/\n/g, '<br>').replace(/ /g, '&nbsp;')}</div>` : ''}
+            ${log.new_data ? `<div style="margin-top:8px;color:var(--success);"><strong>Después:</strong> ${JSON.stringify(log.new_data, null, 2).replace(/\n/g, '<br>').replace(/ /g, '&nbsp;')}</div>` : ''}
+          </div>
+        ` : ''}
+      </div>
+    `).join('');
+    
+  } catch (e) {
+    console.error('Error loading property history:', e);
+    container.innerHTML = '<div class="empty-state" style="padding:40px 20px;"><i class="fas fa-exclamation-triangle"></i><h4>Error cargando historial</h4></div>';
+  }
 }
 
 async function saveProperty(e) {
@@ -878,6 +1134,22 @@ async function saveProperty(e) {
     const caracteristicas = document.getElementById('propFeatures').value.split(',').map(c => c.trim()).filter(c => c);
     const descripcion = document.getElementById('propDescription').value.trim();
     const files = document.getElementById('propImages').files;
+    
+    // SEO fields
+    const seoTitle = document.getElementById('propSeoTitle')?.value.trim() || '';
+    const seoDescription = document.getElementById('propSeoDesc')?.value.trim() || '';
+    const seoKeywords = document.getElementById('propSeoKeywords')?.value.trim() || '';
+    const seoOgImage = document.getElementById('propSeoOgImage')?.value.trim() || '';
+    let seoSchema = null;
+    try {
+      const schemaVal = document.getElementById('propSeoSchema')?.value.trim();
+      if (schemaVal) seoSchema = JSON.parse(schemaVal);
+    } catch {}
+    
+    // MercadoLibre fields
+    const mlEnabled = document.getElementById('propMlEnabled')?.checked || false;
+    const mlItemId = document.getElementById('propMlItemId')?.value.trim() || null;
+    const mlStatus = document.getElementById('propMlStatus')?.value || 'draft';
     
     // Validación client-side completa
     const errors = [];
@@ -911,7 +1183,17 @@ async function saveProperty(e) {
       return;
     }
     
-    const datos = { titulo, precio, moneda, operacion, ubicacion, tipo, habitaciones, banos, m2, antiguedad, destacado, caracteristicas, descripcion };
+    const datos = { 
+      titulo, precio, moneda, operacion, ubicacion, tipo, habitaciones, banos, m2, antiguedad, destacado, caracteristicas, descripcion,
+      seo_title: seoTitle,
+      seo_description: seoDescription,
+      seo_keywords: seoKeywords,
+      seo_og_image: seoOgImage,
+      seo_schema: seoSchema,
+      ml_enabled: mlEnabled,
+      ml_item_id: mlItemId,
+      ml_status: mlStatus
+    };
     
     let result;
     if (editingPropertyId) {
@@ -1104,6 +1386,409 @@ async function executeDelete() {
 }
 
 // ================================================================
+// IMPORT/EXPORT PROPERTIES
+// ================================================================
+
+let importData = null;
+let importErrors = [];
+
+function openImportExportModal(tab = 'import') {
+  const modal = document.getElementById('importExportModal');
+  modal.querySelectorAll('.import-export-tab').forEach(t => t.classList.remove('active'));
+  modal.querySelectorAll('.import-export-panel').forEach(p => p.classList.remove('active'));
+  modal.querySelector(`.import-export-tab[data-tab="${tab}"]`).classList.add('active');
+  modal.querySelector(`#panel-${tab}`).classList.add('active');
+  
+  if (tab === 'export') {
+    populateExportFields();
+  } else {
+    resetImportModal();
+  }
+  
+  modal.classList.add('active');
+}
+
+function closeImportExportModal() {
+  document.getElementById('importExportModal').classList.remove('active');
+  resetImportModal();
+}
+
+function resetImportModal() {
+  importData = null;
+  importErrors = [];
+  document.getElementById('importFile').value = '';
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('importErrors').style.display = 'none';
+  document.getElementById('btnConfirmImport').disabled = true;
+  document.getElementById('fileUploadArea').classList.remove('has-file');
+  document.querySelector('#fileUploadArea p').innerHTML = 'Arrastra tu archivo aquí o <button type="button" class="btn-link" id="btnSelectFile">selecciona un archivo</button>';
+  document.getElementById('btnSelectFile').addEventListener('click', () => document.getElementById('importFile').click());
+}
+
+function handleImportFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  if (!file.name.match(/\.(csv|xlsx|xls)$/i)) {
+    showToast('Formato no válido. Use CSV, XLSX o XLS', 'error');
+    return;
+  }
+  
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('Archivo muy grande. Máximo 10MB', 'error');
+    return;
+  }
+  
+  showToast('Procesando archivo...', 'info');
+  
+  const reader = new FileReader();
+  reader.onload = async (event) => {
+    try {
+      let data;
+      if (file.name.endsWith('.csv')) {
+        const text = event.target.result;
+        data = parseCSV(text);
+      } else {
+        const arrayBuffer = event.target.result;
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        data = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      }
+      
+      if (!data.length) {
+        showToast('El archivo está vacío', 'error');
+        return;
+      }
+      
+      importData = data;
+      validateImportData(data);
+      renderImportPreview(data);
+      
+      document.querySelector('#fileUploadArea p').innerHTML = `<i class="fas fa-check-circle" style="color:var(--success);"></i> ${file.name} (${data.length} filas)`;
+      document.getElementById('fileUploadArea').classList.add('has-file');
+      document.getElementById('btnConfirmImport').disabled = importErrors.length > 0 && !document.getElementById('importSkipErrors').checked;
+      
+    } catch (err) {
+      console.error('Import parse error:', err);
+      showToast('Error al leer el archivo: ' + err.message, 'error');
+    }
+  };
+  
+  if (file.name.endsWith('.csv')) {
+    reader.readAsText(file);
+  } else {
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+async function handleImportFile(files) {
+  const file = files[0];
+  if (!file) return;
+  
+  if (!file.name.match(/\.(csv|xlsx|xls)$/i)) {
+    showToast('Formato no válido. Use CSV, XLSX o XLS', 'error');
+    return;
+  }
+  
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('Archivo muy grande. Máximo 10MB', 'error');
+    return;
+  }
+  
+  showToast('Procesando archivo...', 'info');
+  
+  try {
+    let data;
+    if (file.name.endsWith('.csv')) {
+      const text = await file.text();
+      data = parseCSV(text);
+    } else {
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      data = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+    }
+    
+    if (!data.length) {
+      showToast('El archivo está vacío', 'error');
+      return;
+    }
+    
+    importData = data;
+    validateImportData(data);
+    renderImportPreview(data);
+    
+    document.querySelector('#fileUploadArea p').innerHTML = `<i class="fas fa-check-circle" style="color:var(--success);"></i> ${file.name} (${data.length} filas)`;
+    document.getElementById('fileUploadArea').classList.add('has-file');
+    document.getElementById('btnConfirmImport').disabled = importErrors.length > 0 && !document.getElementById('importSkipErrors').checked;
+    
+  } catch (e) {
+    console.error('Import parse error:', e);
+    showToast('Error al leer el archivo: ' + e.message, 'error');
+  }
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+  return lines.slice(1).map(line => {
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"' && (i === 0 || line[i-1] !== '\\\\')) {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        values.push(current.trim().replace(/^"|"$/g, ''));
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    values.push(current.trim().replace(/^"|"$/g, ''));
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = values[i] || '');
+    return obj;
+  });
+}
+
+function validateImportData(data) {
+  importErrors = [];
+  const requiredFields = ['titulo', 'precio', 'ubicacion', 'operacion', 'tipo'];
+  const validOperations = ['venta', 'alquiler'];
+  const validTypes = ['piso', 'chalet', 'atico', 'local', 'terreno'];
+  const validCurrencies = ['ARS', 'USD'];
+  
+  data.forEach((row, idx) => {
+    const rowErrors = [];
+    requiredFields.forEach(field => {
+      if (!row[field] || !String(row[field]).trim()) {
+        rowErrors.push(`Falta campo requerido: ${field}`);
+      }
+    });
+    if (row.precio && isNaN(parseFloat(row.precio))) rowErrors.push('Precio debe ser numérico');
+    if (row.operacion && !validOperations.includes(row.operacion)) rowErrors.push('Operación inválida (venta/alquiler)');
+    if (row.tipo && !validTypes.includes(row.tipo)) rowErrors.push('Tipo inválido');
+    if (row.moneda && !validCurrencies.includes(row.moneda)) rowErrors.push('Moneda inválida (ARS/USD)');
+    if (row.habitaciones && (isNaN(parseInt(row.habitaciones)) || parseInt(row.habitaciones) < 0 || parseInt(row.habitaciones) > 20)) rowErrors.push('Habitaciones inválida');
+    if (row.banos && (isNaN(parseInt(row.banos)) || parseInt(row.banos) < 0 || parseInt(row.banos) > 20)) rowErrors.push('Baños inválido');
+    if (row.m2 && (isNaN(parseInt(row.m2)) || parseInt(row.m2) < 0 || parseInt(row.m2) > 10000)) rowErrors.push('m² inválido');
+    if (row.antiguedad && !['nuevo', 'reformado', 'viejo'].includes(row.antiguedad)) rowErrors.push('Antigüedad inválida');
+    if (row.destacado && !['true', 'false', '1', '0', 'si', 'no'].includes(String(row.destacado).toLowerCase())) rowErrors.push('Destacado debe ser true/false');
+    
+    if (rowErrors.length) {
+      importErrors.push({ row: idx + 2, errors: rowErrors, data: row });
+    }
+  });
+}
+
+function renderImportPreview(data) {
+  const headers = Object.keys(data[0] || {});
+  document.getElementById('importPreviewHeaders').innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+  
+  const previewRows = data.slice(0, 50).map((row, idx) => {
+    const hasError = importErrors.some(e => e.row === idx + 2);
+    return `<tr class="${hasError ? 'has-error' : ''}">${headers.map(h => `<td>${escapeHtml(row[h] || '')}</td>`).join('')}</tr>`;
+  }).join('');
+  document.getElementById('importPreviewBody').innerHTML = previewRows;
+  
+  document.getElementById('importTotalRows').textContent = data.length;
+  document.getElementById('importValidRows').textContent = data.length - importErrors.length;
+  document.getElementById('importErrorRows').textContent = importErrors.length;
+  
+  if (importErrors.length) {
+    document.getElementById('importErrors').style.display = 'block';
+    document.getElementById('importErrorsList').innerHTML = importErrors.map(e => `<li>Fila ${e.row}: ${e.errors.join(', ')}</li>`).join('');
+  } else {
+    document.getElementById('importErrors').style.display = 'none';
+  }
+  
+  document.getElementById('importPreview').style.display = 'block';
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+async function confirmImport() {
+  const skipErrors = document.getElementById('importSkipErrors').checked;
+  const updateExisting = document.getElementById('importUpdateExisting').checked;
+  const downloadImages = document.getElementById('importDownloadImages').checked;
+  
+  if (!importData || !importData.length) return;
+  
+  const btn = document.getElementById('btnConfirmImport');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importando...';
+  
+  let imported = 0, updated = 0, errors = 0;
+  
+  try {
+    for (const row of importData) {
+      const rowErrors = importErrors.filter(e => e.data === row);
+      if (rowErrors.length && !skipErrors) continue;
+      
+      const datos = {
+        titulo: row.titulo,
+        precio: parseFloat(row.precio),
+        moneda: row.moneda || 'ARS',
+        operacion: row.operacion,
+        ubicacion: row.ubicacion,
+        tipo: row.tipo,
+        habitaciones: parseInt(row.habitaciones) || 0,
+        banos: parseInt(row.banos) || 0,
+        m2: parseInt(row.m2) || 0,
+        antiguedad: row.antiguedad || 'reformado',
+        destacado: ['true', '1', 'si'].includes(String(row.destacado).toLowerCase()),
+        caracteristicas: row.caracteristicas ? row.caracteristicas.split(',').map(c => c.trim()).filter(c => c) : [],
+        descripcion: row.descripcion || ''
+      };
+      
+      let propertyId = null;
+      
+      if (updateExisting) {
+        const existing = propertiesCache.find(p => 
+          p.titulo.toLowerCase() === datos.titulo.toLowerCase() && 
+          p.ubicacion.toLowerCase() === datos.ubicacion.toLowerCase()
+        );
+        if (existing) {
+          propertyId = existing.id;
+        }
+      }
+      
+      if (propertyId) {
+        const { error } = await supabase.from('propiedades').update(datos).eq('id', propertyId);
+        if (error) throw error;
+        updated++;
+      } else {
+        const { data, error } = await supabase.from('propiedades').insert([datos]).select();
+        if (error) throw error;
+        propertyId = data[0].id;
+        imported++;
+      }
+      
+      // Handle images if URL provided
+      if (downloadImages && propertyId && row.imagenes) {
+        const urls = row.imagenes.split(',').map(u => u.trim()).filter(u => u);
+        for (let i = 0; i < Math.min(urls.length, 15); i++) {
+          try {
+            const response = await fetch(urls[i]);
+            if (response.ok) {
+              const blob = await response.blob();
+              const file = new File([blob], `image_${i}.jpg`, { type: 'image/jpeg' });
+              validateImageFile(file);
+              const folder = `inmoconecta/propiedades/${propertyId}`;
+              const img = await uploadToCloudinary(file, folder, CONFIG.CLOUDINARY_UPLOAD_PRESET_PROPS);
+              await supabase.from('imagenes').insert({
+                propiedad_id: propertyId,
+                url: img.url,
+                cloudinary_public_id: img.public_id,
+                orden: i,
+                es_principal: i === 0
+              });
+            }
+          } catch (imgErr) {
+            console.warn('Failed to import image:', urls[i], imgErr);
+          }
+        }
+      }
+    }
+    
+    showToast(`Importación completada: ${imported} nuevas, ${updated} actualizadas, ${errors} errores`, 'success');
+    closeImportExportModal();
+    await loadProperties();
+    
+  } catch (e) {
+    console.error('Import error:', e);
+    showToast('Error en importación: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-download"></i> Importar';
+  }
+}
+
+function populateExportFields() {
+  const container = document.getElementById('exportFields');
+  const fields = [
+    { key: 'titulo', label: 'Título', required: true },
+    { key: 'precio', label: 'Precio', required: true },
+    { key: 'moneda', label: 'Moneda' },
+    { key: 'operacion', label: 'Operación', required: true },
+    { key: 'ubicacion', label: 'Ubicación', required: true },
+    { key: 'tipo', label: 'Tipo', required: true },
+    { key: 'habitaciones', label: 'Habitaciones' },
+    { key: 'banos', label: 'Baños' },
+    { key: 'm2', label: 'm²' },
+    { key: 'antiguedad', label: 'Antigüedad' },
+    { key: 'destacado', label: 'Destacado' },
+    { key: 'caracteristicas', label: 'Características' },
+    { key: 'descripcion', label: 'Descripción' }
+  ];
+  
+  container.innerHTML = fields.map(f => `
+    <label class="checkbox-option">
+      <input type="checkbox" name="exportField" value="${f.key}" ${f.required ? 'checked disabled' : 'checked'} ${f.required ? 'title="Campo obligatorio"' : ''}>
+      <span>${f.label} ${f.required ? '*' : ''}</span>
+    </label>
+  `).join('');
+}
+
+async function confirmExport() {
+  const selectedFields = Array.from(document.querySelectorAll('input[name="exportField"]:checked')).map(cb => cb.value);
+  const applyFilters = document.getElementById('exportApplyFilters').checked;
+  const includeImages = document.getElementById('exportIncludeImages').checked;
+  
+  if (!selectedFields.length) {
+    showToast('Selecciona al menos un campo', 'error');
+    return;
+  }
+  
+  let data = propertiesCache;
+  if (applyFilters) {
+    const search = document.getElementById('searchProperties').value;
+    const status = document.getElementById('filterPropertyStatus').value;
+    if (search) {
+      const f = search.toLowerCase();
+      data = data.filter(p => p.titulo.toLowerCase().includes(f) || p.ubicacion.toLowerCase().includes(f));
+    }
+    if (status) {
+      data = data.filter(p => status === 'featured' ? p.destacado : !p.destacado);
+    }
+  }
+  
+  const rows = data.map(p => {
+    const row = {};
+    selectedFields.forEach(field => {
+      let val = p[field];
+      if (field === 'caracteristicas' && Array.isArray(val)) val = val.join(', ');
+      if (field === 'destacado') val = val ? 'Sí' : 'No';
+      if (field === 'precio') val = formatPrice(val, p.moneda, p.operacion);
+      row[field] = val || '';
+    });
+    if (includeImages && p.imagenes?.length) {
+      row.imagenes = p.imagenes.map(i => i.url).join(', ');
+    }
+    return row;
+  });
+  
+  const csv = [selectedFields.join(','), ...rows.map(r => selectedFields.map(f => `"${String(r[f] || '').replace(/"/g, '""')}"`).join(','))].join('\n');
+  
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `propiedades_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  showToast(`Exportadas ${rows.length} propiedades`, 'success');
+}
+
+// ================================================================
 // CONTENT EDITOR - SAVE ALL
 // ================================================================
 async function saveAllContent() {
@@ -1177,67 +1862,67 @@ const content = {
     
     showToast('Contenido guardado correctamente', 'success');
     await loadContent();
-  } catch (e) {
+} catch (e) {
     console.error('saveAllContent error:', e);
     showToast(`Error: ${e.message || 'Error al guardar contenido'}`, 'error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-save"></i> Guardar Todo';
-  }
 }
 
-// ================================================================
-// SETTINGS - LOAD / SAVE
-// ================================================================
-async function loadSettings() {
-  // Load settings from contenido_sitio or dedicated settings table
-  // For now, populate from contentCache if keys exist
-  const settingsMap = {
-    siteName: 'site_nombre',
-    siteTagline: 'site_eslogan',
-    sitePhone: 'site_telefono',
-    siteEmail: 'site_email',
-    siteWhatsApp: 'site_whatsapp',
-    siteAddress: 'site_direccion',
-    siteHours: 'site_horario'
-  };
-  
-  for (const [elementId, cacheKey] of Object.entries(settingsMap)) {
-    const el = document.getElementById(elementId);
-    if (el && contentCache[cacheKey]) el.value = contentCache[cacheKey];
-  }
-}
+let columnWidths = {};
 
-async function saveSettings() {
-  const btn = document.getElementById('btnSaveSettings');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-  
-  try {
-    const settingsMap = {
-      site_nombre: document.getElementById('siteName').value,
-      site_eslogan: document.getElementById('siteTagline').value,
-      site_telefono: document.getElementById('sitePhone').value,
-      site_email: document.getElementById('siteEmail').value,
-      site_whatsapp: document.getElementById('siteWhatsApp').value,
-      site_direccion: document.getElementById('siteAddress').value,
-      site_horario: document.getElementById('siteHours').value,
-      maintenance_mode: document.getElementById('maintenanceMode').checked,
-      show_prices: document.getElementById('showPrices').checked,
-      enable_chat: document.getElementById('enableChat').checked
-    };
-    
-    for (const [clave, valor] of Object.entries(settingsMap)) {
-      await supabase.from('contenido_sitio').upsert({ clave, valor }, { onConflict: 'clave' });
+// Cargar anchos de columnas guardados
+function loadColumnWidths() {
+  const saved = localStorage.getItem('admin_column_widths');
+  if (saved) {
+    try {
+      columnWidths = JSON.parse(saved);
+    } catch (e) {
+      columnWidths = {};
     }
-    
-    showToast('Configuración guardada', 'success');
-  } catch (e) {
-    console.error(e);
-    showToast('Error al guardar configuración', 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-save"></i> Guardar Configuración';
+  }
+}
+
+function saveColumnWidths() {
+  localStorage.setItem('admin_column_widths', JSON.stringify(columnWidths));
+}
+
+// Renderizar encabezados con handles de redimensionamiento
+function renderTableHeader() {
+  const thead = document.querySelector('#section-properties table thead');
+  if (!thead) return;
+  
+  thead.innerHTML = `
+    <tr>
+      <th data-col-index="0" style="width: 48px;">
+        <input type="checkbox" id="selectAllProperties" aria-label="Seleccionar todas las propiedades">
+        <div class="resize-handle" data-col-index="0"></div>
+      </th>
+      <th data-col-index="1">Imagen <div class="resize-handle" data-col-index="1"></div></th>
+      <th data-col-index="2">Título <div class="resize-handle" data-col-index="2"></div></th>
+      <th data-col-index="3">Ubicación <div class="resize-handle" data-col-index="3"></div></th>
+      <th data-col-index="4">Operación <div class="resize-handle" data-col-index="4"></div></th>
+      <th data-col-index="5">Precio <div class="resize-handle" data-col-index="5"></div></th>
+      <th data-col-index="6">Estado <div class="resize-handle" data-col-index="6"></div></th>
+      <th data-col-index="7" style="width: 120px;">Acciones <div class="resize-handle" data-col-index="7"></div></th>
+    </tr>
+  `;
+  
+  // Re-inicializar select all
+  const selectAll = document.getElementById('selectAllProperties');
+  if (selectAll) {
+    selectAll.addEventListener('change', (e) => {
+      document.querySelectorAll('.row-checkbox').forEach(cb => {
+        cb.checked = e.target.checked;
+        const id = parseInt(cb.value);
+        if (e.target.checked) {
+          selectedPropertyIds.add(id);
+} else {
+selectedPropertyIds.delete(id);
+        }
+      });
+    });
   }
 }
 
@@ -1532,7 +2217,7 @@ function renderPropertyImagePreviews() {
     div.draggable = true;
     div.dataset.index = i;
     div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:var(--radius);overflow:hidden;border:2px solid var(--gray-200);cursor:grab;' + (i===0?'border-color:var(--accent);':'');
-    div.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;"><span style="position:absolute;top:2px;right:2px;background:var(--gray-900);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span><button type="button" class="remove-img" data-index="${i}" style="position:absolute;bottom:2px;right:2px;background:rgba(220,38,38,0.9);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;">×</button>`;
+    div.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" data-index="${i}"><span style="position:absolute;top:2px;right:2px;background:var(--gray-900);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span><button type="button" class="remove-img" data-index="${i}" style="position:absolute;bottom:2px;right:2px;background:rgba(220,38,38,0.9);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;">×</button><button type="button" class="edit-img" data-index="${i}" style="position:absolute;bottom:2px;left:2px;background:rgba(31,110,212,0.9);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;" title="Editar"><i class="fas fa-crop"></i></button>`;
     preview.appendChild(div);
   });
   
@@ -1567,7 +2252,135 @@ function renderPropertyImagePreviews() {
       uploadedPropertyImages.splice(idx, 1);
       renderPropertyImagePreviews();
     });
+    // Edit button (crop/rotate)
+    el.querySelector('.edit-img')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(e.target.dataset.index);
+      openImageEditor(idx);
+    });
+    // Click image to edit
+    el.querySelector('img')?.addEventListener('click', (e) => {
+      const idx = parseInt(e.target.dataset.index);
+      openImageEditor(idx);
+    });
   });
+}
+
+let cropperInstance = null;
+
+function openImageEditor(index) {
+  const file = uploadedPropertyImages[index];
+  if (!file) return;
+  
+  const url = URL.createObjectURL(file);
+  
+  // Create modal
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.style.cssText = 'display:flex;z-index:2000;';
+  modal.innerHTML = `
+    <div class="modal" style="max-width:90vw;max-height:90vh;width:800px;">
+      <div class="modal-header" style="display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid var(--gray-200);">
+        <h3 class="modal-title" style="margin:0;">Editar Imagen</h3>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn-secondary" id="cropRotateLeft"><i class="fas fa-undo"></i> Rotar izq</button>
+          <button type="button" class="btn-secondary" id="cropRotateRight"><i class="fas fa-redo"></i> Rotar der</button>
+          <button type="button" class="btn-secondary" id="cropFlipH"><i class="fas fa-arrows-alt-h"></i> Voltear H</button>
+          <button type="button" class="btn-secondary" id="cropFlipV"><i class="fas fa-arrows-alt-v"></i> Voltear V</button>
+          <button type="button" class="btn-secondary" id="cropReset"><i class="fas fa-history"></i> Reset</button>
+          <button type="button" class="modal-close" style="margin-left:8px;">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" style="padding:24px;max-height:60vh;overflow:auto;text-align:center;">
+        <div style="max-width:100%;max-height:50vh;margin:0 auto;">
+          <img id="cropperImage" src="${url}" alt="Editor de imagen" style="max-width:100%;max-height:50vh;">
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:16px 24px;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;gap:12px;">
+        <button type="button" class="btn-secondary" id="cropCancel">Cancelar</button>
+        <button type="button" class="btn-primary" id="cropApply"><i class="fas fa-check"></i> Aplicar</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Initialize Cropper
+  const image = modal.querySelector('#cropperImage');
+  cropperInstance = new Cropper(image, {
+    aspectRatio: NaN,
+    viewMode: 1,
+    dragMode: 'move',
+    autoCropArea: 1,
+    responsive: true,
+    restore: true,
+    guides: true,
+    center: true,
+    highlight: true,
+    cropBoxMovable: true,
+    cropBoxResizable: true,
+    toggleDragModeOnDblclick: true,
+  });
+  
+  // Event handlers
+  modal.querySelector('#cropRotateLeft')?.addEventListener('click', () => cropperInstance?.rotate(-90));
+  modal.querySelector('#cropRotateRight')?.addEventListener('click', () => cropperInstance?.rotate(90));
+  modal.querySelector('#cropFlipH')?.addEventListener('click', () => {
+    const data = cropperInstance.getData();
+    cropperInstance.scaleX(-data.scaleX);
+  });
+  modal.querySelector('#cropFlipV')?.addEventListener('click', () => {
+    const data = cropperInstance.getData();
+    cropperInstance.scaleY(-data.scaleY);
+  });
+  modal.querySelector('#cropReset')?.addEventListener('click', () => cropperInstance?.reset());
+  
+  const closeModal = () => {
+    cropperInstance?.destroy();
+    cropperInstance = null;
+    modal.remove();
+  };
+  
+  modal.querySelector('.modal-close')?.addEventListener('click', closeModal);
+  modal.querySelector('#cropCancel')?.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  
+  modal.querySelector('#cropApply')?.addEventListener('click', async () => {
+    if (!cropperInstance) return;
+    
+    const canvas = cropperInstance.getCroppedCanvas({
+      maxWidth: 1920,
+      maxHeight: 1080,
+      imageSmoothingEnabled: true,
+      imageSmoothingQuality: 'high',
+    });
+    
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      
+      // Compress if too large
+      let finalBlob = blob;
+      if (blob.size > 1024 * 1024) { // > 1MB
+        canvas.toBlob((compressed) => {
+          finalBlob = compressed || blob;
+          replaceImage(index, finalBlob);
+        }, 'image/jpeg', 0.85);
+      } else {
+        replaceImage(index, blob);
+      }
+      
+      closeModal();
+    }, 'image/jpeg', 0.92);
+  });
+}
+
+function replaceImage(index, blob) {
+  // Create new file from blob
+  const newFile = new File([blob], `edited_${Date.now()}.jpg`, { type: 'image/jpeg' });
+  uploadedPropertyImages[index] = newFile;
+  renderPropertyImagePreviews();
 }
 
 // ================================================================
@@ -1649,18 +2462,20 @@ function setupMarkdownTextareas() {
               }
               return;
           }
-          if (prefix || suffix) {
+        });
+        
+        if (prefix || suffix) {
             const newText = text.substring(0, start) + prefix + text.substring(start, end) + suffix + text.substring(end);
             element.value = newText;
             element.selectionStart = element.selectionEnd = start + prefix.length;
             element.focus();
           }
         });
+        
+        element.setAttribute('data-md-initialized', 'true');
       });
-      
-      element.setAttribute('data-md-initialized', 'true');
-    });
-  }, 100);
+}, 100);
+  }
 }
 
 function markedParse(text) {
@@ -1690,6 +2505,16 @@ function markedParse(text) {
 window.editProperty = (id) => {
   const prop = propertiesCache.find(p => p.id === id);
   if (prop) openPropertyModal(prop);
+};
+
+window.cloneProperty = (id) => {
+  const prop = propertiesCache.find(p => p.id === id);
+  if (prop) {
+    // Create a copy without id, created_at, updated_at, ml fields
+    const { id: _, created_at, updated_at, ml_item_id, ml_status, ml_last_sync, ml_enabled, imagenes, ...cloneData } = prop;
+    cloneData.titulo = `${cloneData.titulo} (Copia)`;
+    openPropertyModal(cloneData);
+  }
 };
 
 window.editAgent = (id) => {
@@ -1751,10 +2576,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Modals
   document.getElementById('btnNewProperty').addEventListener('click', () => openPropertyModal());
+  document.getElementById('btnImportExport')?.addEventListener('click', () => {
+    document.getElementById('importExportModal').classList.add('active');
+  });
   document.getElementById('closePropertyModal').addEventListener('click', closePropertyModal);
   document.getElementById('cancelPropertyModal').addEventListener('click', closePropertyModal);
   document.getElementById('propertyForm').addEventListener('submit', saveProperty);
   document.getElementById('btnSyncPropertyML')?.addEventListener('click', () => {
+    if (editingPropertyId) syncPropertyToML(editingPropertyId, 'publish');
+  });
+  document.getElementById('btnPublishPropertyML')?.addEventListener('click', () => {
     if (editingPropertyId) syncPropertyToML(editingPropertyId, 'publish');
   });
   
@@ -1765,7 +2596,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Image uploads handled by setupImageUploads()
   
-  // Settings tabs - scoped to each tab group
+// Settings tabs - scoped to each tab group
   document.querySelectorAll('.settings-tabs').forEach(tabGroup => {
     tabGroup.querySelectorAll('.settings-tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -1778,6 +2609,60 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
   });
+
+  // Property Modal tabs
+  document.querySelectorAll('#propertyModal .modal-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const modal = document.getElementById('propertyModal');
+      modal.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+      modal.querySelectorAll('.modal-tabpanel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+    });
+  });
+
+  // Import/Export Modal tabs
+  document.querySelectorAll('.import-export-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const modal = document.getElementById('importExportModal');
+      modal.querySelectorAll('.import-export-tab').forEach(t => t.classList.remove('active'));
+      modal.querySelectorAll('.import-export-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+    });
+  });
+
+  // Import/Export Modal handlers
+  document.getElementById('btnSelectFile')?.addEventListener('click', () => {
+    document.getElementById('importFile')?.click();
+  });
+
+  document.getElementById('importFile')?.addEventListener('change', handleImportFileSelect);
+
+  document.getElementById('fileUploadArea')?.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.currentTarget.classList.add('dragover');
+  });
+
+  document.getElementById('fileUploadArea')?.addEventListener('dragleave', e => {
+    e.currentTarget.classList.remove('dragover');
+  });
+
+  document.getElementById('fileUploadArea')?.addEventListener('drop', e => {
+    e.preventDefault();
+    e.currentTarget.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      handleImportFileSelect({ target: { files: e.dataTransfer.files } });
+    }
+  });
+
+  document.getElementById('btnCancelImport')?.addEventListener('click', closeImportExportModal);
+  document.getElementById('btnCancelExport')?.addEventListener('click', closeImportExportModal);
+  document.getElementById('closeImportExportModal')?.addEventListener('click', closeImportExportModal);
+  document.getElementById('btnConfirmImport')?.addEventListener('click', confirmImport);
+  document.getElementById('btnConfirmExport')?.addEventListener('click', confirmExport);
+
+  // Restore saved widths
   
   // Save content
   document.getElementById('btnSaveAllContent').addEventListener('click', saveAllContent);

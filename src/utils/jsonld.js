@@ -10,7 +10,6 @@
 export function generatePropertyJSONLD(property) {
   const price = property.precio || 0;
   const currency = property.moneda === 'USD' ? 'USD' : 'ARS';
-  const operation = property.operacion === 'venta' ? 'SellAction' : 'RentAction';
   
   // Formatear precio
   const priceValue = Number(price);
@@ -20,7 +19,7 @@ export function generatePropertyJSONLD(property) {
     '@type': 'ImageObject',
     contentUrl: img,
     caption: property.titulo
-  }) || [];
+  })) || [];
 
   if (property.imagen_principal && !images.some(img => img.contentUrl === property.imagen_principal)) {
     images.unshift({
@@ -99,7 +98,6 @@ export function generatePropertyJSONLD(property) {
     yearBuilt: property.anio_construccion ? Number(property.anio_construccion) : undefined,
     petsAllowed: property.mascotas === true,
     smokingAllowed: false,
-    petsAllowed: property.mascotas === true,
     hasGarage: property.cochera === true,
     hasPool: property.pileta === true,
     hasBalcony: property.balcon === true,
@@ -124,7 +122,7 @@ export function generateBreadcrumbJSONLD(breadcrumbs) {
       position: index + 1,
       name: crumb.name,
       item: crumb.url ? `${window.location.origin}${crumb.url}` : undefined
-    }).filter(item => item.item)
+    })).filter(item => item.item)
   };
 }
 
@@ -237,26 +235,6 @@ function getPropertyType(tipo) {
     'terreno': 'Land'
   };
   return types[tipo] || 'RealEstate';
-}
-
-function cleanObject(obj) {
-  if (obj === null || obj === undefined) return undefined;
-  if (Array.isArray(obj)) {
-    return obj.map(cleanObject).filter(v => v !== undefined && v !== null);
-  }
-  if (typeof obj === 'object') {
-    const cleaned = {};
-    for (const [key, value] of Object.entries(obj)) {
-      const cleanedValue = cleanObject(value);
-      if (cleanedValue !== undefined && cleanedValue !== null) {
-        if (Array.isArray(cleanedValue) && cleanedValue.length === 0) continue;
-        if (typeof cleanedValue === 'object' && Object.keys(cleanedValue).length === 0) continue;
-        cleaned[key] = cleanedValue;
-      }
-    }
-    return Object.keys(cleaned).length > 0 ? cleaned : undefined;
-  }
-  return obj;
 }
 
 function cleanObject(obj) {

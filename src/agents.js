@@ -57,7 +57,7 @@ export function renderizarAgentes(agentes) {
   }
 
   grid.innerHTML = agentes.map(agente => {
-    let avatarHtml = agente.avatar_url
+    const avatarHtml = agente.avatar_url
       ? `<img src="${agente.avatar_url}" alt="${agente.nombre} ${agente.apellido}">`
       : `<span style="font-size:2.4rem;">${getAvatarEmoji(agente.nombre)}</span>`;
 

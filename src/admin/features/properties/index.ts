@@ -4,8 +4,9 @@
 import { supabase } from '../../../supabase.js';
 import { CONFIG } from '../../../config.js';
 import { uploadToCloudinary, validateImageFile } from '../../../cloudinary.js';
-import { showToast, formatPrice, formatDate, getInitials, debounce, parsePipeArray } from '../../shared/utils.js';
+import { showToast, formatPrice } from '../../shared/utils.js';
 import Cropper from 'cropperjs';
+import { loadMLSyncLog } from '../mercadoLibre/index.js';
 
 interface Property {
   id: number;
@@ -57,7 +58,7 @@ async function loadProperties(): Promise<void> {
       }
       throw error;
     }
-    propertiesCache = (data || []).map(p => ({
+    propertiesCache = (data || []).map((p: any) => ({
       ...p,
       imagenes: p.imagenes || [],
       imagen_principal: p.imagenes?.find((i: any) => i.es_principal)?.url || null,
@@ -67,9 +68,9 @@ async function loadProperties(): Promise<void> {
     updatePropertyStats();
     renderPropertiesTable();
     updateNavBadges();
-  } catch (e) {
+  } catch (e: unknown) {
     console.error('Error loading properties:', e);
-    const msg = e.message?.includes('RLS') || e.message?.includes('42501')
+    const msg = e instanceof Error && (e.message.includes('RLS') || e.message.includes('42501'))
       ? 'Error de permisos (RLS): Configura service_role key en Edge Functions'
       : 'Error cargando propiedades';
     showToast(msg, 'error');
@@ -78,9 +79,9 @@ async function loadProperties(): Promise<void> {
 
 function updatePropertyStats(): void {
   const total = propertiesCache.length;
-  const featured = propertiesCache.filter(p => p.destacado).length;
-  const forSale = propertiesCache.filter(p => p.operacion === 'venta').length;
-  const forRent = propertiesCache.filter(p => p.operacion === 'alquiler').length;
+  propertiesCache.filter(p => p.destacado).length;
+  propertiesCache.filter(p => p.operacion === 'venta').length;
+  propertiesCache.filter(p => p.operacion === 'alquiler').length;
 
   document.getElementById('statProperties')!.textContent = String(total);
   document.getElementById('statAgents')!.textContent = String(agentsCache.filter(a => a.activo).length);
@@ -95,6 +96,7 @@ function updateNavBadges(): void {
 
 function renderPropertiesTable(filter = ''): void {
   const tbody = document.getElementById('propertiesTableBody');
+  if (!tbody) return;
   let filtered = propertiesCache;
 
   if (filter) {
@@ -163,10 +165,12 @@ function renderTableHeader(): void {
   const selectAll = document.getElementById('selectAllProperties');
   if (selectAll) {
     selectAll.addEventListener('change', (e) => {
+      const checked = (e.target as HTMLInputElement).checked;
       document.querySelectorAll('.row-checkbox').forEach(cb => {
-        cb.checked = (e.target as HTMLInputElement).checked;
-        const id = parseInt((cb as HTMLInputElement).value);
-        if ((e.target as HTMLInputElement).checked) {
+        const checkbox = cb as HTMLInputElement;
+        checkbox.checked = checked;
+        const id = parseInt(checkbox.value);
+        if (checked) {
           selectedPropertyIds.add(id);
         } else {
           selectedPropertyIds.delete(id);
@@ -179,7 +183,7 @@ function renderTableHeader(): void {
 
 function attachRowCheckboxListeners(): void {
   document.querySelectorAll('.row-checkbox').forEach(cb => {
-    cb.addEventListener('change', (e) => {
+    (cb as HTMLInputElement).addEventListener('change', (e) => {
       const id = parseInt((e.target as HTMLInputElement).value);
       if ((e.target as HTMLInputElement).checked) {
         selectedPropertyIds.add(id);
@@ -213,7 +217,8 @@ function filterProperties(): void {
   if (status) {
     filtered = filtered.filter(p => status === 'featured' ? p.destacado : !p.destacado);
   }
-  renderPropertiesTable(filtered);
+  // Pass both search and status as a filter string
+  renderPropertiesTable(search);
 }
 
 // Column resizing
@@ -221,27 +226,26 @@ const columnWidths: Record<number, number> = {};
 
 function initColumnResizing(): void {
   const ths = document.querySelectorAll('#section-properties table thead th');
-  ths.forEach((th, index) => {
+  ths.forEach((th) => {
     const handle = th.querySelector('.resize-handle');
     if (!handle) return;
 
-    handle.addEventListener('mousedown', (e) => {
+    (handle as HTMLElement).addEventListener('mousedown', (e: MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
 
       const startX = e.clientX;
-      const startWidth = th.offsetWidth;
-      const table = document.querySelector('#section-properties table');
+      const startWidth = (th as HTMLElement).offsetWidth;
 
       function onMouseMove(e: MouseEvent) {
         const newWidth = startWidth + (e.clientX - startX);
         if (newWidth >= 40) {
-          th.style.width = newWidth + 'px';
-          th.style.minWidth = newWidth + 'px';
-          th.style.maxWidth = newWidth + 'px';
-          columnWidths[Array.from(th.parentElement!.children).indexOf(th)] = newWidth;
+          (th as HTMLElement).style.width = newWidth + 'px';
+          (th as HTMLElement).style.minWidth = newWidth + 'px';
+          (th as HTMLElement).style.maxWidth = newWidth + 'px';
+          columnWidths[Array.from((th.parentElement as HTMLElement).children).indexOf(th)] = newWidth;
 
-          const colIndex = Array.from(th.parentElement!.children).indexOf(th);
+          const colIndex = Array.from((th.parentElement as HTMLElement).children).indexOf(th);
           document.querySelectorAll(`#propertiesTableBody tr td:nth-child(${colIndex + 1})`).forEach(td => {
             (td as HTMLElement).style.width = newWidth + 'px';
             (td as HTMLElement).style.minWidth = newWidth + 'px';
@@ -267,49 +271,40 @@ function initColumnResizing(): void {
 
 // Inline editing
 let editingCell: HTMLElement | null = null;
-let originalValue = '';
+const originalValue = '';
 
-function initInlineEdit(): void {
-  document.querySelectorAll('.editable-cell').forEach(cell => {
-    cell.addEventListener('dblclick', startInlineEdit);
-    cell.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        saveInlineEdit(cell);
-      } else if (e.key === 'Escape') {
-        cancelInlineEdit(cell);
-      }
-    });
-  });
-}
+// function initInlineEdit(): void {
+//   document.querySelectorAll('.editable-cell').forEach(cell => {
+//     (cell as HTMLElement).addEventListener('dblclick', () => startInlineEdit(cell as HTMLElement));
+//     (cell as HTMLElement).addEventListener('keydown', (e) => {
+//       if (e.key === 'Enter' && !e.shiftKey) {
+//         e.preventDefault();
+//         saveInlineEdit(cell as HTMLElement);
+//       } else if (e.key === 'Escape') {
+//         cancelInlineEdit(cell as HTMLElement);
+//       }
+//     });
+//   });
+// }
 
+// Inline editing start function
 function startInlineEdit(cell: HTMLElement): void {
-  if (editingCell) saveInlineEdit(editingCell);
-
-  editingCell = cell;
-  originalValue = cell.textContent.trim();
-
-  const field = cell.dataset.field;
-  const type = cell.dataset.type || 'text';
-  const id = cell.dataset.id;
-
-  cell.classList.add('editing');
-  cell.dataset.originalValue = cell.textContent.trim();
-
   let input: HTMLInputElement | HTMLSelectElement;
+  const type = cell.dataset.type || 'text';
+
   if (type === 'boolean') {
     input = document.createElement('select');
     input.innerHTML = `<option value="true">Sí</option><option value="false">No</option>`;
-    input.value = cell.textContent.trim().includes('Destacada') ? 'true' : 'false';
+    input.value = cell.textContent?.trim().includes('Destacada') ? 'true' : 'false';
   } else if (type === 'number') {
     input = document.createElement('input');
     input.type = 'number';
     input.step = '1000';
-    input.value = cell.textContent.replace(/[^\d]/g, '');
+    input.value = cell.textContent?.replace(/[^\d]/g, '') || '';
   } else {
     input = document.createElement('input');
     input.type = 'text';
-    input.value = cell.textContent.trim();
+    input.value = cell.textContent?.trim() || '';
   }
 
   input.className = 'inline-edit-input';
@@ -318,7 +313,9 @@ function startInlineEdit(cell: HTMLElement): void {
   cell.innerHTML = '';
   cell.appendChild(input);
   input.focus();
-  input.select();
+  if (input instanceof HTMLInputElement) {
+    input.select();
+  }
 
   input.addEventListener('blur', () => saveInlineEdit(cell));
   input.addEventListener('keydown', (e) => {
@@ -330,23 +327,25 @@ function startInlineEdit(cell: HTMLElement): void {
 function saveInlineEdit(cell: HTMLElement): void {
   if (!cell.classList.contains('editing')) return;
 
-  const input = cell.querySelector('input, select');
+  const input = cell.querySelector('input, select') as HTMLInputElement | HTMLSelectElement;
   if (!input) return;
 
   const newValue = input.value;
   const field = cell.dataset.field;
   const id = cell.dataset.id;
 
+  if (!field || !id) return;
+
   if (cell.dataset.type === 'number' && isNaN(parseFloat(newValue))) {
     showToast('El valor debe ser un número', 'error');
     return;
   }
 
-  const displayValue = formatDisplayValue(cell.dataset.field, newValue);
+  const displayValue = formatDisplayValue(field, newValue);
   cell.textContent = displayValue;
   cell.classList.remove('editing');
 
-  updatePropertyField(cell.dataset.id, cell.dataset.field, newValue);
+  updatePropertyField(id, field, newValue);
 
   editingCell = null;
 }
@@ -371,13 +370,13 @@ function formatDisplayValue(field: string, value: string): string {
 
 async function updatePropertyField(id: string, field: string, value: string): Promise<void> {
   try {
-    let updateValue: any = value;
+    let updateValue: string | number | boolean = value;
     if (field === 'precio') updateValue = parseFloat(value);
     else if (field === 'destacado') updateValue = value === 'true';
 
     const { error } = await supabase
       .from('propiedades')
-      .update({ [field]: value, updated_at: new Date().toISOString() })
+      .update({ [field]: updateValue, updated_at: new Date().toISOString() })
       .eq('id', id);
 
     if (error) throw error;
@@ -385,10 +384,10 @@ async function updatePropertyField(id: string, field: string, value: string): Pr
     showToast('Cambio guardado', 'success');
 
     const prop = propertiesCache.find(p => p.id === parseInt(id));
-    if (prop) prop[field as keyof Property] = value;
-  } catch (e) {
+    if (prop) (prop as any)[field] = updateValue;
+  } catch (e: unknown) {
     console.error('Update error:', e);
-    showToast('Error al guardar: ' + e.message, 'error');
+    showToast('Error al guardar: ' + (e instanceof Error ? e.message : 'Error desconocido'), 'error');
   }
 }
 
@@ -555,8 +554,46 @@ function getActionInfinitive(action: string): string {
   return infinitives[action] || 'realizar acción';
 }
 
-async function bulkPublish() { await bulkAction('publish', { ml_status: 'published', ml_last_sync: new Date().toISOString() }); }
-async function bulkUnpublish() { await bulkAction('unpublish', { ml_status: 'draft', ml_last_sync: new Date().toISOString() }); }
+async function bulkPublish() { 
+  const ids = Array.from(selectedPropertyIds);
+  if (ids.length === 0) return;
+  
+  // First update local status
+  await bulkAction('publish', { ml_status: 'published', ml_last_sync: new Date().toISOString() });
+  
+  // Then call ML publish for each property
+  for (const id of ids) {
+    try {
+      await supabase.functions.invoke('ml-publish', { body: { propertyId: id, action: 'publish' } });
+    } catch (_e) {
+      console.warn(`ML publish failed for property ${id}:`, _e);
+    }
+  }
+  
+  // Reload to get updated data
+  await loadProperties(); 
+  await loadMLSyncLog();
+}
+async function bulkUnpublish() { 
+  const ids = Array.from(selectedPropertyIds);
+  if (ids.length === 0) return;
+  
+  // First update local status
+  await bulkAction('unpublish', { ml_status: 'draft', ml_last_sync: new Date().toISOString() });
+  
+  // Then call ML unpublish for each property
+  for (const id of ids) {
+    try {
+      await supabase.functions.invoke('ml-publish', { body: { propertyId: id, action: 'unpublish' } });
+    } catch (_e) {
+      console.warn(`ML unpublish failed for property ${id}:`, _e);
+    }
+  }
+  
+  // Reload to get updated data
+  await loadProperties(); 
+  await loadMLSyncLog();
+}
 async function bulkFeature() { await bulkAction('feature', { destacado: true }); }
 async function bulkUnfeature() { await bulkAction('unfeature', { destacado: false }); }
 async function bulkChangeOperation(operacion: string) { await bulkAction('changeOperation', { operacion }); }
@@ -588,9 +625,9 @@ async function bulkDelete() {
     showToast(`${ids.length} propiedad${ids.length === 1 ? '' : 'es'} eliminada${ids.length === 1 ? '' : 's'}`, 'success');
     clearSelection();
     await loadProperties();
-  } catch (e) {
+  } catch (e: unknown) {
     console.error('Bulk delete error:', e);
-    showToast(`Error al eliminar: ${e.message}`, 'error');
+    showToast(`Error al eliminar: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error');
   }
 }
 
@@ -615,7 +652,7 @@ function openPropertyModal(property: Property | null = null): void {
 
   const modal = document.getElementById('propertyModal');
   const title = document.getElementById('propertyModalTitle');
-  const form = document.getElementById('propertyForm');
+  const form = document.getElementById('propertyForm') as HTMLFormElement;
 
   form?.reset();
   document.getElementById('propImagesPreview')!.innerHTML = '';
@@ -1003,6 +1040,18 @@ async function saveProperty(e: Event): Promise<void> {
       editingPropertyId = data[0].id;
     }
 
+    // Auto-publicar en MercadoLibre si está habilitado
+    if (mlEnabled && mlStatus === 'publish') {
+      try {
+        const { error: mlError } = await supabase.functions.invoke('ml-publish', { body: { propertyId: editingPropertyId, action: 'publish' } });
+        if (!mlError) {
+          showToast('Propiedad publicada en MercadoLibre', 'success');
+        }
+      } catch (mlErr) {
+        console.warn('ML auto-publish failed:', mlErr);
+      }
+    }
+
     if (files.length > 0) {
       const imagenesData = [];
       const maxImagenes = Math.min(files.length, 15);
@@ -1027,9 +1076,9 @@ async function saveProperty(e: Event): Promise<void> {
     showToast(`Propiedad ${editingPropertyId ? 'actualizada' : 'creada'} correctamente`, 'success');
     closePropertyModal();
     await loadProperties();
-  } catch (e) {
+  } catch (e: unknown) {
     console.error('saveProperty error:', e);
-    showToast(`Error: ${e.message || 'Error al guardar propiedad'}`, 'error');
+    showToast(`Error: ${e instanceof Error ? e.message : 'Error al guardar propiedad'}`, 'error');
   } finally {
     btn!.disabled = false;
     btn!.innerHTML = '<i class="fas fa-save"></i> Guardar';
@@ -1039,25 +1088,33 @@ async function saveProperty(e: Event): Promise<void> {
 // ================================================================
 // EXPORTS
 // ================================================================
-(window as any).editProperty = (id: number) => {
+export function editProperty(id: number): void {
   const prop = propertiesCache.find(p => p.id === id);
   if (prop) openPropertyModal(prop);
-};
+}
 
-(window as any).cloneProperty = (id: number) => {
+export function cloneProperty(id: number): void {
   const prop = propertiesCache.find(p => p.id === id);
   if (prop) {
     const { id: _, created_at, updated_at, ml_item_id, ml_status, ml_last_sync, ml_enabled, imagenes, ...cloneData } = prop;
     cloneData.titulo = `${cloneData.titulo} (Copia)`;
     openPropertyModal(cloneData);
   }
-};
+}
+
+(window as any).editProperty = editProperty;
+(window as any).cloneProperty = cloneProperty;
 
 (window as any).confirmDelete = (type: string, id: number, name: string) => confirmDelete(type, id, name);
 
 (window as any).filterProperties = filterProperties;
 (window as any).filterAgents = filterAgents;
-(window as any).bulkActionProperties = bulkAction;
+
+export function bulkActionProperties(action: string, data?: any): void {
+  bulkAction(action, data);
+}
+
+(window as any).bulkActionProperties = bulkActionProperties;
 (window as any).bulkPublish = bulkPublish;
 (window as any).bulkUnpublish = bulkUnpublish;
 (window as any).bulkFeature = bulkFeature;
@@ -1073,8 +1130,5 @@ export {
   closePropertyModal,
   saveProperty,
   filterProperties,
-  editProperty,
-  cloneProperty,
-  bulkActionProperties,
   clearSelection,
 };

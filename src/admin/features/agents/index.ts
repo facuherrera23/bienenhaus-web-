@@ -3,28 +3,31 @@
 // ================================================================
 import { supabase } from '../../../supabase.js';
 import { uploadToCloudinary, validateImageFile } from '../../../cloudinary.js';
+import { showToast } from '../../shared/utils.js';
 import { CONFIG } from '../../../config.js';
-import { showToast, formatPrice, formatDate, getInitials, debounce } from '../../shared/utils.js';
-import Cropper from 'cropperjs';
+import { propertiesCache } from '../properties/index.js';
+import { getInitials } from '../../shared/utils.js';
 
 interface Agent {
   id: number;
   nombre: string;
-  apellido: string;
+  apellido: string | null;
   especialidad: string;
-  email: string;
-  telefono: string;
-  descripcion: string;
+  email: string | null;
+  telefono: string | null;
+  descripcion: string | null;
   orden: number;
   activo: boolean;
-  avatar_url: string;
-  avatar_public_id: string;
-  redes_sociales: Record<string, string>;
+  avatar_url: string | null;
+  avatar_public_id: string | null;
+  redes_sociales: Record<string, string> | null;
+  created_at: string;
+  updated_at: string;
 }
 
 let agentsCache: Agent[] = [];
+export { agentsCache };
 let editingAgentId: number | null = null;
-let uploadedAgentAvatar: File | null = null;
 
 async function loadAgents(): Promise<void> {
   try {
@@ -77,7 +80,7 @@ function renderAgentsTable(filter = ''): void {
 }
 
 function filterAgents(): void {
-  const search = document.getElementById('searchAgents')!.value.toLowerCase();
+  const search = (document.getElementById('searchAgents') as HTMLInputElement)?.value.toLowerCase() || '';
   const filtered = agentsCache.filter(a =>
     `${a.nombre} ${a.apellido}`.toLowerCase().includes(search) ||
     a.especialidad.toLowerCase().includes(search) ||
@@ -99,9 +102,7 @@ function renderAgentsTableFiltered(filtered: any[]): void {
 
 function openAgentModal(agent: Agent | null = null): void {
   editingAgentId = agent?.id || null;
-  uploadedAgentAvatar = null;
   const form = document.getElementById('agentForm') as HTMLFormElement;
-  const title = document.getElementById('agentModalTitle')!;
   const preview = document.getElementById('agentAvatarPreview')!;
   form.reset();
   preview.innerHTML = '<span>👤</span>';
@@ -130,7 +131,7 @@ function openAgentModal(agent: Agent | null = null): void {
 
 function closeAgentModal(): void {
   document.getElementById('agentModal')!.classList.remove('active');
-  editingAgentId = null; uploadedAgentAvatar = null;
+  editingAgentId = null;
 }
 
 async function saveAgent(e: Event): Promise<void> {
@@ -150,9 +151,8 @@ async function saveAgent(e: Event): Promise<void> {
 
     if (!nombre || !apellido || !especialidad) { showToast('Completa nombre, apellido y especialidad', 'error'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar'; return; }
 
-    const datos = { nombre, apellido, especialidad, email, telefono, orden, descripcion, activo };
-    let avatarUrl = null;
-    if (file) { validateImageFile(file); const folder = `inmoconecta/agentes/${editingAgentId || 'nuevo'}`; const img = await uploadToCloudinary(file, folder, CONFIG.CLOUDINARY_UPLOAD_PRESET_AGENTES); avatarUrl = img.url; datos.avatar_url = avatarUrl; datos.avatar_public_id = img.public_id; }
+    const datos: Omit<Agent, 'id' | 'created_at' | 'updated_at'> = { nombre, apellido, especialidad, email, telefono, orden, descripcion, activo, avatar_url: null, avatar_public_id: null, redes_sociales: null };
+    if (file) { validateImageFile(file); const folder = `inmoconecta/agentes/${editingAgentId || 'nuevo'}`; const img = await uploadToCloudinary(file, folder, CONFIG.CLOUDINARY_UPLOAD_PRESET_AGENTES); datos.avatar_url = img.url; datos.avatar_public_id = img.public_id; }
 
     let result;
     if (editingAgentId) { result = await supabase.from('agentes').update(datos).eq('id', editingAgentId); }
@@ -160,7 +160,7 @@ async function saveAgent(e: Event): Promise<void> {
     if (result.error) throw result.error;
     showToast(`Agente ${editingAgentId ? 'actualizado' : 'creado'} correctamente`, 'success');
     closeAgentModal(); await loadAgents();
-  } catch (e) { console.error('saveAgent error:', e); showToast(`Error: ${e.message || 'Error al guardar agente'}`, 'error'); }
+  } catch (e: unknown) { console.error('saveAgent error:', e); showToast(`Error: ${e instanceof Error ? e.message : 'Error al guardar agente'}`, 'error'); }
   finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar'; }
 }
 

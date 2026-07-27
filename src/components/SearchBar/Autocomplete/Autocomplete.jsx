@@ -78,10 +78,14 @@ window.Autocomplete = {
     autocompleteInstance = null;
     autocompleteContainer = null;
   }
-};
+}
+
+export function initAutocomplete(config) {
+  return window.Autocomplete.init(config);
+}
 
 // Internal component factory
-function createAutocompleteComponent(config) {
+export function createAutocompleteComponent(config) {
   const {
     container,
     name = 'location',
@@ -267,7 +271,7 @@ if (!listRef) return;
     item.addEventListener('click', () => {
       const search = recentSearches[parseInt(item.dataset.index)];
       if (search) {
-        const suggestion = {
+const suggestion = {
           ...search,
           displayName: search.name,
           shortName: search.name,
@@ -275,7 +279,8 @@ if (!listRef) return;
           lng: search.lng,
           type: 'recent'
         };
-handleSelect(suggestion);
+
+  handleSelect(suggestion);
       }
     });
   });
@@ -418,8 +423,8 @@ handleSelect(suggestion);
         lng: location.lng,
         type: 'user_location',
         _isCurrentLocation: true
-      };
-      
+};
+       
       query = suggestion.shortName || name;
       if (inputRef) inputRef.value = query;
       onSelect(suggestion);

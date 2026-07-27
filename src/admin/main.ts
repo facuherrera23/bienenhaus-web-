@@ -6,77 +6,18 @@ import { supabase } from '../supabase.js';
 import { CONFIG } from '../config.js';
 import { uploadToCloudinary, validateImageFile } from '../cloudinary.js';
 import Cropper from 'cropperjs';
+import {
+  showToast,
+  formatPrice,
+  formatDate,
+  getInitials,
+  debounce,
+  parsePipeArray,
+} from './shared/utils.ts';
+import { propertiesCache } from './features/properties/index.ts';
+import { getContentCache, setContentCache } from './features/content/index.ts';
+import { agentsCache } from './features/agents/index.ts';
 // Cropper CSS imported via admin.css
-
-// ================================================================
-// GLOBAL STATE
-// ================================================================
-let currentSection = 'dashboard';
-let currentUser = null;
-let propertiesCache: any[] = [];
-let agentsCache: any[] = [];
-let contentCache: Record<string, any> = {};
-const editingPropertyId: number | null = null;
-const editingAgentId: number | null = null;
-const uploadedPropertyImages: File[] = [];
-const uploadedAgentAvatar: File | null = null;
-
-// MercadoLibre State
-const mlConnected = false;
-const mlUserId: string | null = null;
-const mlTokenExpiresAt: string | null = null;
-
-// ================================================================
-// UTILITIES (inline to avoid circular deps)
-// ================================================================
-function showToast(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success', duration = 4000): void {
-  const container = document.getElementById('toastContainer');
-  if (!container) return;
-
-  const toast = document.createElement('div');
-  const icons = { success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
-  const colors = { success: 'var(--success)', error: 'var(--danger)', warning: 'var(--warning)', info: 'var(--accent)' };
-
-  toast.style.cssText = `
-    background: white; border-left: 4px solid ${colors[type]};
-    padding: 16px 20px; border-radius: var(--radius);
-    box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 12px;
-    min-width: 300px; max-width: 400px; animation: slideInRight 0.3s ease;
-  `;
-  toast.innerHTML = `<i class="fas ${icons[type]}" style="color: ${colors[type]}; font-size: 1.2rem;"></i><span>${message}</span>`;
-  container.appendChild(toast);
-  setTimeout(() => { toast.style.animation = 'slideOutRight 0.3s ease'; setTimeout(() => toast.remove(), 300); }, duration);
-}
-
-function formatPrice(price: number, currency = 'ARS', operation = 'sale'): string {
-  const symbol = currency === 'USD' ? 'U$S' : '$';
-  const suffix = operation === 'rent' ? '/mes' : '';
-  return `${symbol} ${Number(price).toLocaleString('es-AR')}${suffix}`;
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-
-function getInitials(name: string): string {
-  if (!name) return '?';
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-}
-
-function debounce<T extends (...args: any[]) => any>(fn: T, delay: number): T {
-  let timeoutId: ReturnType<typeof setTimeout>;
-  return ((...args: any[]) => { clearTimeout(timeoutId); timeoutId = setTimeout(() => fn(...args), delay); }) as T;
-}
-
-function parsePipeArray(value: string, fields: string[]): Record<string, string>[] {
-  if (!value) return [];
-  return value.split('\n').filter(line => line.trim()).map(line => {
-    const parts = line.split('|');
-    const obj: Record<string, string> = {};
-    fields.forEach((field, i) => { obj[field] = parts[i]?.trim() || ''; });
-    return obj;
-  });
-}
 
 // ================================================================
 // LAZY LOAD FEATURE MODULES
@@ -274,8 +215,9 @@ async function loadContent(): Promise<void> {
   try {
     const { data, error } = await supabase.from('contenido_sitio').select('*');
     if (error) { console.warn('contenido_sitio no accesible:', error.message); return; }
-    contentCache = {};
-    (data || []).forEach(item => { contentCache[item.clave] = item.valor; });
+    const newCache: Record<string, any> = {};
+    (data || []).forEach(item => { newCache[item.clave] = item.valor; });
+    setContentCache(newCache);
     populateContentEditor();
   } catch (e) { console.warn('Error loading content:', e); }
 }
@@ -285,62 +227,63 @@ async function loadContentEditor(): Promise<void> {
 }
 
 function populateContentEditor(): void {
+  const cache = getContentCache();
   // Hero
-  (document.getElementById('heroBadge') as HTMLInputElement).value = contentCache.hero_badge || '';
-  (document.getElementById('heroTitle') as HTMLTextAreaElement).value = contentCache.hero_titulo || '';
-  (document.getElementById('heroSubtitle') as HTMLTextAreaElement).value = contentCache.hero_subtitulo || '';
-  (document.getElementById('heroBadges') as HTMLTextAreaElement).value = (contentCache.hero_badges || []).join('\n');
-  (document.getElementById('heroCtaPrimary') as HTMLInputElement).value = contentCache.hero_cta_primario || '';
-  (document.getElementById('heroCtaSecondary') as HTMLInputElement).value = contentCache.hero_cta_secundario || '';
-  (document.getElementById('heroStats') as HTMLTextAreaElement).value = (contentCache.hero_stats || []).map(s => `${s.label}|${s.valor}|${s.icono}`).join('\n');
+  (document.getElementById('heroBadge') as HTMLInputElement).value = getContentCache().hero_badge || '';
+  (document.getElementById('heroTitle') as HTMLTextAreaElement).value = getContentCache().hero_titulo || '';
+  (document.getElementById('heroSubtitle') as HTMLTextAreaElement).value = getContentCache().hero_subtitulo || '';
+  (document.getElementById('heroBadges') as HTMLTextAreaElement).value = (getContentCache().hero_badges || []).join('\n');
+  (document.getElementById('heroCtaPrimary') as HTMLInputElement).value = getContentCache().hero_cta_primario || '';
+  (document.getElementById('heroCtaSecondary') as HTMLInputElement).value = getContentCache().hero_cta_secundario || '';
+  (document.getElementById('heroStats') as HTMLTextAreaElement).value = (getContentCache().hero_stats || []).map(s => `${s.label}|${s.valor}|${s.icono}`).join('\n');
 
   // About
-  (document.getElementById('aboutTitle') as HTMLInputElement).value = contentCache.about_titulo || '';
-  (document.getElementById('aboutDescription') as HTMLTextAreaElement).value = contentCache.about_descripcion || '';
-  (document.getElementById('aboutValues') as HTMLTextAreaElement).value = (contentCache.about_valores || []).map(v => `${v.icono}|${v.titulo}|${v.descripcion}`).join('\n');
+  (document.getElementById('aboutTitle') as HTMLInputElement).value = getContentCache().about_titulo || '';
+  (document.getElementById('aboutDescription') as HTMLTextAreaElement).value = getContentCache().about_descripcion || '';
+  (document.getElementById('aboutValues') as HTMLTextAreaElement).value = (getContentCache().about_valores || []).map(v => `${v.icono}|${v.titulo}|${v.descripcion}`).join('\n');
 
   // Services
-  (document.getElementById('servicesTitle') as HTMLInputElement).value = contentCache.servicios_titulo || '';
-  (document.getElementById('servicesSubtitle') as HTMLInputElement).value = contentCache.servicios_subtitulo || '';
-  (document.getElementById('servicesList') as HTMLTextAreaElement).value = (contentCache.servicios_lista || []).map(s => `${s.icono}|${s.titulo}|${s.descripcion}`).join('\n');
+  (document.getElementById('servicesTitle') as HTMLInputElement).value = getContentCache().servicios_titulo || '';
+  (document.getElementById('servicesSubtitle') as HTMLInputElement).value = getContentCache().servicios_subtitulo || '';
+  (document.getElementById('servicesList') as HTMLTextAreaElement).value = (getContentCache().servicios_lista || []).map(s => `${s.icono}|${s.titulo}|${s.descripcion}`).join('\n');
 
   // Why
-  (document.getElementById('whyTitle') as HTMLInputElement).value = contentCache.por_que_titulo || '';
-  (document.getElementById('whySubtitle') as HTMLInputElement).value = contentCache.por_que_subtitulo || '';
-  (document.getElementById('whyReasons') as HTMLTextAreaElement).value = (contentCache.por_que_razones || []).map(r => `${r.emoji}|${r.titulo}|${r.descripcion}`).join('\n');
+  (document.getElementById('whyTitle') as HTMLInputElement).value = getContentCache().por_que_titulo || '';
+  (document.getElementById('whySubtitle') as HTMLInputElement).value = getContentCache().por_que_subtitulo || '';
+  (document.getElementById('whyReasons') as HTMLTextAreaElement).value = (getContentCache().por_que_razones || []).map(r => `${r.emoji}|${r.titulo}|${r.descripcion}`).join('\n');
 
   // Team
-  (document.getElementById('teamTitle') as HTMLInputElement).value = contentCache.equipo_titulo || '';
-  (document.getElementById('teamSubtitle') as HTMLInputElement).value = contentCache.equipo_subtitulo || '';
+  (document.getElementById('teamTitle') as HTMLInputElement).value = getContentCache().equipo_titulo || '';
+  (document.getElementById('teamSubtitle') as HTMLInputElement).value = getContentCache().equipo_subtitulo || '';
 
   // Offices
-  (document.getElementById('officesTitle') as HTMLInputElement).value = contentCache.oficinas_titulo || '';
-  (document.getElementById('officesSubtitle') as HTMLInputElement).value = contentCache.oficinas_subtitulo || '';
+  (document.getElementById('officesTitle') as HTMLInputElement).value = getContentCache().oficinas_titulo || '';
+  (document.getElementById('officesSubtitle') as HTMLInputElement).value = getContentCache().oficinas_subtitulo || '';
 
   // Footer
-  (document.getElementById('footerBrand') as HTMLInputElement).value = contentCache.footer_marca || '';
-  (document.getElementById('footerDescription') as HTMLTextAreaElement).value = contentCache.footer_descripcion || '';
-  (document.getElementById('footerContact') as HTMLInputElement).value = contentCache.footer_contacto || '';
-  (document.getElementById('footerLinks') as HTMLTextAreaElement).value = (contentCache.footer_links || []).map(l => `${l.texto}|${l.url}`).join('\n');
-  (document.getElementById('footerServices') as HTMLTextAreaElement).value = (contentCache.footer_servicios || []).map(s => `${s.texto}|${s.url}`).join('\n');
-  (document.getElementById('footerCopyright') as HTMLInputElement).value = contentCache.footer_copyright || '';
+  (document.getElementById('footerBrand') as HTMLInputElement).value = getContentCache().footer_marca || '';
+  (document.getElementById('footerDescription') as HTMLTextAreaElement).value = getContentCache().footer_descripcion || '';
+  (document.getElementById('footerContact') as HTMLInputElement).value = getContentCache().footer_contacto || '';
+  (document.getElementById('footerLinks') as HTMLTextAreaElement).value = (getContentCache().footer_links || []).map(l => `${l.texto}|${l.url}`).join('\n');
+  (document.getElementById('footerServices') as HTMLTextAreaElement).value = (getContentCache().footer_servicios || []).map(s => `${s.texto}|${s.url}`).join('\n');
+  (document.getElementById('footerCopyright') as HTMLInputElement).value = getContentCache().footer_copyright || '';
 
   // FAQ
-  (document.getElementById('faqTitle') as HTMLInputElement).value = contentCache.faq_titulo || '';
-  (document.getElementById('faqSubtitle') as HTMLInputElement).value = contentCache.faq_subtitulo || '';
-  (document.getElementById('faqGrid') as HTMLTextAreaElement).value = (contentCache.faq_grid || []).map(f => `${f.pregunta}|${f.respuesta}`).join('\n');
+  (document.getElementById('faqTitle') as HTMLInputElement).value = getContentCache().faq_titulo || '';
+  (document.getElementById('faqSubtitle') as HTMLInputElement).value = getContentCache().faq_subtitulo || '';
+  (document.getElementById('faqGrid') as HTMLTextAreaElement).value = (getContentCache().faq_grid || []).map(f => `${f.pregunta}|${f.respuesta}`).join('\n');
 
   // Contacto
-  (document.getElementById('contactoTitle') as HTMLInputElement).value = contentCache.contacto_titulo || '';
-  (document.getElementById('contactoSubtitle') as HTMLInputElement).value = contentCache.contacto_subtitulo || '';
+  (document.getElementById('contactoTitle') as HTMLInputElement).value = getContentCache().contacto_titulo || '';
+  (document.getElementById('contactoSubtitle') as HTMLInputElement).value = getContentCache().contacto_subtitulo || '';
 
   // SEO
-  (document.getElementById('seoTitle') as HTMLInputElement).value = contentCache.seo_titulo || '';
-  (document.getElementById('seoDescription') as HTMLTextAreaElement).value = contentCache.seo_descripcion || '';
-  (document.getElementById('seoKeywords') as HTMLInputElement).value = contentCache.seo_keywords || '';
-  (document.getElementById('seoOgImage') as HTMLInputElement).value = contentCache.seo_og_image || '';
-  (document.getElementById('seoTwitterCard') as HTMLInputElement).value = contentCache.seo_twitter_card || '';
-  (document.getElementById('seoSchema') as HTMLTextAreaElement).value = contentCache.seo_schema || '';
+  (document.getElementById('seoTitle') as HTMLInputElement).value = getContentCache().seo_titulo || '';
+  (document.getElementById('seoDescription') as HTMLTextAreaElement).value = getContentCache().seo_descripcion || '';
+  (document.getElementById('seoKeywords') as HTMLInputElement).value = getContentCache().seo_keywords || '';
+  (document.getElementById('seoOgImage') as HTMLInputElement).value = getContentCache().seo_og_image || '';
+  (document.getElementById('seoTwitterCard') as HTMLInputElement).value = getContentCache().seo_twitter_card || '';
+  (document.getElementById('seoSchema') as HTMLTextAreaElement).value = getContentCache().seo_schema || '';
 }
 
 async function saveAllContent(): Promise<void> {
