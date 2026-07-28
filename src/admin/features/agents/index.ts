@@ -167,4 +167,4 @@ async function saveAgent(e: Event): Promise<void> {
 (window as any).editAgent = (id: number) => { const agent = agentsCache.find(a => a.id === id); if (agent) openAgentModal(agent); };
 (window as any).filterAgents = filterAgents;
 
-export { loadAgents, openAgentModal, closeAgentModal, saveAgent };
+export { loadAgents, openAgentModal, closeAgentModal, saveAgent, filterAgents };
