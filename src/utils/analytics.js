@@ -36,7 +36,11 @@ export function initAnalytics() {
   // Meta Pixel
   if (ANALYTICS_CONFIG.metaPixelId && !window.fbq) {
     window.fbq = function fbq() {
-      window.fbq.callMethod ? window.fbq.callMethod.apply(window.fbq, arguments) : window.fbq.queue.push(arguments);
+      if (window.fbq.callMethod) {
+        window.fbq.callMethod.apply(window.fbq, arguments);
+      } else {
+        window.fbq.queue.push(arguments);
+      }
     };
     window.fbq.queue = [];
     window.fbq('init', ANALYTICS_CONFIG.metaPixelId, {
@@ -82,7 +86,7 @@ export function trackPageView(pagePath, pageTitle) {
   }
 
   if (ANALYTICS_CONFIG.debug) {
-    console.log('[Analytics] Page view:', { pagePath, pageTitle });
+    console.warn('[Analytics] Page view:', { pagePath, pageTitle });
   }
 }
 
@@ -122,7 +126,7 @@ export function trackEvent(eventName, parameters = {}) {
   }
 
   if (ANALYTICS_CONFIG.debug) {
-    console.log('[Analytics] Event:', eventName, enrichedParams);
+    console.warn('[Analytics] Event:', eventName, enrichedParams);
   }
 }
 

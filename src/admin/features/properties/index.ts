@@ -5,8 +5,8 @@ import { supabase } from '../../../supabase.js';
 import { CONFIG } from '../../../config.js';
 import { uploadToCloudinary, validateImageFile } from '../../../cloudinary.js';
 import { showToast, formatPrice } from '../../shared/utils.js';
-import Cropper from 'cropperjs';
 import { loadMLSyncLog } from '../mercadoLibre/index.js';
+import Cropper from 'cropperjs';
 
 interface Property {
   id: number;
@@ -26,17 +26,17 @@ interface Property {
   imagenes: Array<{ url: string; cloudinary_public_id: string; orden: number; es_principal: boolean }>;
   imagen_principal: string | null;
   galeria: string[];
-  // SEO
   seo_titulo?: string;
   seo_descripcion?: string;
   seo_keywords?: string;
   seo_og_image?: string;
   seo_schema?: object;
-  // MercadoLibre
   ml_enabled?: boolean;
   ml_item_id?: string;
   ml_status?: string;
   ml_last_sync?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 let propertiesCache: Property[] = [];
@@ -44,6 +44,7 @@ const agentsCache: any[] = [];
 const selectedPropertyIds = new Set<number>();
 let editingPropertyId: number | null = null;
 let uploadedPropertyImages: File[] = [];
+let cropperInstance: any = null;
 
 async function loadProperties(): Promise<void> {
   try {
@@ -164,12 +165,13 @@ function renderTableHeader(): void {
 
   const selectAll = document.getElementById('selectAllProperties');
   if (selectAll) {
-    selectAll.addEventListener('change', (e) => {
-      const checked = (e.target as HTMLInputElement).checked;
+    selectAll.addEventListener('change', (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const checked = target.checked;
       document.querySelectorAll('.row-checkbox').forEach(cb => {
         const checkbox = cb as HTMLInputElement;
         checkbox.checked = checked;
-        const id = parseInt(checkbox.value);
+        const id = parseInt(checkbox.value, 10);
         if (checked) {
           selectedPropertyIds.add(id);
         } else {
@@ -183,9 +185,10 @@ function renderTableHeader(): void {
 
 function attachRowCheckboxListeners(): void {
   document.querySelectorAll('.row-checkbox').forEach(cb => {
-    (cb as HTMLInputElement).addEventListener('change', (e) => {
-      const id = parseInt((e.target as HTMLInputElement).value);
-      if ((e.target as HTMLInputElement).checked) {
+    (cb as HTMLInputElement).addEventListener('change', (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const id = parseInt(target.value, 10);
+      if (target.checked) {
         selectedPropertyIds.add(id);
       } else {
         selectedPropertyIds.delete(id);
@@ -217,11 +220,9 @@ function filterProperties(): void {
   if (status) {
     filtered = filtered.filter(p => status === 'featured' ? p.destacado : !p.destacado);
   }
-  // Pass both search and status as a filter string
   renderPropertiesTable(search);
 }
 
-// Column resizing
 const columnWidths: Record<number, number> = {};
 
 function initColumnResizing(): void {
@@ -267,128 +268,6 @@ function initColumnResizing(): void {
       document.body.style.userSelect = 'none';
     });
   });
-}
-
-// Inline editing
-let editingCell: HTMLElement | null = null;
-const originalValue = '';
-
-// function initInlineEdit(): void {
-//   document.querySelectorAll('.editable-cell').forEach(cell => {
-//     (cell as HTMLElement).addEventListener('dblclick', () => startInlineEdit(cell as HTMLElement));
-//     (cell as HTMLElement).addEventListener('keydown', (e) => {
-//       if (e.key === 'Enter' && !e.shiftKey) {
-//         e.preventDefault();
-//         saveInlineEdit(cell as HTMLElement);
-//       } else if (e.key === 'Escape') {
-//         cancelInlineEdit(cell as HTMLElement);
-//       }
-//     });
-//   });
-// }
-
-// Inline editing start function
-function startInlineEdit(cell: HTMLElement): void {
-  let input: HTMLInputElement | HTMLSelectElement;
-  const type = cell.dataset.type || 'text';
-
-  if (type === 'boolean') {
-    input = document.createElement('select');
-    input.innerHTML = `<option value="true">Sí</option><option value="false">No</option>`;
-    input.value = cell.textContent?.trim().includes('Destacada') ? 'true' : 'false';
-  } else if (type === 'number') {
-    input = document.createElement('input');
-    input.type = 'number';
-    input.step = '1000';
-    input.value = cell.textContent?.replace(/[^\d]/g, '') || '';
-  } else {
-    input = document.createElement('input');
-    input.type = 'text';
-    input.value = cell.textContent?.trim() || '';
-  }
-
-  input.className = 'inline-edit-input';
-  input.style.cssText = 'width: 100%; padding: 4px 8px; border: 1px solid var(--accent); border-radius: 4px; font: inherit;';
-
-  cell.innerHTML = '';
-  cell.appendChild(input);
-  input.focus();
-  if (input instanceof HTMLInputElement) {
-    input.select();
-  }
-
-  input.addEventListener('blur', () => saveInlineEdit(cell));
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') saveInlineEdit(cell);
-    if (e.key === 'Escape') cancelInlineEdit(cell);
-  });
-}
-
-function saveInlineEdit(cell: HTMLElement): void {
-  if (!cell.classList.contains('editing')) return;
-
-  const input = cell.querySelector('input, select') as HTMLInputElement | HTMLSelectElement;
-  if (!input) return;
-
-  const newValue = input.value;
-  const field = cell.dataset.field;
-  const id = cell.dataset.id;
-
-  if (!field || !id) return;
-
-  if (cell.dataset.type === 'number' && isNaN(parseFloat(newValue))) {
-    showToast('El valor debe ser un número', 'error');
-    return;
-  }
-
-  const displayValue = formatDisplayValue(field, newValue);
-  cell.textContent = displayValue;
-  cell.classList.remove('editing');
-
-  updatePropertyField(id, field, newValue);
-
-  editingCell = null;
-}
-
-function cancelInlineEdit(cell: HTMLElement): void {
-  if (!cell.classList.contains('editing')) return;
-  cell.textContent = cell.dataset.originalValue || originalValue;
-  cell.classList.remove('editing');
-  editingCell = null;
-}
-
-function formatDisplayValue(field: string, value: string): string {
-  switch (field) {
-    case 'precio':
-      return formatPrice(parseFloat(value), 'ARS', 'venta');
-    case 'destacado':
-      return value === 'true' || value === 'true' ? '<span class="badge badge-featured">Destacada</span>' : '<span class="badge badge-active">Normal</span>';
-    default:
-      return value;
-  }
-}
-
-async function updatePropertyField(id: string, field: string, value: string): Promise<void> {
-  try {
-    let updateValue: string | number | boolean = value;
-    if (field === 'precio') updateValue = parseFloat(value);
-    else if (field === 'destacado') updateValue = value === 'true';
-
-    const { error } = await supabase
-      .from('propiedades')
-      .update({ [field]: updateValue, updated_at: new Date().toISOString() })
-      .eq('id', id);
-
-    if (error) throw error;
-
-    showToast('Cambio guardado', 'success');
-
-    const prop = propertiesCache.find(p => p.id === parseInt(id));
-    if (prop) (prop as any)[field] = updateValue;
-  } catch (e: unknown) {
-    console.error('Update error:', e);
-    showToast('Error al guardar: ' + (e instanceof Error ? e.message : 'Error desconocido'), 'error');
-  }
 }
 
 function initStickyTableHeader(): void {
@@ -530,9 +409,9 @@ async function bulkAction(action: string, data = {}): Promise<void> {
     showToast(`${ids.length} propiedad${ids.length === 1 ? '' : 'es'} ${getActionPastTense(action)}`, 'success');
     clearSelection();
     await loadProperties();
-  } catch (e) {
+  } catch (e: unknown) {
     console.error(`Bulk ${action} error:`, e);
-    showToast(`Error al ${getActionInfinitive(action)}: ${e.message}`, 'error');
+    showToast(`Error al ${getActionInfinitive(action)}: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error');
   }
 }
 
@@ -554,14 +433,12 @@ function getActionInfinitive(action: string): string {
   return infinitives[action] || 'realizar acción';
 }
 
-async function bulkPublish() { 
+async function bulkPublish(): Promise<void> {
   const ids = Array.from(selectedPropertyIds);
   if (ids.length === 0) return;
-  
-  // First update local status
+
   await bulkAction('publish', { ml_status: 'published', ml_last_sync: new Date().toISOString() });
-  
-  // Then call ML publish for each property
+
   for (const id of ids) {
     try {
       await supabase.functions.invoke('ml-publish', { body: { propertyId: id, action: 'publish' } });
@@ -569,19 +446,17 @@ async function bulkPublish() {
       console.warn(`ML publish failed for property ${id}:`, _e);
     }
   }
-  
-  // Reload to get updated data
-  await loadProperties(); 
+
+  await loadProperties();
   await loadMLSyncLog();
 }
-async function bulkUnpublish() { 
+
+async function bulkUnpublish(): Promise<void> {
   const ids = Array.from(selectedPropertyIds);
   if (ids.length === 0) return;
-  
-  // First update local status
+
   await bulkAction('unpublish', { ml_status: 'draft', ml_last_sync: new Date().toISOString() });
-  
-  // Then call ML unpublish for each property
+
   for (const id of ids) {
     try {
       await supabase.functions.invoke('ml-publish', { body: { propertyId: id, action: 'unpublish' } });
@@ -589,15 +464,16 @@ async function bulkUnpublish() {
       console.warn(`ML unpublish failed for property ${id}:`, _e);
     }
   }
-  
-  // Reload to get updated data
-  await loadProperties(); 
+
+  await loadProperties();
   await loadMLSyncLog();
 }
-async function bulkFeature() { await bulkAction('feature', { destacado: true }); }
-async function bulkUnfeature() { await bulkAction('unfeature', { destacado: false }); }
-async function bulkChangeOperation(operacion: string) { await bulkAction('changeOperation', { operacion }); }
-async function bulkDelete() {
+
+async function bulkFeature(): Promise<void> { await bulkAction('feature', { destacado: true }); }
+async function bulkUnfeature(): Promise<void> { await bulkAction('unfeature', { destacado: false }); }
+async function bulkChangeOperation(operacion: string): Promise<void> { await bulkAction('changeOperation', { operacion }); }
+
+async function bulkDelete(): Promise<void> {
   if (!confirm(`¿Eliminar ${selectedPropertyIds.size} propiedad${selectedPropertyIds.size === 1 ? '' : 'es'}? Esta acción no se puede deshacer.`)) return;
 
   const ids = Array.from(selectedPropertyIds);
@@ -678,7 +554,6 @@ function openPropertyModal(property: Property | null = null): void {
     document.getElementById('propFeatures')!.value = (property.caracteristicas || []).join(', ');
     document.getElementById('propDescription')!.value = property.descripcion || '';
 
-    // SEO fields
     document.getElementById('propSeoTitle')!.value = property.seo_titulo || '';
     document.getElementById('propSeoDesc')!.value = property.seo_descripcion || '';
     document.getElementById('propSeoKeywords')!.value = property.seo_keywords || '';
@@ -687,7 +562,6 @@ function openPropertyModal(property: Property | null = null): void {
       document.getElementById('propSeoSchema')!.value = property.seo_schema ? JSON.stringify(property.seo_schema, null, 2) : '';
     } catch {}
 
-    // MercadoLibre fields
     document.getElementById('propMlEnabled')!.checked = property.ml_enabled || false;
     document.getElementById('propMlItemId')!.value = property.ml_item_id || '';
     document.getElementById('propMlStatus')!.value = property.ml_status || 'draft';
@@ -725,8 +599,264 @@ function closePropertyModal(): void {
   if (fileInput) fileInput.value = '';
 }
 
-let cropperInstance: Cropper | null = null;
+function setupImageUploads(): void {
+  const propUpload = document.getElementById('propImageUpload');
+  const propInput = document.getElementById('propImages') as HTMLInputElement;
 
+  if (propUpload && propInput) {
+    propInput.style.cssText = 'position:absolute;inset:0;opacity:0;cursor:pointer;z-index:10;';
+    propUpload.style.position = 'relative';
+
+    propUpload.addEventListener('dragover', e => { e.preventDefault(); propUpload.classList.add('dragover'); });
+    propUpload.addEventListener('dragleave', () => propUpload.classList.remove('dragover'));
+    propUpload.addEventListener('drop', (e: DragEvent) => {
+      e.preventDefault();
+      propUpload.classList.remove('dragover');
+      if (e.dataTransfer?.files) handleFiles(e.dataTransfer.files, 'property');
+    });
+    propInput.addEventListener('change', (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      if (target.files) handleFiles(target.files, 'property');
+    });
+  }
+
+  const agentUpload = document.getElementById('agentAvatarUpload');
+  const agentInput = document.getElementById('agentAvatar') as HTMLInputElement;
+
+  if (agentUpload && agentInput) {
+    agentInput.style.cssText = 'position:absolute;inset:0;opacity:0;cursor:pointer;z-index:10;';
+    agentUpload.style.position = 'relative';
+
+    agentUpload.addEventListener('dragover', e => { e.preventDefault(); agentUpload.classList.add('dragover'); });
+    agentUpload.addEventListener('dragleave', () => agentUpload.classList.remove('dragover'));
+    agentUpload.addEventListener('drop', (e: DragEvent) => {
+      e.preventDefault();
+      agentUpload.classList.remove('dragover');
+      if (e.dataTransfer?.files) handleFiles(e.dataTransfer.files, 'agent');
+    });
+    agentInput.addEventListener('change', (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      if (target.files) handleFiles(target.files, 'agent');
+    });
+  }
+}
+
+function handleFiles(files: FileList, type: 'property' | 'agent'): void {
+  const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (validFiles.length === 0) return;
+
+  if (type === 'property') {
+    const remaining = 15 - uploadedPropertyImages.length;
+    const toAdd = validFiles.slice(0, remaining);
+    uploadedPropertyImages.push(...toAdd);
+    renderPropertyImagePreviews();
+  } else if (type === 'agent') {
+    const file = validFiles[0];
+    const preview = document.getElementById('agentAvatarPreview');
+    const url = URL.createObjectURL(file);
+    preview!.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
+    preview!.style.background = 'none';
+  }
+}
+
+function renderPropertyImagePreviews(): void {
+  const preview = document.getElementById('propImagesPreview');
+  if (!preview) return;
+  preview.innerHTML = '';
+  uploadedPropertyImages.forEach((file, i) => {
+    const url = URL.createObjectURL(file);
+    const div = document.createElement('div');
+    div.draggable = true;
+    div.dataset.index = String(i);
+    div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:var(--radius);overflow:hidden;border:2px solid var(--gray-200);cursor:grab;' + (i===0?'border-color:var(--accent);':'');
+    div.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" data-index="${i}"><span style="position:absolute;top:2px;right:2px;background:var(--gray-900);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span><button type="button" class="remove-img" data-index="${i}" style="position:absolute;bottom:2px;right:2px;background:rgba(220,38,38,0.9);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;">×</button><button type="button" class="edit-img" data-index="${i}" style="position:absolute;bottom:2px;left:2px;background:rgba(31,110,212,0.9);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;" title="Editar"><i class="fas fa-crop"></i></button>`;
+    preview.appendChild(div);
+  });
+
+  let draggedIndex = -1;
+  preview.querySelectorAll('[draggable]').forEach(el => {
+    const element = el as HTMLElement;
+    element.addEventListener('dragstart', (e: DragEvent) => {
+      draggedIndex = parseInt(element.dataset.index!, 10);
+      element.style.opacity = '0.5';
+      if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+    });
+    element.addEventListener('dragend', () => {
+      element.style.opacity = '1';
+    });
+    element.addEventListener('dragover', (e: DragEvent) => {
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    });
+    element.addEventListener('drop', (e: DragEvent) => {
+      e.preventDefault();
+      const targetEl = (e.currentTarget as HTMLElement).closest('[draggable]') as HTMLElement | null;
+      const targetIndex = parseInt(targetEl?.dataset.index || '-1', 10);
+      if (draggedIndex !== -1 && targetIndex !== -1 && draggedIndex !== targetIndex) {
+        const [removed] = uploadedPropertyImages.splice(draggedIndex, 1);
+        uploadedPropertyImages.splice(targetIndex, 0, removed);
+        renderPropertyImagePreviews();
+      }
+    });
+
+    const removeBtn = element.querySelector('.remove-img') as HTMLElement | null;
+    removeBtn?.addEventListener('click', (e: MouseEvent) => {
+      e.stopPropagation();
+      const idx = parseInt((e.currentTarget as HTMLElement).dataset.index!, 10);
+      uploadedPropertyImages.splice(idx, 1);
+      renderPropertyImagePreviews();
+    });
+
+    const editBtn = element.querySelector('.edit-img') as HTMLElement | null;
+    editBtn?.addEventListener('click', (e: MouseEvent) => {
+      e.stopPropagation();
+      const idx = parseInt((e.currentTarget as HTMLElement).dataset.index!, 10);
+      openImageEditor(idx);
+    });
+
+    const imgEl = element.querySelector('img') as HTMLElement | null;
+    imgEl?.addEventListener('click', (e: MouseEvent) => {
+      const idx = parseInt((e.currentTarget as HTMLElement).dataset.index!, 10);
+      openImageEditor(idx);
+    });
+  });
+}
+
+async function saveProperty(e: Event): Promise<void> {
+  e.preventDefault();
+
+  const btn = document.getElementById('savePropertyBtn') as HTMLButtonElement;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+  try {
+    const titulo = (document.getElementById('propTitle') as HTMLInputElement).value.trim();
+    const precio = parseFloat((document.getElementById('propPrice') as HTMLInputElement).value);
+    const moneda = (document.getElementById('propCurrency') as HTMLSelectElement).value;
+    const operacion = (document.getElementById('propOperation') as HTMLSelectElement).value;
+    const ubicacion = (document.getElementById('propLocation') as HTMLInputElement).value.trim();
+    const tipo = (document.getElementById('propType') as HTMLSelectElement).value;
+    const habitaciones = parseInt((document.getElementById('propRooms') as HTMLInputElement).value, 10) || 0;
+    const banos = parseInt((document.getElementById('propBaths') as HTMLInputElement).value, 10) || 0;
+    const m2 = parseInt((document.getElementById('propM2') as HTMLInputElement).value, 10) || 0;
+    const antiguedad = (document.getElementById('propAge') as HTMLSelectElement).value;
+    const destacado = (document.getElementById('propFeatured') as HTMLInputElement).checked;
+    const caracteristicas = (document.getElementById('propFeatures') as HTMLTextAreaElement).value.split(',').map(c => c.trim()).filter(c => c);
+    const descripcion = (document.getElementById('propDescription') as HTMLTextAreaElement).value.trim();
+    const files = (document.getElementById('propImages') as HTMLInputElement).files || new FileList();
+
+    const seoTitle = (document.getElementById('propSeoTitle') as HTMLInputElement)?.value.trim() || '';
+    const seoDescription = (document.getElementById('propSeoDesc') as HTMLTextAreaElement)?.value.trim() || '';
+    const seoKeywords = (document.getElementById('propSeoKeywords') as HTMLInputElement)?.value.trim() || '';
+    const seoOgImage = (document.getElementById('propSeoOgImage') as HTMLInputElement)?.value.trim() || '';
+    let seoSchema = null;
+    try {
+      const schemaVal = (document.getElementById('propSeoSchema') as HTMLTextAreaElement)?.value.trim();
+      if (schemaVal) seoSchema = JSON.parse(schemaVal);
+    } catch {}
+
+    const mlEnabled = (document.getElementById('propMlEnabled') as HTMLInputElement)?.checked || false;
+    const mlItemId = (document.getElementById('propMlItemId') as HTMLInputElement)?.value.trim() || null;
+    const mlStatus = (document.getElementById('propMlStatus') as HTMLSelectElement)?.value || 'draft';
+
+    const errors = [];
+    if (!titulo) errors.push('Título es requerido');
+    if (!precio || precio <= 0) errors.push('Precio debe ser un número mayor a 0');
+    if (!ubicacion) errors.push('Ubicación es requerida');
+    if (!['ARS', 'USD'].includes(moneda)) errors.push('Moneda inválida');
+    if (!['venta', 'alquiler'].includes(operacion)) errors.push('Operación inválida');
+    if (!['piso', 'chalet', 'atico', 'local', 'terreno'].includes(tipo)) errors.push('Tipo de propiedad inválido');
+    if (habitaciones < 0 || habitaciones > 20) errors.push('Habitaciones debe estar entre 0 y 20');
+    if (banos < 0 || banos > 20) errors.push('Baños debe estar entre 0 y 20');
+    if (m2 < 0 || m2 > 10000) errors.push('Metros cuadrados debe estar entre 0 y 10000');
+    if (!['nuevo', 'reformado', 'viejo'].includes(antiguedad)) errors.push('Antigüedad inválida');
+    if (files.length > 15) errors.push('Máximo 15 imágenes permitidas');
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file.type.match(/^image\/(jpeg|png|webp|jpg)$/)) {
+        errors.push(`Archivo ${file.name}: solo JPG, PNG, WebP permitidos`);
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        errors.push(`Archivo ${file.name}: máximo 10MB`);
+      }
+    }
+
+    if (errors.length > 0) {
+      showToast(errors.join('\n'), 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
+      return;
+    }
+
+    const datos = {
+      titulo, precio, moneda, operacion, ubicacion, tipo, habitaciones, banos, m2, antiguedad, destacado, caracteristicas, descripcion,
+      seo_title: seoTitle,
+      seo_description: seoDescription,
+      seo_keywords: seoKeywords,
+      seo_og_image: seoOgImage,
+      seo_schema: seoSchema,
+      ml_enabled: mlEnabled,
+      ml_item_id: mlItemId,
+      ml_status: mlStatus
+    };
+
+    if (editingPropertyId) {
+      const { error } = await supabase.from('propiedades').update(datos).eq('id', editingPropertyId);
+      if (error) throw error;
+    } else {
+      const { data, error } = await supabase.from('propiedades').insert([datos]).select();
+      if (error) throw error;
+      editingPropertyId = data[0].id;
+    }
+
+    if (mlEnabled && mlStatus === 'publish') {
+      try {
+        const { error: mlError } = await supabase.functions.invoke('ml-publish', { body: { propertyId: editingPropertyId, action: 'publish' } });
+        if (!mlError) {
+          showToast('Propiedad publicada en MercadoLibre', 'success');
+        }
+      } catch (mlErr) {
+        console.warn('ML auto-publish failed:', mlErr);
+      }
+    }
+
+    if (files.length > 0) {
+      const imagenesData = [];
+      const maxImagenes = Math.min(files.length, 15);
+      for (let i = 0; i < maxImagenes; i++) {
+        validateImageFile(files[i]);
+        const folder = `inmoconecta/propiedades/${editingPropertyId}`;
+        const img = await uploadToCloudinary(files[i], folder, CONFIG.CLOUDINARY_UPLOAD_PRESET_PROPS);
+        imagenesData.push({
+          propiedad_id: editingPropertyId,
+          url: img.url,
+          cloudinary_public_id: img.public_id,
+          orden: i,
+          es_principal: i === 0
+        });
+      }
+      if (imagenesData.length > 0) {
+        const { error: imgError } = await supabase.from('imagenes').insert(imagenesData);
+        if (imgError) throw imgError;
+      }
+    }
+
+    showToast(`Propiedad ${editingPropertyId ? 'actualizada' : 'creada'} correctamente`, 'success');
+    closePropertyModal();
+    await loadProperties();
+  } catch (e: unknown) {
+    console.error('saveProperty error:', e);
+    showToast(`Error: ${e instanceof Error ? e.message : 'Error al guardar propiedad'}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
+  }
+}
+
+// ================================================================
+// IMAGE EDITOR (CROPPER)
+// ================================================================
 function openImageEditor(index: number): void {
   const file = uploadedPropertyImages[index];
   if (!file) return;
@@ -811,12 +941,12 @@ function openImageEditor(index: number): void {
       imageSmoothingQuality: 'high',
     });
 
-    canvas.toBlob(async (blob) => {
+    canvas.toBlob(async (blob: Blob | null) => {
       if (!blob) return;
 
       let finalBlob = blob;
       if (blob.size > 1024 * 1024) {
-        canvas.toBlob((compressed) => {
+        canvas.toBlob((compressed: Blob | null) => {
           finalBlob = compressed || blob;
           replaceImage(index, finalBlob);
         }, 'image/jpeg', 0.85);
@@ -835,256 +965,6 @@ function replaceImage(index: number, blob: Blob): void {
   renderPropertyImagePreviews();
 }
 
-function setupImageUploads(): void {
-  const propUpload = document.getElementById('propImageUpload');
-  const propInput = document.getElementById('propImages') as HTMLInputElement;
-  const propPreview = document.getElementById('propImagesPreview');
-
-  if (propUpload && propInput) {
-    propInput.style.cssText = 'position:absolute;inset:0;opacity:0;cursor:pointer;z-index:10;';
-    propUpload.style.position = 'relative';
-
-    propUpload.addEventListener('dragover', e => { e.preventDefault(); propUpload.classList.add('dragover'); });
-    propUpload.addEventListener('dragleave', () => propUpload.classList.remove('dragover'));
-    propUpload.addEventListener('drop', e => {
-      e.preventDefault();
-      propUpload.classList.remove('dragover');
-      handleFiles(e.dataTransfer!.files, 'property');
-    });
-    propInput.addEventListener('change', e => handleFiles(e.target.files, 'property'));
-  }
-
-  const agentUpload = document.getElementById('agentAvatarUpload');
-  const agentInput = document.getElementById('agentAvatar') as HTMLInputElement;
-
-  if (agentUpload && agentInput) {
-    agentInput.style.cssText = 'position:absolute;inset:0;opacity:0;cursor:pointer;z-index:10;';
-    agentUpload.style.position = 'relative';
-
-    agentUpload.addEventListener('dragover', e => { e.preventDefault(); agentUpload.classList.add('dragover'); });
-    agentUpload.addEventListener('dragleave', () => agentUpload.classList.remove('dragover'));
-    agentUpload.addEventListener('drop', e => {
-      e.preventDefault();
-      agentUpload.classList.remove('dragover');
-      handleFiles(e.dataTransfer!.files, 'agent');
-    });
-    agentInput.addEventListener('change', e => handleFiles(e.target.files, 'agent'));
-  }
-}
-
-function handleFiles(files: FileList, type: 'property' | 'agent'): void {
-  const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
-  if (validFiles.length === 0) return;
-
-  if (type === 'property') {
-    const remaining = 15 - uploadedPropertyImages.length;
-    const toAdd = validFiles.slice(0, remaining);
-    uploadedPropertyImages.push(...toAdd);
-    renderPropertyImagePreviews();
-  } else if (type === 'agent') {
-    const file = validFiles[0];
-    uploadedAgentAvatar = file;
-    const preview = document.getElementById('agentAvatarPreview');
-    const url = URL.createObjectURL(file);
-    preview!.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
-    preview!.style.background = 'none';
-  }
-}
-
-function renderPropertyImagePreviews(): void {
-  const preview = document.getElementById('propImagesPreview');
-  if (!preview) return;
-  preview.innerHTML = '';
-  uploadedPropertyImages.forEach((file, i) => {
-    const url = URL.createObjectURL(file);
-    const div = document.createElement('div');
-    div.draggable = true;
-    div.dataset.index = String(i);
-    div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:var(--radius);overflow:hidden;border:2px solid var(--gray-200);cursor:grab;' + (i===0?'border-color:var(--accent);':'');
-    div.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" data-index="${i}"><span style="position:absolute;top:2px;right:2px;background:var(--gray-900);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span><button type="button" class="remove-img" data-index="${i}" style="position:absolute;bottom:2px;right:2px;background:rgba(220,38,38,0.9);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;">×</button><button type="button" class="edit-img" data-index="${i}" style="position:absolute;bottom:2px;left:2px;background:rgba(31,110,212,0.9);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;" title="Editar"><i class="fas fa-crop"></i></button>`;
-    preview.appendChild(div);
-  });
-
-  let draggedIndex = -1;
-  preview.querySelectorAll('[draggable]').forEach(el => {
-    el.addEventListener('dragstart', (e) => {
-      draggedIndex = parseInt(e.currentTarget.dataset.index!);
-      e.currentTarget.style.opacity = '0.5';
-      e.dataTransfer!.effectAllowed = 'move';
-    });
-    el.addEventListener('dragend', (e) => {
-      e.currentTarget.style.opacity = '1';
-    });
-    el.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      e.dataTransfer!.dropEffect = 'move';
-    });
-    el.addEventListener('drop', (e) => {
-      e.preventDefault();
-      const targetIndex = parseInt(e.currentTarget.closest('[draggable]')?.dataset.index || '-1');
-      if (draggedIndex !== -1 && targetIndex !== -1 && draggedIndex !== targetIndex) {
-        const [removed] = uploadedPropertyImages.splice(draggedIndex, 1);
-        uploadedPropertyImages.splice(targetIndex, 0, removed);
-        renderPropertyImagePreviews();
-      }
-    });
-
-    el.querySelector('.remove-img')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const idx = parseInt(e.currentTarget.dataset.index!);
-      uploadedPropertyImages.splice(idx, 1);
-      renderPropertyImagePreviews();
-    });
-
-    el.querySelector('.edit-img')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const idx = parseInt(e.currentTarget.dataset.index!);
-      openImageEditor(idx);
-    });
-
-    el.querySelector('img')?.addEventListener('click', (e) => {
-      const idx = parseInt(e.currentTarget.dataset.index!);
-      openImageEditor(idx);
-    });
-  });
-}
-
-let uploadedAgentAvatar: File | null = null;
-
-async function saveProperty(e: Event): Promise<void> {
-  e.preventDefault();
-
-  const btn = document.getElementById('savePropertyBtn');
-  btn!.disabled = true;
-  btn!.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-
-  try {
-    const titulo = document.getElementById('propTitle')!.value.trim();
-    const precio = parseFloat(document.getElementById('propPrice')!.value);
-    const moneda = document.getElementById('propCurrency')!.value;
-    const operacion = document.getElementById('propOperation')!.value;
-    const ubicacion = document.getElementById('propLocation')!.value.trim();
-    const tipo = document.getElementById('propType')!.value;
-    const habitaciones = parseInt(document.getElementById('propRooms')!.value) || 0;
-    const banos = parseInt(document.getElementById('propBaths')!.value) || 0;
-    const m2 = parseInt(document.getElementById('propM2')!.value) || 0;
-    const antiguedad = document.getElementById('propAge')!.value;
-    const destacado = document.getElementById('propFeatured')!.checked;
-    const caracteristicas = document.getElementById('propFeatures')!.value.split(',').map(c => c.trim()).filter(c => c);
-    const descripcion = document.getElementById('propDescription')!.value.trim();
-    const files = document.getElementById('propImages')!.files;
-
-    const seoTitle = document.getElementById('propSeoTitle')?.value.trim() || '';
-    const seoDescription = document.getElementById('propSeoDesc')?.value.trim() || '';
-    const seoKeywords = document.getElementById('propSeoKeywords')?.value.trim() || '';
-    const seoOgImage = document.getElementById('propSeoOgImage')?.value.trim() || '';
-    let seoSchema = null;
-    try {
-      const schemaVal = document.getElementById('propSeoSchema')?.value.trim();
-      if (schemaVal) seoSchema = JSON.parse(schemaVal);
-    } catch {}
-
-    const mlEnabled = document.getElementById('propMlEnabled')?.checked || false;
-    const mlItemId = document.getElementById('propMlItemId')?.value.trim() || null;
-    const mlStatus = document.getElementById('propMlStatus')?.value || 'draft';
-
-    const errors = [];
-    if (!titulo) errors.push('Título es requerido');
-    if (!precio || precio <= 0) errors.push('Precio debe ser un número mayor a 0');
-    if (!ubicacion) errors.push('Ubicación es requerida');
-    if (!['ARS', 'USD'].includes(moneda)) errors.push('Moneda inválida');
-    if (!['venta', 'alquiler'].includes(operacion)) errors.push('Operación inválida');
-    if (!['piso', 'chalet', 'atico', 'local', 'terreno'].includes(tipo)) errors.push('Tipo de propiedad inválido');
-    if (habitaciones < 0 || habitaciones > 20) errors.push('Habitaciones debe estar entre 0 y 20');
-    if (banos < 0 || banos > 20) errors.push('Baños debe estar entre 0 y 20');
-    if (m2 < 0 || m2 > 10000) errors.push('Metros cuadrados debe estar entre 0 y 10000');
-    if (!['nuevo', 'reformado', 'viejo'].includes(antiguedad)) errors.push('Antigüedad inválida');
-    if (files.length > 15) errors.push('Máximo 15 imágenes permitidas');
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (!file.type.match(/^image\/(jpeg|png|webp|jpg)$/)) {
-        errors.push(`Archivo ${file.name}: solo JPG, PNG, WebP permitidos`);
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        errors.push(`Archivo ${file.name}: máximo 10MB`);
-      }
-    }
-
-    if (errors.length > 0) {
-      showToast(errors.join('\n'), 'error');
-      btn!.disabled = false;
-      btn!.innerHTML = '<i class="fas fa-save"></i> Guardar';
-      return;
-    }
-
-    const datos = {
-      titulo, precio, moneda, operacion, ubicacion, tipo, habitaciones, banos, m2, antiguedad, destacado, caracteristicas, descripcion,
-      seo_title: seoTitle,
-      seo_description: seoDescription,
-      seo_keywords: seoKeywords,
-      seo_og_image: seoOgImage,
-      seo_schema: seoSchema,
-      ml_enabled: mlEnabled,
-      ml_item_id: mlItemId,
-      ml_status: mlStatus
-    };
-
-    let result;
-    if (editingPropertyId) {
-      const { error } = await supabase.from('propiedades').update(datos).eq('id', editingPropertyId);
-      if (error) throw error;
-    } else {
-      const { data, error } = await supabase.from('propiedades').insert([datos]).select();
-      if (error) throw error;
-      editingPropertyId = data[0].id;
-    }
-
-    // Auto-publicar en MercadoLibre si está habilitado
-    if (mlEnabled && mlStatus === 'publish') {
-      try {
-        const { error: mlError } = await supabase.functions.invoke('ml-publish', { body: { propertyId: editingPropertyId, action: 'publish' } });
-        if (!mlError) {
-          showToast('Propiedad publicada en MercadoLibre', 'success');
-        }
-      } catch (mlErr) {
-        console.warn('ML auto-publish failed:', mlErr);
-      }
-    }
-
-    if (files.length > 0) {
-      const imagenesData = [];
-      const maxImagenes = Math.min(files.length, 15);
-      for (let i = 0; i < maxImagenes; i++) {
-        validateImageFile(files[i]);
-        const folder = `inmoconecta/propiedades/${editingPropertyId}`;
-        const img = await uploadToCloudinary(files[i], folder, CONFIG.CLOUDINARY_UPLOAD_PRESET_PROPS);
-        imagenesData.push({
-          propiedad_id: editingPropertyId,
-          url: img.url,
-          cloudinary_public_id: img.public_id,
-          orden: i,
-          es_principal: i === 0
-        });
-      }
-      if (imagenesData.length > 0) {
-        const { error: imgError } = await supabase.from('imagenes').insert(imagenesData);
-        if (imgError) throw imgError;
-      }
-    }
-
-    showToast(`Propiedad ${editingPropertyId ? 'actualizada' : 'creada'} correctamente`, 'success');
-    closePropertyModal();
-    await loadProperties();
-  } catch (e: unknown) {
-    console.error('saveProperty error:', e);
-    showToast(`Error: ${e instanceof Error ? e.message : 'Error al guardar propiedad'}`, 'error');
-  } finally {
-    btn!.disabled = false;
-    btn!.innerHTML = '<i class="fas fa-save"></i> Guardar';
-  }
-}
-
 // ================================================================
 // EXPORTS
 // ================================================================
@@ -1097,8 +977,19 @@ export function cloneProperty(id: number): void {
   const prop = propertiesCache.find(p => p.id === id);
   if (prop) {
     const { id: _, created_at, updated_at, ml_item_id, ml_status, ml_last_sync, ml_enabled, imagenes, ...cloneData } = prop;
-    cloneData.titulo = `${cloneData.titulo} (Copia)`;
-    openPropertyModal(cloneData);
+    // Remove fields that should not be cloned
+    const clone: Partial<Property> = {
+      ...cloneData,
+      titulo: `${cloneData.titulo} (Copia)`,
+      ml_item_id: undefined,
+      ml_status: undefined,
+      ml_last_sync: undefined,
+      ml_enabled: undefined,
+      imagenes: [],
+      imagen_principal: null,
+      galeria: []
+    };
+    openPropertyModal(clone as Property);
   }
 }
 
@@ -1123,6 +1014,18 @@ export function bulkActionProperties(action: string, data?: any): void {
 (window as any).bulkDelete = bulkDelete;
 (window as any).clearBulkSelection = clearSelection;
 
+function filterAgents(): void {
+  // Will be overridden by agents module
+}
+
+function confirmDelete(type: string, _id: number, name: string): void {
+  if (confirm(`¿Eliminar ${type === 'property' ? 'propiedad' : 'agente'} "${name}"? Esta acción no se puede deshacer.`)) {
+    if (type === 'property') {
+      bulkDelete();
+    }
+  }
+}
+
 export {
   propertiesCache,
   loadProperties,
@@ -1131,4 +1034,5 @@ export {
   saveProperty,
   filterProperties,
   clearSelection,
+  setupImageUploads,
 };

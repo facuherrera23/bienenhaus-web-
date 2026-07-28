@@ -1,16 +1,18 @@
 -- ================================================================
 -- SUPABASE SCHEMA - BIENENHAUS PROPIEDADES (COMPLETO)
--- Ejecutar en Supabase SQL Editor
+-- Ejecutar UNA SOLA VEZ en Supabase SQL Editor
 -- ================================================================
 
 -- Extensiones
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_net"; -- Para pg_cron con http requests
 
 -- Limpieza preventiva: elimina triggers existentes (por si se ejecuta varias veces)
 DROP TRIGGER IF EXISTS update_ml_credenciales_updated_at ON ml_credenciales;
 DROP TRIGGER IF EXISTS update_propiedades_updated_at ON propiedades;
 DROP TRIGGER IF EXISTS update_agentes_updated_at ON agentes;
-DROP TRIGGER IF EXISTS update_contenido_updated_at ON contenido_sitio;
+DROP TRIGGER IF EXISTS update_contenido_sitio_updated_at ON contenido_sitio;
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
 
 -- Función para updated_at (debe existir antes de los triggers)
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -20,6 +22,69 @@ BEGIN
   RETURN NEW;
 END;
 $$ language 'plpgsql';
+
+-- ================================================================
+-- TABLA: profiles (extensión de auth.users para datos ML)
+-- Supabase Auth crea auth.users automáticamente
+-- Esta tabla extiende con campos de MercadoLibre
+-- ================================================================
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT,
+  full_name TEXT,
+  avatar_url TEXT,
+  -- MercadoLibre fields
+  ml_connected BOOLEAN DEFAULT FALSE,
+  ml_user_id TEXT,
+  ml_access_token TEXT,
+  ml_refresh_token TEXT,
+  ml_token_expires_at TIMESTAMPTZ,
+  ml_token_type TEXT,
+  ml_scope TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_profiles_ml_user_id ON profiles(ml_user_id);
+CREATE INDEX IF NOT EXISTS idx_profiles_ml_connected ON profiles(ml_connected) WHERE ml_connected = true;
+
+CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- RLS para profiles
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+DROP POLICY IF EXISTS "Service role full access profiles" ON profiles;
+CREATE POLICY "Service role full access profiles" ON profiles FOR ALL USING (auth.role() = 'service_role');
+
+-- ================================================================
+-- TABLA: ml_oauth_pkce (para flujo OAuth con PKCE)
+-- ================================================================
+CREATE TABLE IF NOT EXISTS ml_oauth_pkce (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  code_verifier TEXT NOT NULL,
+  code_challenge TEXT NOT NULL,
+  state TEXT NOT NULL UNIQUE,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ml_oauth_pkce_state ON ml_oauth_pkce(state);
+CREATE INDEX IF NOT EXISTS idx_ml_oauth_pkce_user_id ON ml_oauth_pkce(user_id);
+CREATE INDEX IF NOT EXISTS idx_ml_oauth_pkce_expires ON ml_oauth_pkce(expires_at);
+
+-- RLS - solo service_role puede acceder
+ALTER TABLE ml_oauth_pkce ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Service role full access ml_oauth_pkce" ON ml_oauth_pkce;
+CREATE POLICY "Service role full access ml_oauth_pkce" ON ml_oauth_pkce FOR ALL USING (auth.role() = 'service_role');
+
+-- Limpieza automática de PKCE expirados (ejecutar via pg_cron cada hora)
+-- CREATE EXTENSION IF NOT EXISTS pg_cron;
+-- SELECT cron.schedule('clean-ml-pkce', '0 * * * *', 'DELETE FROM ml_oauth_pkce WHERE expires_at < NOW();');
 
 -- ================================================================
 -- TABLA: propiedades
@@ -39,7 +104,6 @@ CREATE TABLE IF NOT EXISTS propiedades (
   destacado BOOLEAN DEFAULT FALSE,
   caracteristicas TEXT[],
   descripcion TEXT,
-  -- Campos extra para filtros avanzados y UX premium
   video_url TEXT,
   cochera BOOLEAN DEFAULT FALSE,
   balcon BOOLEAN DEFAULT FALSE,
@@ -48,7 +112,14 @@ CREATE TABLE IF NOT EXISTS propiedades (
   mascotas BOOLEAN DEFAULT FALSE,
   gastos_comunes NUMERIC DEFAULT 0,
   expensas NUMERIC DEFAULT 0,
+  -- SEO fields
+  seo_titulo TEXT,
+  seo_descripcion TEXT,
+  seo_keywords TEXT,
+  seo_og_image TEXT,
+  seo_schema JSONB,
   -- MercadoLibre sync fields
+  ml_enabled BOOLEAN DEFAULT FALSE,
   ml_item_id TEXT UNIQUE,
   ml_status TEXT,
   ml_permalink TEXT,
@@ -63,10 +134,13 @@ CREATE INDEX IF NOT EXISTS idx_prop_tipo ON propiedades(tipo);
 CREATE INDEX IF NOT EXISTS idx_prop_precio ON propiedades(precio);
 CREATE INDEX IF NOT EXISTS idx_prop_destacado ON propiedades(destacado DESC);
 CREATE INDEX IF NOT EXISTS idx_prop_created ON propiedades(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_prop_ubicacion ON propiedades USING gin(to_tsvector('spanish', ubicacion));
+CREATE INDEX IF NOT EXISTS idx_prop_titulo ON propiedades USING gin(to_tsvector('spanish', titulo));
 -- Índices para MercadoLibre sync
 CREATE INDEX IF NOT EXISTS idx_prop_ml_item_id ON propiedades(ml_item_id);
 CREATE INDEX IF NOT EXISTS idx_prop_ml_status ON propiedades(ml_status);
 CREATE INDEX IF NOT EXISTS idx_prop_ml_last_sync ON propiedades(ml_last_sync DESC);
+CREATE INDEX IF NOT EXISTS idx_prop_ml_enabled ON propiedades(ml_enabled) WHERE ml_enabled = true;
 -- Índices para filtros avanzados
 CREATE INDEX IF NOT EXISTS idx_prop_cochera ON propiedades(cochera);
 CREATE INDEX IF NOT EXISTS idx_prop_balcon ON propiedades(balcon);
@@ -74,7 +148,6 @@ CREATE INDEX IF NOT EXISTS idx_prop_pileta ON propiedades(pileta);
 CREATE INDEX IF NOT EXISTS idx_prop_amueblado ON propiedades(amueblado);
 CREATE INDEX IF NOT EXISTS idx_prop_mascotas ON propiedades(mascotas);
 
--- Trigger para updated_at
 CREATE TRIGGER update_propiedades_updated_at BEFORE UPDATE ON propiedades
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -92,6 +165,7 @@ CREATE TABLE IF NOT EXISTS imagenes (
 );
 
 CREATE INDEX IF NOT EXISTS idx_img_propiedad ON imagenes(propiedad_id);
+CREATE INDEX IF NOT EXISTS idx_img_principal ON imagenes(propiedad_id, es_principal DESC);
 
 -- ================================================================
 -- TABLA: agentes
@@ -115,6 +189,9 @@ CREATE TABLE IF NOT EXISTS agentes (
 
 CREATE INDEX IF NOT EXISTS idx_agentes_activo ON agentes(activo) WHERE activo = true;
 CREATE INDEX IF NOT EXISTS idx_agentes_orden ON agentes(orden);
+
+CREATE TRIGGER update_agentes_updated_at BEFORE UPDATE ON agentes
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ================================================================
 -- TABLA: leads (contactos)
@@ -142,8 +219,12 @@ CREATE TABLE IF NOT EXISTS contenido_sitio (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TRIGGER update_contenido_sitio_updated_at BEFORE UPDATE ON contenido_sitio
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ================================================================
 -- TABLA: ml_credenciales (OAuth tokens para MercadoLibre)
+-- Usada por Edge Functions para publicar/sincronizar
 -- ================================================================
 CREATE TABLE IF NOT EXISTS ml_credenciales (
   id BIGSERIAL PRIMARY KEY,
@@ -159,6 +240,9 @@ CREATE TABLE IF NOT EXISTS ml_credenciales (
 ALTER TABLE ml_credenciales ENABLE ROW LEVEL SECURITY;
 -- Sin políticas públicas = solo service_role bypassa RLS
 
+CREATE TRIGGER update_ml_credenciales_updated_at BEFORE UPDATE ON ml_credenciales
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ================================================================
 -- TABLA: ml_sync_log (trazabilidad de sincronización ML)
 -- ================================================================
@@ -166,7 +250,7 @@ CREATE TABLE IF NOT EXISTS ml_sync_log (
   id BIGSERIAL PRIMARY KEY,
   propiedad_id BIGINT REFERENCES propiedades(id) ON DELETE CASCADE,
   ml_item_id TEXT,
-  accion TEXT CHECK (accion IN ('import','create','update','pause','error')),
+  accion TEXT CHECK (accion IN ('import','create','update','pause','activate','close','error')),
   detalle JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -178,12 +262,12 @@ CREATE INDEX IF NOT EXISTS idx_ml_sync_created ON ml_sync_log(created_at DESC);
 ALTER TABLE ml_sync_log ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public read ml_sync_log" ON ml_sync_log;
 CREATE POLICY "Public read ml_sync_log" ON ml_sync_log FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Service role full access ml_sync_log" ON ml_sync_log;
+CREATE POLICY "Service role full access ml_sync_log" ON ml_sync_log FOR ALL USING (auth.role() = 'service_role');
 
--- Insertar contenido por defecto
--- Ensure descripcion column exists (for existing databases)
-ALTER TABLE contenido_sitio ADD COLUMN IF NOT EXISTS descripcion TEXT;
-
--- Insertar contenido por defecto (usando ::jsonb para escapar HTML correctamente)
+-- ================================================================
+-- CONTENIDO POR DEFECTO (CMS)
+-- ================================================================
 INSERT INTO contenido_sitio (clave, valor, descripcion) VALUES
 ('hero_badge', '"CPI. 1834 · Córdoba · Argentina"'::jsonb, 'Badge superior del hero'),
 ('hero_titulo', '"Encuentra tu <span class=\"highlight\">hogar</span> o la<br>inversión que <span class=\"highlight\">buscas</span>"'::jsonb, 'Título principal del hero (HTML permitido)'),
@@ -225,41 +309,6 @@ INSERT INTO contenido_sitio (clave, valor, descripcion) VALUES
 ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor, updated_at = NOW();
 
 -- ================================================================
--- MERCADOLIBRE INTEGRATION TABLES
--- ================================================================
-
--- Tabla de credenciales ML (solo accesible via service_role / Edge Functions)
-CREATE TABLE IF NOT EXISTS ml_credenciales (
-  id BIGSERIAL PRIMARY KEY,
-  ml_user_id BIGINT NOT NULL,
-  access_token TEXT NOT NULL,
-  refresh_token TEXT NOT NULL,
-  expires_at TIMESTAMPTZ NOT NULL,
-  scope TEXT,
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- RLS: solo service_role puede acceder (sin políticas públicas = solo service_role)
-ALTER TABLE ml_credenciales ENABLE ROW LEVEL SECURITY;
-
--- Tabla de log de sincronización ML
-CREATE TABLE IF NOT EXISTS ml_sync_log (
-  id BIGSERIAL PRIMARY KEY,
-  propiedad_id BIGINT REFERENCES propiedades(id) ON DELETE CASCADE,
-  ml_item_id TEXT,
-  accion TEXT CHECK (accion IN ('import','create','update','pause','error')),
-  detalle JSONB,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_ml_sync_propiedad ON ml_sync_log(propiedad_id);
-CREATE INDEX IF NOT EXISTS idx_ml_sync_created ON ml_sync_log(created_at DESC);
-
--- Trigger para updated_at en ml_credenciales
-CREATE TRIGGER update_ml_credenciales_updated_at BEFORE UPDATE ON ml_credenciales
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- ================================================================
 -- RLS (Row Level Security)
 -- ================================================================
 ALTER TABLE propiedades ENABLE ROW LEVEL SECURITY;
@@ -289,62 +338,34 @@ CREATE POLICY "Public insert leads" ON leads FOR INSERT WITH CHECK (true);
 -- No necesita políticas explícitas, usa service_role key
 
 -- ================================================================
--- TRIGGERS para updated_at
--- ================================================================
--- Limpieza agresiva: elimina triggers si existen (por si se ejecuta varias veces)
-DROP TRIGGER IF EXISTS update_ml_credenciales_updated_at ON ml_credenciales;
-DROP TRIGGER IF EXISTS update_propiedades_updated_at ON propiedades;
-DROP TRIGGER IF EXISTS update_agentes_updated_at ON agentes;
-DROP TRIGGER IF EXISTS update_contenido_updated_at ON contenido_sitio;
-
-CREATE TRIGGER update_ml_credenciales_updated_at BEFORE UPDATE ON ml_credenciales
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_propiedades_updated_at BEFORE UPDATE ON propiedades
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_agentes_updated_at BEFORE UPDATE ON agentes
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_contenido_updated_at BEFORE UPDATE ON contenido_sitio
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- ================================================================
--- STORAGE (Cloudinary) - Solo referencia, se maneja en cliente
+-- STORAGE / CLOUDINARY - Solo referencia (se maneja en cliente)
 -- ================================================================
 -- Cloudinary folders: inmoconecta/propiedades/{id}/, inmoconecta/agentes/{id}/
--- Upload presets: inmoconecta_propiedades, inmoconecta_agentes (unsigned)
+-- Upload presets (unsigned): inmoconecta_propiedades, inmoconecta_agentes
 
 -- ================================================================
--- PG_CRON - Tareas programadas
+-- PG_CRON - Tareas programadas (configurar en Supabase Dashboard)
 -- ================================================================
--- Habilitar extensión pg_cron (ejecutar una vez en Supabase SQL Editor)
--- CREATE EXTENSION IF NOT EXISTS pg_cron;
-
--- Refrescar tokens de MercadoLibre cada 30 minutos
--- Llama a la Edge Function ml-refresh-token usando pg_net
--- Requiere: CREATE EXTENSION IF NOT EXISTS pg_net;
--- SELECT cron.schedule(
---   'ml-refresh-token',
---   '*/30 * * * *',
---   $$
---   SELECT net.http_post(
---     url := 'https://TU_PROYECTO.supabase.co/functions/v1/ml-refresh-token',
---     headers := jsonb_build_object(
---       'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'),
---       'Content-Type', 'application/json'
---     ),
---     body := '{}'::jsonb
---   );
---   $$
--- );
-
--- Alternativa más simple: usar pg_cron con http extension (si está disponible)
--- SELECT cron.schedule(
---   'ml-refresh-token',
---   '*/30 * * * *',
---   'SELECT http_post(''https://TU_PROYECTO.supabase.co/functions/v1/ml-refresh-token'', ''{"Authorization": "Bearer " || current_setting(''app.settings.service_role_key'')}'', ''{}'')'
--- );
+-- 1. Settings > Database > Extensions > Enable pg_cron
+-- 2. Settings > Database > Extensions > Enable pg_net
+-- 3. Settings > Database > Cron Jobs > Add job:
+--    Name: ml-refresh-token
+--    Schedule: */30 * * * *
+--    Command:
+SELECT cron.schedule(
+  'ml-refresh-token',
+  '*/30 * * * *',
+  $$
+  SELECT net.http_post(
+    url := 'https://TU_PROYECTO.supabase.co/functions/v1/ml-refresh-token',
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'),
+      'Content-Type', 'application/json'
+    ),
+    body := '{}'::jsonb
+  );
+  $$
+);
 
 -- Para configurar manualmente en Supabase Dashboard:
 -- 1. Settings > Edge Functions > ml-refresh-token > Copy URL
@@ -352,11 +373,56 @@ CREATE TRIGGER update_contenido_updated_at BEFORE UPDATE ON contenido_sitio
 --    Name: ml-refresh-token
 --    Schedule: */30 * * * *
 --    Command: 
---    SELECT net.http_post(
---      url := 'https://TU_PROYECTO.supabase.co/functions/v1/ml-refresh-token',
---      headers := jsonb_build_object(
---        'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'),
---        'Content-Type', 'application/json'
---      ),
---      body := '{}'::jsonb
---    );
+SELECT net.http_post(
+  url := 'https://TU_PROYECTO.supabase.co/functions/v1/ml-refresh-token',
+  headers := jsonb_build_object(
+    'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'),
+    'Content-Type', 'application/json'
+  ),
+  body := '{}'::jsonb
+);
+
+-- ================================================================
+-- EDGE FUNCTIONS REQUERIDAS (desplegar por separado en Supabase)
+-- ================================================================
+-- 1. ml-oauth-init          - Inicia flujo OAuth con PKCE
+-- 2. ml-oauth-callback      - Recibe callback de ML, intercambia código por tokens
+-- 3. ml-publish             - Publica/actualiza/pausa propiedades en ML
+-- 4. ml-import              - Importa propiedades desde ML
+-- 5. ml-refresh-token       - Refresca access_token automáticamente (cron)
+-- 6. ml-status              - Verifica estado de conexión ML
+-- 7. ml-webhook             - Recibe notificaciones de ML (opcional)
+-- 8. geocode-batch          - Geocodificación masiva (opcional)
+
+-- ================================================================
+-- FUNCIONALIDAD AUTO-PUBLISH MERCADOLIBRE
+-- ================================================================
+-- Implementada en frontend (src/admin/features/properties/index.ts):
+-- - Al CREAR propiedad: si ml_enabled=true y ml_status='publish' → llama ml-publish
+-- - Bulk actions: botón "Publicar" en barra bulk llama ml-publish para cada selección
+--
+-- Flujo:
+-- 1. Usuario marca "Publicar en MercadoLibre" + estado "Publicar" en modal propiedad
+-- 2. Al guardar, se inserta en BD y luego se invoca supabase.functions.invoke('ml-publish')
+-- 3. Edge Function ml-publish usa credenciales de ml_credenciales para publicar en ML API
+-- 4. Resultado se guarda en ml_sync_log y actualiza ml_item_id, ml_status, ml_last_sync
+
+-- ================================================================
+-- VERIFICACIÓN POST-EJECUCIÓN
+-- ================================================================
+-- Verificar tablas:
+-- SELECT * FROM propiedades LIMIT 1;
+-- SELECT * FROM imagenes LIMIT 1;
+-- SELECT * FROM agentes LIMIT 1;
+-- SELECT * FROM leads LIMIT 1;
+-- SELECT * FROM contenido_sitio LIMIT 5;
+-- SELECT * FROM ml_credenciales LIMIT 1;
+-- SELECT * FROM ml_sync_log LIMIT 1;
+-- SELECT * FROM profiles LIMIT 1;
+-- SELECT * FROM ml_oauth_pkce LIMIT 1;
+--
+-- Verificar triggers:
+-- SELECT * FROM information_schema.triggers WHERE trigger_name LIKE 'update_%_updated_at';
+--
+-- Verificar RLS:
+-- SELECT * FROM pg_policies WHERE tablename IN ('propiedades','imagenes','agentes','leads','contenido_sitio','ml_sync_log','profiles','ml_oauth_pkce');

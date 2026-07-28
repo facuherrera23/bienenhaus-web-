@@ -4,51 +4,120 @@
 import '../styles/admin.css';
 import { supabase } from '../supabase.js';
 import { CONFIG } from '../config.js';
-import { uploadToCloudinary, validateImageFile } from '../cloudinary.js';
-import Cropper from 'cropperjs';
-import {
-  showToast,
-  formatPrice,
-  formatDate,
-  getInitials,
-  debounce,
-  parsePipeArray,
-} from './shared/utils.ts';
-import { propertiesCache } from './features/properties/index.ts';
-import { getContentCache, setContentCache } from './features/content/index.ts';
-import { agentsCache } from './features/agents/index.ts';
-// Cropper CSS imported via admin.css
+import { showToast, parsePipeArray } from './shared/utils.ts';
 
 // ================================================================
 // LAZY LOAD FEATURE MODULES
 // ================================================================
-async function loadPropertiesModule(): Promise<any> {
-  return import('./features/properties/index.ts');
-}
-
-async function loadAgentsModule(): Promise<any> {
-  return import('./features/agents/index.ts');
-}
-
-async function loadContentModule(): Promise<any> {
-  return import('./features/content/index.ts');
-}
-
-async function loadSettingsModule(): Promise<any> {
-  return import('./features/settings/index.ts');
-}
-
 async function loadSettings(): Promise<void> {
-  const settingsModule = await loadSettingsModule();
+  const settingsModule = await import('./features/settings/index.ts');
   await settingsModule.loadSettings();
 }
 
-async function loadMercadoLibreModule(): Promise<any> {
-  return import('./features/mercadoLibre/index.ts');
+// ================================================================
+// AUTH SECURITY CONFIG
+// ================================================================
+const AUTH_CONFIG = {
+  MAX_LOGIN_ATTEMPTS: 5,
+  LOCKOUT_DURATION_MS: 15 * 60 * 1000, // 15 minutes
+  SESSION_TIMEOUT_MS: 30 * 60 * 1000, // 30 minutes
+  ACTIVITY_CHECK_INTERVAL_MS: 60 * 1000, // Check every minute
+};
+
+// In-memory login attempt tracking (persists during session)
+const loginAttempts = new Map<string, { count: number; lockedUntil: number }>();
+
+// ================================================================
+// GLOBAL STATE
+// ================================================================
+let currentUser: any = null;
+let propertiesCache: any[] = [];
+let agentsCache: any[] = [];
+let selectedPropertyIds = new Set<number>();
+let sessionTimer: number | null = null;
+let lastActivity = Date.now();
+
+// ================================================================
+// AUTH HELPERS: Rate limiting & Session management
+// ================================================================
+function getClientIP(): string {
+  // In production, get from Supabase Edge Function headers or Cloudflare
+  return 'admin-panel'; // Fallback for client-side
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; remainingTime?: number } {
+  const now = Date.now();
+  const attempt = loginAttempts.get(ip);
+  
+  if (!attempt) return { allowed: true };
+  
+  if (attempt.lockedUntil > now) {
+    return { allowed: false, remainingTime: attempt.lockedUntil - now };
+  }
+  
+  // Reset count if lockout expired
+  if (attempt.count >= AUTH_CONFIG.MAX_LOGIN_ATTEMPTS) {
+    attempt.lockedUntil = now + AUTH_CONFIG.LOCKOUT_DURATION_MS;
+    loginAttempts.set(ip, attempt);
+    return { allowed: false, remainingTime: AUTH_CONFIG.LOCKOUT_DURATION_MS };
+  }
+  
+  return { allowed: true };
+}
+
+function recordFailedAttempt(ip: string): void {
+  const now = Date.now();
+  const attempt = loginAttempts.get(ip) || { count: 0, lockedUntil: 0 };
+  
+  attempt.count += 1;
+  
+  if (attempt.count >= AUTH_CONFIG.MAX_LOGIN_ATTEMPTS) {
+    attempt.lockedUntil = now + AUTH_CONFIG.LOCKOUT_DURATION_MS;
+    showToast(`Demasiados intentos fallidos. Cuenta bloqueada por ${AUTH_CONFIG.LOCKOUT_DURATION_MS / 60000} minutos.`, 'error');
+  }
+  
+  loginAttempts.set(ip, attempt);
+}
+
+function clearFailedAttempts(ip: string): void {
+  loginAttempts.delete(ip);
+}
+
+// Session timeout management
+function startSessionTimer(): void {
+  if (sessionTimer) clearInterval(sessionTimer);
+  
+  lastActivity = Date.now();
+  
+  sessionTimer = window.setInterval(() => {
+    const inactiveTime = Date.now() - lastActivity;
+    if (inactiveTime >= AUTH_CONFIG.SESSION_TIMEOUT_MS) {
+      clearInterval(sessionTimer!);
+      sessionTimer = null;
+      showToast('Sesión expirada por inactividad', 'warning');
+      logout();
+    }
+  }, AUTH_CONFIG.ACTIVITY_CHECK_INTERVAL_MS);
+}
+
+function resetActivityTimer(): void {
+  lastActivity = Date.now();
+}
+
+function setupActivityListeners(): void {
+  ['mousedown', 'keydown', 'touchstart', 'scroll'].forEach(event => {
+    document.addEventListener(event, resetActivityTimer, { passive: true });
+  });
+}
+
+function removeActivityListeners(): void {
+  ['mousedown', 'keydown', 'touchstart', 'scroll'].forEach(event => {
+    document.removeEventListener(event, resetActivityTimer);
+  });
 }
 
 // ================================================================
-// AUTHENTICATION
+// AUTHENTICATION (with rate limiting & session timeout)
 // ================================================================
 async function checkAuth(): Promise<boolean> {
   const { data: { session } } = await supabase.auth.getSession();
@@ -65,6 +134,18 @@ async function handleLogin(email: string, password: string): Promise<void> {
   const btn = document.getElementById('btnLogin') as HTMLButtonElement;
   const errorDiv = document.getElementById('loginError')!;
 
+  // Check rate limit
+  const ip = getClientIP();
+  const rateLimit = checkRateLimit(ip);
+  if (!rateLimit.allowed) {
+    const mins = Math.ceil((rateLimit.remainingTime || 0) / 60000);
+    errorDiv.textContent = `Demasiados intentos. Intenta en ${mins} minutos.`;
+    errorDiv.classList.add('visible');
+    btn.disabled = true;
+    setTimeout(() => { btn.disabled = false; }, rateLimit.remainingTime || AUTH_CONFIG.LOCKOUT_DURATION_MS);
+    return;
+  }
+
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
   errorDiv.classList.remove('visible');
@@ -80,9 +161,11 @@ async function handleLogin(email: string, password: string): Promise<void> {
     }
 
     currentUser = data.user;
+    clearFailedAttempts(ip);
     showDashboard();
-  } catch (e) {
-    errorDiv.textContent = e.message;
+  } catch (e: unknown) {
+    recordFailedAttempt(ip);
+    errorDiv.textContent = e instanceof Error ? e.message : 'Error desconocido';
     errorDiv.classList.add('visible');
   } finally {
     btn.disabled = false;
@@ -93,6 +176,11 @@ async function handleLogin(email: string, password: string): Promise<void> {
 async function logout(): Promise<void> {
   await supabase.auth.signOut();
   currentUser = null;
+  if (sessionTimer) {
+    clearInterval(sessionTimer);
+    sessionTimer = null;
+  }
+  removeActivityListeners();
   showLogin();
 }
 
@@ -100,6 +188,12 @@ function showLogin(): void {
   document.getElementById('loginView')!.classList.remove('d-none');
   document.getElementById('dashboardView')!.classList.add('d-none');
   document.body.className = 'login-page';
+  // Clear any existing session timer
+  if (sessionTimer) {
+    clearInterval(sessionTimer);
+    sessionTimer = null;
+  }
+  removeActivityListeners();
 }
 
 function showDashboard(): void {
@@ -112,6 +206,9 @@ function showDashboard(): void {
     document.getElementById('userAvatar')!.textContent = currentUser.email.split('@')[0].charAt(0).toUpperCase();
   }
 
+  setupActivityListeners();
+  startSessionTimer();
+  
   loadDashboard();
   loadAllData();
 }
@@ -123,7 +220,7 @@ function navigate(section: string): void {
   window.location.hash = section;
 
   document.querySelectorAll('.nav-item').forEach(item => {
-    item.classList.toggle('active', item.dataset.section === section);
+    item.classList.toggle('active', (item as HTMLElement).dataset.section === section);
   });
 
   document.querySelectorAll('.settings-panel[id^="section-"]').forEach(panel => {
@@ -140,8 +237,6 @@ function navigate(section: string): void {
   };
   document.getElementById('pageTitle')!.textContent = titles[section] || 'Dashboard';
   document.getElementById('breadcrumbCurrent')!.textContent = titles[section] || 'Dashboard';
-
-  currentSection = section;
 
   switch (section) {
     case 'dashboard': loadDashboard(); break;
@@ -173,19 +268,19 @@ async function loadProperties(): Promise<void> {
       }
       throw error;
     }
-    propertiesCache = (data || []).map(p => ({
+    propertiesCache = (data || []).map((p: any) => ({
       ...p,
       imagenes: p.imagenes || [],
-      imagen_principal: p.imagenes?.find(i => i.es_principal)?.url || null,
-      galeria: p.imagenes?.sort((a, b) => a.orden - b.orden).map(i => i.url) || []
+      imagen_principal: p.imagenes?.find((i: any) => i.es_principal)?.url || null,
+      galeria: p.imagenes?.sort((a: any, b: any) => a.orden - b.orden).map((i: any) => i.url) || []
     }));
 
     updatePropertyStats();
     renderPropertiesTable();
     updateNavBadges();
-  } catch (e) {
+  } catch (e: unknown) {
     console.error('Error loading properties:', e);
-    const msg = e.message?.includes('RLS') || e.message?.includes('42501')
+    const msg = e instanceof Error && (e.message.includes('RLS') || e.message.includes('42501'))
       ? 'Error de permisos (RLS): Configura service_role key en Edge Functions'
       : 'Error cargando propiedades';
     showToast(msg, 'error');
@@ -205,7 +300,7 @@ async function loadAgents(): Promise<void> {
     updateAgentStats();
     renderAgentsTable();
     updateNavBadges();
-  } catch (e) {
+  } catch (e: unknown) {
     console.error('Error loading agents:', e);
     showToast('Error cargando agentes', 'error');
   }
@@ -216,74 +311,88 @@ async function loadContent(): Promise<void> {
     const { data, error } = await supabase.from('contenido_sitio').select('*');
     if (error) { console.warn('contenido_sitio no accesible:', error.message); return; }
     const newCache: Record<string, any> = {};
-    (data || []).forEach(item => { newCache[item.clave] = item.valor; });
+    (data || []).forEach((item: any) => { newCache[item.clave] = item.valor; });
     setContentCache(newCache);
     populateContentEditor();
-  } catch (e) { console.warn('Error loading content:', e); }
+  } catch (e: unknown) { console.warn('Error loading content:', e); }
 }
 
 async function loadContentEditor(): Promise<void> {
   await loadContent();
 }
 
+// Import content cache functions
+let contentCache: Record<string, any> = {};
+
+function getContentCache(): Record<string, any> {
+  return contentCache;
+}
+
+function setContentCache(cache: Record<string, any>): void {
+  contentCache = cache;
+}
+
+// ================================================================
+// CONTENT EDITOR
+// ================================================================
 function populateContentEditor(): void {
   const cache = getContentCache();
   // Hero
-  (document.getElementById('heroBadge') as HTMLInputElement).value = getContentCache().hero_badge || '';
-  (document.getElementById('heroTitle') as HTMLTextAreaElement).value = getContentCache().hero_titulo || '';
-  (document.getElementById('heroSubtitle') as HTMLTextAreaElement).value = getContentCache().hero_subtitulo || '';
-  (document.getElementById('heroBadges') as HTMLTextAreaElement).value = (getContentCache().hero_badges || []).join('\n');
-  (document.getElementById('heroCtaPrimary') as HTMLInputElement).value = getContentCache().hero_cta_primario || '';
-  (document.getElementById('heroCtaSecondary') as HTMLInputElement).value = getContentCache().hero_cta_secundario || '';
-  (document.getElementById('heroStats') as HTMLTextAreaElement).value = (getContentCache().hero_stats || []).map(s => `${s.label}|${s.valor}|${s.icono}`).join('\n');
+  (document.getElementById('heroBadge') as HTMLInputElement).value = cache.hero_badge || '';
+  (document.getElementById('heroTitle') as HTMLTextAreaElement).value = cache.hero_titulo || '';
+  (document.getElementById('heroSubtitle') as HTMLTextAreaElement).value = cache.hero_subtitulo || '';
+  (document.getElementById('heroBadges') as HTMLTextAreaElement).value = (cache.hero_badges || []).join('\n');
+  (document.getElementById('heroCtaPrimary') as HTMLInputElement).value = cache.hero_cta_primario || '';
+  (document.getElementById('heroCtaSecondary') as HTMLInputElement).value = cache.hero_cta_secundario || '';
+  (document.getElementById('heroStats') as HTMLTextAreaElement).value = (cache.hero_stats || []).map((s: any) => `${s.label}|${s.valor}|${s.icono}`).join('\n');
 
   // About
-  (document.getElementById('aboutTitle') as HTMLInputElement).value = getContentCache().about_titulo || '';
-  (document.getElementById('aboutDescription') as HTMLTextAreaElement).value = getContentCache().about_descripcion || '';
-  (document.getElementById('aboutValues') as HTMLTextAreaElement).value = (getContentCache().about_valores || []).map(v => `${v.icono}|${v.titulo}|${v.descripcion}`).join('\n');
+  (document.getElementById('aboutTitle') as HTMLInputElement).value = cache.about_titulo || '';
+  (document.getElementById('aboutDescription') as HTMLTextAreaElement).value = cache.about_descripcion || '';
+  (document.getElementById('aboutValues') as HTMLTextAreaElement).value = (cache.about_valores || []).map((v: any) => `${v.icono}|${v.titulo}|${v.descripcion}`).join('\n');
 
   // Services
-  (document.getElementById('servicesTitle') as HTMLInputElement).value = getContentCache().servicios_titulo || '';
-  (document.getElementById('servicesSubtitle') as HTMLInputElement).value = getContentCache().servicios_subtitulo || '';
-  (document.getElementById('servicesList') as HTMLTextAreaElement).value = (getContentCache().servicios_lista || []).map(s => `${s.icono}|${s.titulo}|${s.descripcion}`).join('\n');
+  (document.getElementById('servicesTitle') as HTMLInputElement).value = cache.servicios_titulo || '';
+  (document.getElementById('servicesSubtitle') as HTMLInputElement).value = cache.servicios_subtitulo || '';
+  (document.getElementById('servicesList') as HTMLTextAreaElement).value = (cache.servicios_lista || []).map((s: any) => `${s.icono}|${s.titulo}|${s.descripcion}`).join('\n');
 
   // Why
-  (document.getElementById('whyTitle') as HTMLInputElement).value = getContentCache().por_que_titulo || '';
-  (document.getElementById('whySubtitle') as HTMLInputElement).value = getContentCache().por_que_subtitulo || '';
-  (document.getElementById('whyReasons') as HTMLTextAreaElement).value = (getContentCache().por_que_razones || []).map(r => `${r.emoji}|${r.titulo}|${r.descripcion}`).join('\n');
+  (document.getElementById('whyTitle') as HTMLInputElement).value = cache.por_que_titulo || '';
+  (document.getElementById('whySubtitle') as HTMLInputElement).value = cache.por_que_subtitulo || '';
+  (document.getElementById('whyReasons') as HTMLTextAreaElement).value = (cache.por_que_razones || []).map((r: any) => `${r.emoji}|${r.titulo}|${r.descripcion}`).join('\n');
 
   // Team
-  (document.getElementById('teamTitle') as HTMLInputElement).value = getContentCache().equipo_titulo || '';
-  (document.getElementById('teamSubtitle') as HTMLInputElement).value = getContentCache().equipo_subtitulo || '';
+  (document.getElementById('teamTitle') as HTMLInputElement).value = cache.equipo_titulo || '';
+  (document.getElementById('teamSubtitle') as HTMLInputElement).value = cache.equipo_subtitulo || '';
 
   // Offices
-  (document.getElementById('officesTitle') as HTMLInputElement).value = getContentCache().oficinas_titulo || '';
-  (document.getElementById('officesSubtitle') as HTMLInputElement).value = getContentCache().oficinas_subtitulo || '';
+  (document.getElementById('officesTitle') as HTMLInputElement).value = cache.oficinas_titulo || '';
+  (document.getElementById('officesSubtitle') as HTMLInputElement).value = cache.oficinas_subtitulo || '';
 
   // Footer
-  (document.getElementById('footerBrand') as HTMLInputElement).value = getContentCache().footer_marca || '';
-  (document.getElementById('footerDescription') as HTMLTextAreaElement).value = getContentCache().footer_descripcion || '';
-  (document.getElementById('footerContact') as HTMLInputElement).value = getContentCache().footer_contacto || '';
-  (document.getElementById('footerLinks') as HTMLTextAreaElement).value = (getContentCache().footer_links || []).map(l => `${l.texto}|${l.url}`).join('\n');
-  (document.getElementById('footerServices') as HTMLTextAreaElement).value = (getContentCache().footer_servicios || []).map(s => `${s.texto}|${s.url}`).join('\n');
-  (document.getElementById('footerCopyright') as HTMLInputElement).value = getContentCache().footer_copyright || '';
+  (document.getElementById('footerBrand') as HTMLInputElement).value = cache.footer_marca || '';
+  (document.getElementById('footerDescription') as HTMLTextAreaElement).value = cache.footer_descripcion || '';
+  (document.getElementById('footerContact') as HTMLInputElement).value = cache.footer_contacto || '';
+  (document.getElementById('footerLinks') as HTMLTextAreaElement).value = (cache.footer_links || []).map((l: any) => `${l.texto}|${l.url}`).join('\n');
+  (document.getElementById('footerServices') as HTMLTextAreaElement).value = (cache.footer_servicios || []).map((s: any) => `${s.texto}|${s.url}`).join('\n');
+  (document.getElementById('footerCopyright') as HTMLInputElement).value = cache.footer_copyright || '';
 
   // FAQ
-  (document.getElementById('faqTitle') as HTMLInputElement).value = getContentCache().faq_titulo || '';
-  (document.getElementById('faqSubtitle') as HTMLInputElement).value = getContentCache().faq_subtitulo || '';
-  (document.getElementById('faqGrid') as HTMLTextAreaElement).value = (getContentCache().faq_grid || []).map(f => `${f.pregunta}|${f.respuesta}`).join('\n');
+  (document.getElementById('faqTitle') as HTMLInputElement).value = cache.faq_titulo || '';
+  (document.getElementById('faqSubtitle') as HTMLInputElement).value = cache.faq_subtitulo || '';
+  (document.getElementById('faqGrid') as HTMLTextAreaElement).value = (cache.faq_grid || []).map((f: any) => `${f.pregunta}|${f.respuesta}`).join('\n');
 
   // Contacto
-  (document.getElementById('contactoTitle') as HTMLInputElement).value = getContentCache().contacto_titulo || '';
-  (document.getElementById('contactoSubtitle') as HTMLInputElement).value = getContentCache().contacto_subtitulo || '';
+  (document.getElementById('contactoTitle') as HTMLInputElement).value = cache.contacto_titulo || '';
+  (document.getElementById('contactoSubtitle') as HTMLInputElement).value = cache.contacto_subtitulo || '';
 
   // SEO
-  (document.getElementById('seoTitle') as HTMLInputElement).value = getContentCache().seo_titulo || '';
-  (document.getElementById('seoDescription') as HTMLTextAreaElement).value = getContentCache().seo_descripcion || '';
-  (document.getElementById('seoKeywords') as HTMLInputElement).value = getContentCache().seo_keywords || '';
-  (document.getElementById('seoOgImage') as HTMLInputElement).value = getContentCache().seo_og_image || '';
-  (document.getElementById('seoTwitterCard') as HTMLInputElement).value = getContentCache().seo_twitter_card || '';
-  (document.getElementById('seoSchema') as HTMLTextAreaElement).value = getContentCache().seo_schema || '';
+  (document.getElementById('seoTitle') as HTMLInputElement).value = cache.seo_titulo || '';
+  (document.getElementById('seoDescription') as HTMLTextAreaElement).value = cache.seo_descripcion || '';
+  (document.getElementById('seoKeywords') as HTMLInputElement).value = cache.seo_keywords || '';
+  (document.getElementById('seoOgImage') as HTMLInputElement).value = cache.seo_og_image || '';
+  (document.getElementById('seoTwitterCard') as HTMLInputElement).value = cache.seo_twitter_card || '';
+  (document.getElementById('seoSchema') as HTMLTextAreaElement).value = cache.seo_schema || '';
 }
 
 async function saveAllContent(): Promise<void> {
@@ -338,114 +447,37 @@ async function saveAllContent(): Promise<void> {
 
     showToast('Contenido guardado correctamente', 'success');
     await loadContent();
-  } catch (e) {
+  } catch (e: unknown) {
     console.error('saveAllContent error:', e);
-    showToast(`Error: ${e.message || 'Error al guardar contenido'}`, 'error');
+    showToast(`Error: ${e instanceof Error ? e.message : 'Error al guardar contenido'}`, 'error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-save"></i> Guardar Todo';
   }
 }
 
-let columnWidths: Record<number, number> = {};
-
-function loadColumnWidths(): void {
-  const saved = localStorage.getItem('admin_column_widths');
-  if (saved) { try { columnWidths = JSON.parse(saved); } catch (e) { columnWidths = {}; } }
-}
-
-function saveColumnWidths(): void {
-  localStorage.setItem('admin_column_widths', JSON.stringify(columnWidths));
-}
-
-function renderTableHeader(): void {
-  const thead = document.querySelector('#section-properties table thead');
-  if (!thead) return;
-
-  thead.innerHTML = `
-    <tr>
-      <th data-col-index="0" style="width: 48px;">
-        <input type="checkbox" id="selectAllProperties" aria-label="Seleccionar todas las propiedades">
-        <div class="resize-handle" data-col-index="0"></div>
-      </th>
-      <th data-col-index="1">Imagen <div class="resize-handle" data-col-index="1"></div></th>
-      <th data-col-index="2">Título <div class="resize-handle" data-col-index="2"></div></th>
-      <th data-col-index="3">Ubicación <div class="resize-handle" data-col-index="3"></div></th>
-      <th data-col-index="4">Operación <div class="resize-handle" data-col-index="4"></div></th>
-      <th data-col-index="5">Precio <div class="resize-handle" data-col-index="5"></div></th>
-      <th data-col-index="6">Estado <div class="resize-handle" data-col-index="6"></div></th>
-      <th data-col-index="7" style="width: 120px;">Acciones <div class="resize-handle" data-col-index="7"></div></th>
-    </tr>
-  `;
-
-  const selectAll = document.getElementById('selectAllProperties');
-  if (selectAll) {
-    selectAll.addEventListener('change', (e) => {
-      document.querySelectorAll('.row-checkbox').forEach(cb => {
-        (cb as HTMLInputElement).checked = (e.target as HTMLInputElement).checked;
-        const id = parseInt((cb as HTMLInputElement).value);
-        if ((e.target as HTMLInputElement).checked) { selectedPropertyIds.add(id); } else { selectedPropertyIds.delete(id); }
-      });
-      updateBulkActionsBar();
-    });
-  }
-}
-
-function initColumnResizing(): void {
-  const ths = document.querySelectorAll('#section-properties table thead th');
-  ths.forEach((th, index) => {
-    const handle = th.querySelector('.resize-handle');
-    if (!handle) return;
-
-    handle.addEventListener('mousedown', (e) => {
-      e.preventDefault(); e.stopPropagation();
-      const startX = e.clientX; const startWidth = th.offsetWidth;
-
-      function onMouseMove(e: MouseEvent) {
-        const newWidth = startWidth + (e.clientX - startX);
-        if (newWidth >= 40) {
-          th.style.width = newWidth + 'px';
-          th.style.minWidth = newWidth + 'px';
-          th.style.maxWidth = newWidth + 'px';
-          columnWidths[Array.from(th.parentElement!.children).indexOf(th)] = newWidth;
-
-          const colIndex = Array.from(th.parentElement!.children).indexOf(th);
-          document.querySelectorAll(`#propertiesTableBody tr td:nth-child(${colIndex + 1})`).forEach(td => {
-            (td as HTMLElement).style.width = newWidth + 'px';
-            (td as HTMLElement).style.minWidth = newWidth + 'px';
-            (td as HTMLElement).style.maxWidth = newWidth + 'px';
-          });
-        }
-      }
-
-      function onMouseUp() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-        document.body.style.cursor = ''; document.body.style.userSelect = '';
-      }
-
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-      document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none';
-    });
-  });
-}
-
-function initTableEnhancements(): void {
-  loadColumnWidths();
-}
-
-export function init(): void {
-  // This will be called from admin.html
-}
+// Stubs that will be replaced by feature modules
+function renderPropertiesTable(): void { /* Will be overridden by properties module */ }
+function updatePropertyStats(): void { /* Will be overridden by properties module */ }
+function updateAgentStats(): void { /* Will be overridden by agents module */ }
+function renderAgentsTable(): void { /* Will be overridden by agents module */ }
+function updateNavBadges(): void { /* Will be overridden by modules */ }
+function loadDashboard(): void { /* Will be overridden by dashboard module */ }
+function loadMercadoLibre(): void { /* Will be overridden by mercadoLibre module */ }
 
 // Export all for global access
-(window as any).editProperty = (id: number) => { /* will be set by properties module */ };
-(window as any).cloneProperty = (id: number) => { /* will be set by properties module */ };
-(window as any).confirmDelete = (type: string, id: number, name: string) => { /* will be set by properties module */ };
+(window as any).editProperty = (_id: number) => { /* will be set by properties module */ };
+(window as any).cloneProperty = (_id: number) => { /* will be set by properties module */ };
+(window as any).confirmDelete = (_type: string, _id: number, _name: string) => { /* will be set by properties module */ };
 (window as any).filterProperties = () => { /* will be set by properties module */ };
 (window as any).filterAgents = () => { /* will be set by agents module */ };
 (window as any).bulkActionProperties = () => { /* will be set by properties module */ };
 (window as any).clearBulkSelection = () => { /* will be set by properties module */ };
 
-export { loadContent, loadContentEditor, saveAllContent, populateContentEditor };
+export { 
+  loadContent, loadContentEditor, saveAllContent, populateContentEditor,
+  getContentCache, setContentCache,
+  checkAuth, handleLogin, logout, navigate,
+  loadProperties, loadAgents, loadAllData,
+  propertiesCache, agentsCache, selectedPropertyIds
+};

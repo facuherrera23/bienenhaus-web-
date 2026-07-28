@@ -113,6 +113,18 @@ export class Router {
    */
   start() {
     if (this.#listening) return;
+
+    // Handle initial load
+    const initialHash = window.location.hash.slice(1) || '/';
+    this.navigate(initialHash, { replace: true });
+
+    // Listen for hash changes (browser back/forward, direct URL)
+    window.addEventListener('hashchange', () => {
+      const hash = window.location.hash.slice(1) || '/';
+      this.navigate(hash, { replace: false });
+    });
+
+    this.#listening = true;
     return this;
   }
 

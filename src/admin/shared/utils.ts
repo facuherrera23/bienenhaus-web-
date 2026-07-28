@@ -2,8 +2,6 @@
 // ADMIN SHARED UTILITIES
 // ================================================================
 
-import { CONFIG } from '../../config.js';
-
 export function showToast(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success', duration = 4000): void {
   const container = document.getElementById('toastContainer');
   if (!container) return;

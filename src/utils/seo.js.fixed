@@ -1,4 +1,4 @@
-// ================================================================
+﻿// ================================================================
 // SEO UTILITIES - Dynamic meta tags, JSON-LD, sitemap
 // ================================================================
 
@@ -134,17 +134,18 @@ export function generateJSONLD(type, data) {
       numberOfRooms: data.numberOfRooms,
       numberOfBathrooms: data.numberOfBathrooms,
       petsAllowed: data.petsAllowed
-    }),
-    BreadcrumbList: (data) => ({
+    },
+    
+    BreadcrumbList: (breadcrumbs) => ({
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
-      itemListElement: data.map((crumb, index) => ({
+      itemListElement: breadcrumbs.map((crumb, index) => ({
         '@type': 'ListItem',
         position: index + 1,
         name: crumb.name,
         item: crumb.url
-      }))
-    }),
+      })),
+    
     Organization: (data) => ({
       '@context': 'https://schema.org',
       '@type': 'RealEstateAgent',
@@ -172,7 +173,8 @@ export function generateJSONLD(type, data) {
       currenciesAccepted: data.currenciesAccepted,
       paymentAccepted: data.paymentAccepted,
       areaServed: data.areaServed
-    }),
+    },
+    
     WebSite: (data) => ({
       '@context': 'https://schema.org',
       '@type': 'WebSite',
@@ -186,7 +188,8 @@ export function generateJSONLD(type, data) {
         },
         'query-input': 'required name=search_term_string'
       }
-    }),
+    },
+    
     FAQPage: (faqs) => ({
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
@@ -198,7 +201,7 @@ export function generateJSONLD(type, data) {
           text: faq.answer
         }
       }))
-    })
+    }
   };
   
   const generator = schemas[type];

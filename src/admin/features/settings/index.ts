@@ -9,7 +9,7 @@ export async function loadSettings(): Promise<void> {
   try {
     const { data } = await supabase.from('ml_credenciales').select('*').order('updated_at', { ascending: false }).limit(1).single();
     updateMercadoLibreUI(data || null);
-  } catch (e) { console.warn('Settings load:', e); }
+  } catch (e: unknown) { console.warn('Settings load:', e); }
 }
 
 function updateMercadoLibreUI(creds: { ml_user_id: string; expires_at?: string } | null): void {
@@ -28,12 +28,14 @@ function updateMercadoLibreUI(creds: { ml_user_id: string; expires_at?: string }
       if (importBtn) importBtn.style.display = 'inline-flex';
       if (syncBtn) syncBtn.style.display = 'inline-flex';
       if (pauseBtn) pauseBtn.style.display = 'inline-flex';
+      if (activateBtn) activateBtn.style.display = 'inline-flex';
     } else {
       statusEl.innerHTML = `<span class="badge badge-inactive">Desconectado</span>`;
       if (connectBtn) connectBtn.style.display = 'inline-flex';
       if (importBtn) importBtn.style.display = 'none';
       if (syncBtn) syncBtn.style.display = 'none';
       if (pauseBtn) pauseBtn.style.display = 'none';
+      if (activateBtn) activateBtn.style.display = 'none';
     }
   }
 }
@@ -49,7 +51,7 @@ async function connectMercadoLibre(): Promise<void> {
       sessionStorage.setItem('ml_oauth_state', state);
       window.location.href = data.authUrl;
     }
-  } catch (e) { console.error('ML Connect error:', e); showToast(`Error: ${e.message}`, 'error'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-link"></i> Conectar MercadoLibre'; }
+  } catch (e: unknown) { console.error('ML Connect error:', e); showToast(`Error: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-link"></i> Conectar MercadoLibre'; }
 }
 
 async function handleMLCallback(): Promise<void> {
@@ -67,7 +69,7 @@ async function handleMLCallback(): Promise<void> {
       showToast('¡Cuenta de MercadoLibre conectada!', 'success');
       updateMercadoLibreUI({ ml_user_id: data.user_id, expires_at: data.expires_at });
     } else throw new Error(data.error || 'Error desconocido');
-  } catch (e) { console.error('ML Callback error:', e); showToast(`Error: ${e.message}`, 'error'); }
+  } catch (e: unknown) { console.error('ML Callback error:', e); showToast(`Error: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error'); }
 }
 
 async function importFromMercadoLibre(): Promise<void> {
@@ -79,7 +81,7 @@ async function importFromMercadoLibre(): Promise<void> {
     if (error) throw error;
     showToast(`Importación completada: ${data.imported} nuevas, ${data.updated} actualizadas, ${data.errors} errores`, 'success');
     await loadProperties(); await loadMLSyncLog();
-  } catch (e) { console.error('ML Import error:', e); showToast(`Error: ${e.message}`, 'error'); }
+  } catch (e: unknown) { console.error('ML Import error:', e); showToast(`Error: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error'); }
   finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-download"></i> Importar de ML'; }
 }
 
@@ -87,11 +89,11 @@ async function syncPropertyToML(propertyId: number, action = 'publish'): Promise
   const prop = propertiesCache.find(p => p.id === propertyId);
   if (!prop) return;
   try {
-    const { data, error } = await supabase.functions.invoke('ml-publish', { body: { propertyId, action } });
+    const { error } = await supabase.functions.invoke('ml-publish', { body: { propertyId, action } });
     if (error) throw error;
     showToast(`Propiedad ${action === 'publish' ? 'publicada' : action} en MercadoLibre`, 'success');
     await loadProperties(); await loadMLSyncLog();
-  } catch (e) { console.error('ML Sync error:', e); showToast(`Error: ${e.message}`, 'error'); }
+  } catch (e: unknown) { console.error('ML Sync error:', e); showToast(`Error: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error'); }
 }
 
 async function loadMLSyncLog(): Promise<void> {
@@ -101,7 +103,7 @@ async function loadMLSyncLog(): Promise<void> {
     const { data, error } = await supabase.from('ml_sync_log').select('*, propiedades(titulo)').order('created_at', { ascending: false }).limit(50);
     if (error) throw error;
     if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No hay historial de sincronización</td></tr>'; return; }
-    tbody.innerHTML = data.map(log => `
+    tbody.innerHTML = data.map((log: any) => `
       <tr>
         <td>${new Date(log.created_at).toLocaleString('es-AR')}</td>
         <td>${log.propiedades?.titulo || 'N/A'}</td>
@@ -110,7 +112,7 @@ async function loadMLSyncLog(): Promise<void> {
         <td>${log.detalle ? JSON.stringify(log.detalle).substring(0, 100) : '—'}</td>
       </tr>
     `).join('');
-  } catch (e) { console.error('Load ML Sync Log error:', e); tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Error cargando historial</td></tr>'; }
+  } catch (e: unknown) { console.error('Load ML Sync Log error:', e); tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Error cargando historial</td></tr>'; }
 }
 
 (window as any).connectMercadoLibre = connectMercadoLibre;

@@ -210,4 +210,82 @@ interface Window {
   hideSpinner: () => void;
   cargarContenidoSitio: () => Promise<void>;
   recargarContenido: () => Promise<void>;
+  gtag: (...args: any[]) => void;
+  fbq: (...args: any[]) => void;
+  dataLayer: any[];
+  performance: Performance;
+  PerformanceObserver: {
+    new (callback: (entries: PerformanceObserverEntryList, observer: PerformanceObserver) => void): PerformanceObserver;
+    observe(options: { type: string; buffered?: boolean }): void;
+    disconnect(): void;
+    takeRecords(): PerformanceEntry[];
+  };
+  AbortController: {
+    new (): AbortController;
+    prototype: AbortController;
+  };
+  AbortSignal: {
+    prototype: AbortSignal;
+  };
+}
+
+interface Performance {
+  now(): number;
+  mark(name: string): void;
+  measure(name: string, startMark?: string, endMark?: string): void;
+  getEntriesByName(name: string, type?: string): PerformanceEntry[];
+  getEntriesByType(type: string): PerformanceEntry[];
+  getEntries(): PerformanceEntry[];
+  clearMarks(name?: string): void;
+  clearMeasures(name?: string): void;
+  timing: PerformanceTiming;
+  navigation: PerformanceNavigation;
+}
+
+interface PerformanceTiming {
+  navigationStart: number;
+  unloadEventStart: number;
+  unloadEventEnd: number;
+  redirectStart: number;
+  redirectEnd: number;
+  fetchStart: number;
+  domainLookupStart: number;
+  domainLookupEnd: number;
+  connectStart: number;
+  connectEnd: number;
+  secureConnectionStart: number;
+  requestStart: number;
+  responseStart: number;
+  responseEnd: number;
+  domLoading: number;
+  domInteractive: number;
+  domContentLoadedEventStart: number;
+  domContentLoadedEventEnd: number;
+  domComplete: number;
+  loadEventStart: number;
+  loadEventEnd: number;
+}
+
+interface PerformanceNavigation {
+  type: number;
+  redirectCount: number;
+}
+
+interface PerformanceObserverEntryList {
+  getEntries(): PerformanceEntry[];
+  getEntriesByType(type: string): PerformanceEntry[];
+  getEntriesByName(name: string, type?: string): PerformanceEntry[];
+}
+
+interface AbortController {
+  signal: AbortSignal;
+  abort(reason?: any): void;
+}
+
+interface AbortSignal {
+  aborted: boolean;
+  reason: any;
+  onabort: ((this: AbortSignal, ev: Event) => any) | null;
+  addEventListener(type: 'abort', listener: (this: AbortSignal, ev: Event) => any): void;
+  removeEventListener(type: 'abort', listener: (this: AbortSignal, ev: Event) => any): void;
 }
