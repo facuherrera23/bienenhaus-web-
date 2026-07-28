@@ -52,6 +52,23 @@
   <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="theme-color" content="#0b2b4a">
+
+  <!-- MAINTENANCE MODE CHECK (blocking script - runs before any React/Vite code) -->
+  <script>
+    (function() {
+      const SUPABASE_URL = 'https://rnldqiwwzhjnurkguihu.supabase.co';
+      const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubGRxaXd3emhqbnVya2d1aWh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NDA4MzMsImV4cCI6MjEwMDUxNjgzM30.tzqe0Z1vS9R5GiCTxIe3m6uY4kkggF3kewPrRUY8BwE';
+      
+      fetch(`${SUPABASE_URL}/rest/v1/contenido_sitio?clave=eq.maintenance_mode&select=valor`, {
+        headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
+        signal: AbortSignal.timeout(2500)
+      })
+        .then(r => r.json())
+        .then(d => { if (d?.[0]?.valor?.enabled === true) location.replace('/maintenance.html'); })
+        .catch(() => {}); // fail-open: si falla, muestra sitio normal
+    })();
+  </script>
+  <meta name="robots" content="index, follow" id="dynamicRobotsMeta" />
 </head>
 <body>
   <!-- Skip Link (Accesibilidad) -->

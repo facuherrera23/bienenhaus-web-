@@ -1,6 +1,7 @@
 // ================================================================
 // ADMIN CONTENT FEATURE - Gestión de textos del sitio
 // ================================================================
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { supabase } from '../../../supabase.js';
 
 const contentCache: Record<string, any> = {};

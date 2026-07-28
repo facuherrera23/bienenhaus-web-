@@ -41,10 +41,34 @@ async function loadSettingsModule(): Promise<any> {
 async function loadSettings(): Promise<void> {
   const settingsModule = await loadSettingsModule();
   await settingsModule.loadSettings();
+  // Cargar estado de maintenance al entrar a settings
+  if (settingsModule.loadMaintenanceState) {
+    await settingsModule.loadMaintenanceState();
+  }
+  if (settingsModule.initMaintenanceToggle) {
+    settingsModule.initMaintenanceToggle();
+  }
 }
 
 async function loadMercadoLibreModule(): Promise<any> {
   return import('./features/mercadoLibre/index.ts');
+}
+
+// ================================================================
+// MAINTENANCE MODE
+// ================================================================
+async function loadMaintenanceModule(): Promise<any> {
+  return import('./features/settings/index.ts');
+}
+
+async function loadMaintenanceState(): Promise<void> {
+  const maintenanceModule = await loadMaintenanceModule();
+  await maintenanceModule.loadMaintenanceState();
+}
+
+async function initMaintenanceToggle(): Promise<void> {
+  const maintenanceModule = await loadMaintenanceModule();
+  maintenanceModule.initMaintenanceToggle();
 }
 
 // ================================================================
@@ -114,6 +138,8 @@ function showDashboard(): void {
 
   loadDashboard();
   loadAllData();
+  loadMaintenanceState();
+  initMaintenanceToggle();
 }
 
 // ================================================================

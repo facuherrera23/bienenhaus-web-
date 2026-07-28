@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bienenhaus · Mantenimiento</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <!-- Fuentes según el sistema de diseño -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@300;400;500;600&family=Montserrat:wght@500;600&family=Quicksand:wght@400;500&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Reset y variables */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #000000;
+      --surface-1: #080808;
+      --surface-2: #0d0d0d;
+      --surface-3: #141414;
+      --surface-4: #1c1c1c;
+      --accent: #20b8ab;
+      --accent-dark: #178c81;
+      --accent-glow: rgba(32, 184, 171, 0.15);
+      --text-primary: #ffffff;
+      --text-secondary: #9a9a9a;
+      --text-muted: #555555;
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.12);
+      --font-display: 'Anton', sans-serif;
+      --font-body: 'Poppins', sans-serif;
+      --font-numbers: 'Montserrat', sans-serif;
+      --font-elegant: 'Quicksand', sans-serif;
+      --font-badge: 'Open Sans', sans-serif;
+      --radius-card: 40px;
+      --radius-modal: 40px;
+      --radius-game: 28px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      margin: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ===== FONDO DE HEXÁGONOS ===== */
+    .hzone {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(0.8px);
+      opacity: 0.6;
+    }
+    .hzone.tl { top: 0; left: 0; }
+    .hzone.br { bottom: 0; right: 0; }
+    .hzone.tr { top: 0; right: 0; opacity: .45; }
+    .hzone polygon {
+      transition: stroke .9s ease, stroke-width .9s ease;
+    }
+
+    .maintenance-card {
+      max-width: 720px;
+      width: 100%;
+      background: rgba(8, 8, 8, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 2.8rem 2.8rem 2.2rem 2.8rem;
+      box-shadow: 
+        0 30px 60px -20px rgba(0, 0, 0, 0.9),
+        0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+        0 0 40px rgba(32, 184, 171, 0.02);
+      text-align: center;
+      transition: var(--transition);
+      position: relative;
+      z-index: 1;
+    }
+
+    .maintenance-card:hover {
+      border-color: rgba(32, 184, 171, 0.2);
+      box-shadow: 
+        0 40px 70px -20px rgba(0, 0, 0, 0.9),
+        0 0 0 1px rgba(32, 184, 171, 0.06) inset,
+        0 0 60px rgba(32, 184, 171, 0.03);
+    }
+
+    /* Logo */
+    .logo-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 0.8rem;
+    }
+
+    .logo-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.2rem;
+    }
+
+    .logo-text {
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      letter-spacing: 0.06em;
+      line-height: 1;
+      background: linear-gradient(135deg, #ffffff 0%, #b0b0b0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 2px 10px rgba(255, 255, 255, 0.05));
+    }
+
+    .logo-sub {
+      font-family: var(--font-badge);
+      font-weight: 600;
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: var(--surface-2);
+      padding: 0.25rem 1.8rem;
+      border-radius: 60px;
+      border: 1px solid var(--border);
+      margin-top: 0.2rem;
+      display: inline-block;
+    }
+
+    .cpi-badge {
+      font-family: var(--font-badge);
+      font-weight: 600;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: var(--surface-2);
+      padding: 0.2rem 1.8rem;
+      border-radius: 60px;
+      border: 1px solid var(--border);
+      margin-top: 0.5rem;
+      display: inline-block;
+      transition: var(--transition);
+    }
+
+    .cpi-badge:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+
+    .cpi-badge strong {
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.2px;
+    }
+
+    /* Hexágono clickeable */
+    .status-pulse {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.9rem;
+      margin: 0.6rem 0 1rem 0;
+      cursor: pointer;
+      padding: 0.4rem 1.2rem;
+      border-radius: 60px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      transition: var(--transition);
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .status-pulse:hover {
+      border-color: var(--accent);
+      background: var(--surface-3);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(32, 184, 171, 0.08);
+    }
+
+    .hexagon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      animation: pulse-hex 1.8s ease-in-out infinite;
+      transition: transform 0.2s ease;
+      cursor: pointer;
+    }
+
+    .hexagon-wrapper:hover {
+      transform: scale(1.1);
+    }
+
+    .hexagon {
+      width: 22px;
+      height: 22px;
+      background: var(--accent);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      box-shadow: 0 0 0 0 rgba(32, 184, 171, 0.4);
+      transition: var(--transition);
+      pointer-events: none;
+    }
+
+    @keyframes pulse-hex {
+      0% { transform: scale(0.92); }
+      50% { transform: scale(1.15); filter: brightness(1.3); }
+      100% { transform: scale(0.92); filter: brightness(1); }
+    }
+
+    .status-text {
+      font-family: var(--font-elegant);
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .status-text:hover {
+      color: var(--text-primary);
+    }
+
+    .status-text .highlight {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Título */
+    .maintenance-title {
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      letter-spacing: 0.02em;
+      color: var(--text-primary);
+      line-height: 1.1;
+      margin: 0.5rem 0 0.2rem 0;
+    }
+
+    .maintenance-title small {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      display: block;
+      margin-top: 0.3rem;
+      letter-spacing: 0.3px;
+    }
+
+    .divider {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      border-radius: 10px;
+      margin: 1rem auto 1.2rem auto;
+      opacity: 0.6;
+    }
+
+    .message {
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      max-width: 480px;
+      margin: 0 auto 0.8rem auto;
+    }
+
+    .message a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1.5px dotted rgba(32, 184, 171, 0.25);
+      transition: var(--transition);
+    }
+
+    .message a:hover {
+      border-bottom: 1.5px solid var(--accent);
+      color: #4dd1c4;
+    }
+
+    /* Redes sociales mejoradas */
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 0.6rem;
+      margin: 1rem 0 0.8rem 0;
+      flex-wrap: wrap;
+    }
+
+    .social-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-family: var(--font-badge);
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.3px;
+      padding: 0.4rem 1rem;
+      border-radius: 40px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .social-links a:hover {
+      color: var(--text-primary);
+      border-color: var(--accent);
+      background: var(--surface-3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(32, 184, 171, 0.08);
+    }
+
+    .social-links .social-icon {
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .social-links .social-icon svg {
+      width: 100%;
+      height: 100%;
+      fill: var(--accent);
+      transition: fill 0.25s ease;
+    }
+
+    .social-links .ig:hover .social-icon svg { fill: #e4405f; }
+    .social-links .fb:hover .social-icon svg { fill: #1877f2; }
+    .social-links .yt:hover .social-icon svg { fill: #ff0000; }
+    .social-links .tt:hover .social-icon svg { fill: #00f2ea; }
+    .social-links .email:hover .social-icon svg { fill: #20b8ab; }
+
+    /* === JUEGO DINO === */
+    .game-wrapper {
+      background: var(--surface-2);
+      border-radius: var(--radius-game);
+      padding: 1rem 1rem 0.8rem 1rem;
+      margin: 1rem 0 0.8rem 0;
+      border: 1px solid var(--border);
+      transition: var(--transition);
+    }
+
+    .game-wrapper:hover {
+      border-color: var(--border-hover);
+    }
+
+    .game-container {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      background: #0b0b0b;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.03);
+      cursor: pointer;
+    }
+
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 600 / 180;
+      background: #0b0b0b;
+      image-rendering: pixelated;
+    }
+
+    .game-hint {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0.3rem 0 0.3rem;
+      font-family: var(--font-badge);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.2px;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+
+    .game-hint kbd {
+      background: var(--surface-3);
+      padding: 0.1rem 0.6rem;
+      border-radius: 40px;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.6rem;
+      font-weight: 600;
+    }
+
+    .game-hint .score-display {
+      color: var(--text-secondary);
+      background: var(--surface-3);
+      padding: 0.1rem 0.8rem;
+      border-radius: 40px;
+      border: 1px solid var(--border);
+    }
+
+    .game-hint .score-display span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .game-hint .controls-hint {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* footer */
+    .footer-note {
+      margin-top: 1.8rem;
+      font-family: var(--font-badge);
+      font-weight: 400;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      letter-spacing: 0.3px;
+    }
+
+    .footer-note span {
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+
+    .footer-note span:hover {
+      color: var(--text-secondary);
+    }
+
+    .footer-note .sep {
+      color: var(--surface-4);
+    }
+
+    /* ===== MODAL DEL MEMORAMA ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      animation: fadeIn 0.35s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.96) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-content {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-modal);
+      padding: 2.5rem 2rem 2rem 2rem;
+      max-width: 560px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+    }
+
+    .modal-content::-webkit-scrollbar {
+      width: 4px;
+    }
+    .modal-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .modal-content::-webkit-scrollbar-thumb {
+      background: var(--accent);
+      border-radius: 10px;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1.2rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: var(--font-body);
+      line-height: 1;
+      padding: 0.1rem 0.6rem;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      color: var(--text-primary);
+      border-color: var(--accent);
+      transform: rotate(90deg);
+      background: var(--surface-3);
+    }
+
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      color: var(--text-primary);
+      text-align: center;
+      margin-bottom: 0.2rem;
+      letter-spacing: 0.02em;
+    }
+
+    .modal-subtitle {
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-bottom: 1.2rem;
+    }
+
+    .modal-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+      font-family: var(--font-badge);
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      padding: 0.4rem 0.8rem;
+      background: var(--surface-2);
+      border-radius: 60px;
+      border: 1px solid var(--border);
+    }
+
+    .modal-stats .pairs-found {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .modal-stats .attempts {
+      color: var(--text-muted);
+    }
+
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.7rem;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .memory-card {
+      aspect-ratio: 1 / 1;
+      background: var(--surface-3);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      cursor: pointer;
+      transition: var(--transition);
+      user-select: none;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+
+    .memory-card .card-front,
+    .memory-card .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      backface-visibility: hidden;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .memory-card .card-front {
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      transform: rotateY(180deg);
+      font-size: 2.4rem;
+    }
+
+    .memory-card .card-back {
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      transform: rotateY(0deg);
+      font-size: 1.4rem;
+      color: #fff;
+      font-weight: 700;
+      font-family: var(--font-display);
+      letter-spacing: 0.05em;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .memory-card.flipped .card-front {
+      transform: rotateY(0deg);
+    }
+
+    .memory-card.flipped .card-back {
+      transform: rotateY(-180deg);
+    }
+
+    .memory-card.matched {
+      opacity: 0.5;
+      cursor: default;
+      pointer-events: none;
+      border-color: var(--accent);
+    }
+
+    .memory-card.matched .card-front {
+      transform: rotateY(0deg);
+    }
+
+    .memory-card.matched .card-back {
+      transform: rotateY(-180deg);
+      background: var(--accent-dark);
+    }
+
+    .memory-card:not(.flipped):not(.matched):hover {
+      transform: scale(1.05);
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(32, 184, 171, 0.1);
+    }
+
+    .memory-card:not(.flipped):not(.matched):active {
+      transform: scale(0.95);
+    }
+
+    .modal-footer {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    .btn-restart {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-family: var(--font-badge);
+      font-weight: 600;
+      font-size: 0.8rem;
+      padding: 0.5rem 2rem;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: var(--transition);
+      letter-spacing: 0.3px;
+    }
+
+    .btn-restart:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+      background: var(--surface-3);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(32, 184, 171, 0.08);
+    }
+
+    .btn-restart:active {
+      transform: scale(0.95);
+    }
+
+    /* Mensaje de victoria corregido - sin parpadeo */
+    .win-message {
+      display: none;
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      color: var(--accent);
+      text-align: center;
+      margin-top: 0.5rem;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .win-message.show {
+      display: block;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Responsive */
+    @media (max-width: 540px) {
+      .maintenance-card {
+        padding: 1.8rem 1.2rem 1.5rem 1.2rem;
+        border-radius: 28px;
+      }
+      .logo-text {
+        font-size: 2.2rem;
+      }
+      .maintenance-title {
+        font-size: 2rem;
+      }
+      .maintenance-title small {
+        font-size: 0.9rem;
+      }
+      .game-wrapper {
+        padding: 0.7rem 0.7rem 0.6rem 0.7rem;
+        border-radius: 20px;
+      }
+      .game-hint {
+        font-size: 0.55rem;
+      }
+      .social-links {
+        gap: 0.4rem;
+      }
+      .social-links a {
+        font-size: 0.65rem;
+        padding: 0.3rem 0.7rem;
+        gap: 0.3rem;
+      }
+      .social-links .social-icon {
+        width: 14px;
+        height: 14px;
+      }
+      .hexagon-wrapper {
+        width: 22px;
+        height: 22px;
+      }
+      .hexagon {
+        width: 18px;
+        height: 18px;
+      }
+      .status-pulse {
+        padding: 0.3rem 0.8rem;
+        gap: 0.6rem;
+      }
+      .status-text {
+        font-size: 0.8rem;
+      }
+
+      .modal-content {
+        padding: 1.5rem 0.8rem 1.5rem 0.8rem;
+        border-radius: 28px;
+      }
+      .memory-grid {
+        gap: 0.4rem;
+      }
+      .memory-card .card-front {
+        font-size: 1.4rem;
+      }
+      .memory-card .card-back {
+        font-size: 1rem;
+      }
+      .modal-title {
+        font-size: 1.5rem;
+      }
+      .modal-stats {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+      }
+      .modal-close {
+        width: 30px;
+        height: 30px;
+        font-size: 1.2rem;
+        top: 0.6rem;
+        right: 0.8rem;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .maintenance-card {
+        padding: 1.2rem 0.8rem;
+      }
+      .social-links a {
+        font-size: 0.55rem;
+        padding: 0.2rem 0.5rem;
+      }
+      .memory-grid {
+        gap: 0.3rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ===== FONDO DE HEXÁGONOS ANIMADO ===== -->
+  <div class="hzone tl">
+    <svg width="365" height="330" viewBox="0 0 365 330" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="48.5,13.0 48.5,39.0 26.0,52.0 3.5,39.0 3.5,13.0 26.0,0.0" stroke="rgba(32,184,171,0.20)" stroke-width="1.5" fill="none" data-base="0.20"/>
+      <polygon points="93.5,13.0 93.5,39.0 71.0,52.0 48.5,39.0 48.5,13.0 71.0,0.0" stroke="rgba(32,184,171,0.22)" stroke-width="1.5" fill="none" data-base="0.22"/>
+      <polygon points="138.6,13.0 138.6,39.0 116.1,52.0 93.5,39.0 93.5,13.0 116.1,0.0" stroke="rgba(32,184,171,0.10)" stroke-width="1.1" fill="none" data-base="0.10"/>
+      <polygon points="183.6,13.0 183.6,39.0 161.1,52.0 138.6,39.0 138.6,13.0 161.1,0.0" stroke="rgba(32,184,171,0.15)" stroke-width="1.5" fill="none" data-base="0.15"/>
+      <polygon points="228.6,13.0 228.6,39.0 206.1,52.0 183.6,39.0 183.6,13.0 206.1,0.0" stroke="rgba(32,184,171,0.10)" stroke-width="1.1" fill="none" data-base="0.10"/>
+      <polygon points="273.7,13.0 273.7,39.0 251.2,52.0 228.6,39.0 228.6,13.0 251.2,0.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="318.7,13.0 318.7,39.0 296.2,52.0 273.7,39.0 273.7,13.0 296.2,0.0" stroke="rgba(32,184,171,0.08)" stroke-width="1.1" fill="none" data-base="0.08"/>
+      <polygon points="71.0,52.0 71.0,78.0 48.5,91.0 26.0,78.0 26.0,52.0 48.5,39.0" stroke="rgba(32,184,171,0.24)" stroke-width="1.5" fill="none" data-base="0.24"/>
+      <polygon points="116.1,52.0 116.1,78.0 93.5,91.0 71.0,78.0 71.0,52.0 93.5,39.0" stroke="rgba(32,184,171,0.13)" stroke-width="1.5" fill="none" data-base="0.13"/>
+      <polygon points="161.1,52.0 161.1,78.0 138.6,91.0 116.1,78.0 116.1,52.0 138.6,39.0" stroke="rgba(32,184,171,0.15)" stroke-width="1.5" fill="none" data-base="0.15"/>
+      <polygon points="206.1,52.0 206.1,78.0 183.6,91.0 161.1,78.0 161.1,52.0 183.6,39.0" stroke="rgba(32,184,171,0.16)" stroke-width="1.5" fill="none" data-base="0.16"/>
+      <polygon points="251.2,52.0 251.2,78.0 228.6,91.0 206.1,78.0 206.1,52.0 228.6,39.0" stroke="rgba(32,184,171,0.04)" stroke-width="0.75" fill="none" data-base="0.04"/>
+      <polygon points="296.2,52.0 296.2,78.0 273.7,91.0 251.2,78.0 251.2,52.0 273.7,39.0" stroke="rgba(32,184,171,0.09)" stroke-width="1.1" fill="none" data-base="0.09"/>
+      <polygon points="341.2,52.0 341.2,78.0 318.7,91.0 296.2,78.0 296.2,52.0 318.7,39.0" stroke="rgba(32,184,171,0.05)" stroke-width="0.75" fill="none" data-base="0.05"/>
+      <polygon points="48.5,91.0 48.5,117.0 26.0,130.0 3.5,117.0 3.5,91.0 26.0,78.0" stroke="rgba(32,184,171,0.14)" stroke-width="1.5" fill="none" data-base="0.14"/>
+      <polygon points="93.5,91.0 93.5,117.0 71.0,130.0 48.5,117.0 48.5,91.0 71.0,78.0" stroke="rgba(32,184,171,0.12)" stroke-width="1.1" fill="none" data-base="0.12"/>
+      <polygon points="138.6,91.0 138.6,117.0 116.1,130.0 93.5,117.0 93.5,91.0 116.1,78.0" stroke="rgba(32,184,171,0.18)" stroke-width="1.5" fill="none" data-base="0.18"/>
+      <polygon points="183.6,91.0 183.6,117.0 161.1,130.0 138.6,117.0 138.6,91.0 161.1,78.0" stroke="rgba(32,184,171,0.06)" stroke-width="0.75" fill="none" data-base="0.06"/>
+      <polygon points="228.6,91.0 228.6,117.0 206.1,130.0 183.6,117.0 183.6,91.0 206.1,78.0" stroke="rgba(32,184,171,0.08)" stroke-width="1.1" fill="none" data-base="0.08"/>
+      <polygon points="273.7,91.0 273.7,117.0 251.2,130.0 228.6,117.0 228.6,91.0 251.2,78.0" stroke="rgba(32,184,171,0.09)" stroke-width="1.1" fill="none" data-base="0.09"/>
+      <polygon points="318.7,91.0 318.7,117.0 296.2,130.0 273.7,117.0 273.7,91.0 296.2,78.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="71.0,130.0 71.0,156.0 48.5,169.0 26.0,156.0 26.0,130.0 48.5,117.0" stroke="rgba(32,184,171,0.07)" stroke-width="1.1" fill="none" data-base="0.07"/>
+      <polygon points="116.1,130.0 116.1,156.0 93.5,169.0 71.0,156.0 71.0,130.0 93.5,117.0" stroke="rgba(32,184,171,0.17)" stroke-width="1.5" fill="none" data-base="0.17"/>
+      <polygon points="161.1,130.0 161.1,156.0 138.6,169.0 116.1,156.0 116.1,130.0 138.6,117.0" stroke="rgba(32,184,171,0.09)" stroke-width="1.1" fill="none" data-base="0.09"/>
+      <polygon points="206.1,130.0 206.1,156.0 183.6,169.0 161.1,156.0 161.1,130.0 183.6,117.0" stroke="rgba(32,184,171,0.06)" stroke-width="0.75" fill="none" data-base="0.06"/>
+      <polygon points="251.2,130.0 251.2,156.0 228.6,169.0 206.1,156.0 206.1,130.0 228.6,117.0" stroke="rgba(32,184,171,0.12)" stroke-width="1.1" fill="none" data-base="0.12"/>
+      <polygon points="296.2,130.0 296.2,156.0 273.7,169.0 251.2,156.0 251.2,130.0 273.7,117.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="341.2,130.0 341.2,156.0 318.7,169.0 296.2,156.0 296.2,130.0 318.7,117.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="48.5,169.0 48.5,195.0 26.0,208.0 3.5,195.0 3.5,169.0 26.0,156.0" stroke="rgba(32,184,171,0.12)" stroke-width="1.1" fill="none" data-base="0.12"/>
+      <polygon points="93.5,169.0 93.5,195.0 71.0,208.0 48.5,195.0 48.5,169.0 71.0,156.0" stroke="rgba(32,184,171,0.11)" stroke-width="1.1" fill="none" data-base="0.11"/>
+      <polygon points="138.6,169.0 138.6,195.0 116.1,208.0 93.5,195.0 93.5,169.0 116.1,156.0" stroke="rgba(32,184,171,0.04)" stroke-width="0.75" fill="none" data-base="0.04"/>
+      <polygon points="183.6,169.0 183.6,195.0 161.1,208.0 138.6,195.0 138.6,169.0 161.1,156.0" stroke="rgba(32,184,171,0.11)" stroke-width="1.1" fill="none" data-base="0.11"/>
+      <polygon points="228.6,169.0 228.6,195.0 206.1,208.0 183.6,195.0 183.6,169.0 206.1,156.0" stroke="rgba(32,184,171,0.04)" stroke-width="0.75" fill="none" data-base="0.04"/>
+      <polygon points="273.7,169.0 273.7,195.0 251.2,208.0 228.6,195.0 228.6,169.0 251.2,156.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="318.7,169.0 318.7,195.0 296.2,208.0 273.7,195.0 273.7,169.0 296.2,156.0" stroke="rgba(32,184,171,0.07)" stroke-width="1.1" fill="none" data-base="0.07"/>
+      <polygon points="71.0,208.0 71.0,234.0 48.5,247.0 26.0,234.0 26.0,208.0 48.5,195.0" stroke="rgba(32,184,171,0.11)" stroke-width="1.1" fill="none" data-base="0.11"/>
+      <polygon points="116.1,208.0 116.1,234.0 93.5,247.0 71.0,234.0 71.0,208.0 93.5,195.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="161.1,208.0 161.1,234.0 138.6,247.0 116.1,234.0 116.1,208.0 138.6,195.0" stroke="rgba(32,184,171,0.08)" stroke-width="1.1" fill="none" data-base="0.08"/>
+      <polygon points="206.1,208.0 206.1,234.0 183.6,247.0 161.1,234.0 161.1,208.0 183.6,195.0" stroke="rgba(32,184,171,0.06)" stroke-width="0.75" fill="none" data-base="0.06"/>
+      <polygon points="251.2,208.0 251.2,234.0 228.6,247.0 206.1,234.0 206.1,208.0 228.6,195.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="296.2,208.0 296.2,234.0 273.7,247.0 251.2,234.0 251.2,208.0 273.7,195.0" stroke="rgba(32,184,171,0.07)" stroke-width="0.75" fill="none" data-base="0.07"/>
+      <polygon points="341.2,208.0 341.2,234.0 318.7,247.0 296.2,234.0 296.2,208.0 318.7,195.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="48.5,247.0 48.5,273.0 26.0,286.0 3.5,273.0 3.5,247.0 26.0,234.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="93.5,247.0 93.5,273.0 71.0,286.0 48.5,273.0 48.5,247.0 71.0,234.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="138.6,247.0 138.6,273.0 116.1,286.0 93.5,273.0 93.5,247.0 116.1,234.0" stroke="rgba(32,184,171,0.07)" stroke-width="0.75" fill="none" data-base="0.07"/>
+      <polygon points="183.6,247.0 183.6,273.0 161.1,286.0 138.6,273.0 138.6,247.0 161.1,234.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="228.6,247.0 228.6,273.0 206.1,286.0 183.6,273.0 183.6,247.0 206.1,234.0" stroke="rgba(32,184,171,0.05)" stroke-width="0.75" fill="none" data-base="0.05"/>
+      <polygon points="273.7,247.0 273.7,273.0 251.2,286.0 228.6,273.0 228.6,247.0 251.2,234.0" stroke="rgba(32,184,171,0.04)" stroke-width="0.75" fill="none" data-base="0.04"/>
+      <polygon points="318.7,247.0 318.7,273.0 296.2,286.0 273.7,273.0 273.7,247.0 296.2,234.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="71.0,286.0 71.0,312.0 48.5,325.0 26.0,312.0 26.0,286.0 48.5,273.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="116.1,286.0 116.1,312.0 93.5,325.0 71.0,312.0 71.0,286.0 93.5,273.0" stroke="rgba(32,184,171,0.07)" stroke-width="1.1" fill="none" data-base="0.07"/>
+      <polygon points="161.1,286.0 161.1,312.0 138.6,325.0 116.1,312.0 116.1,286.0 138.6,273.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="206.1,286.0 206.1,312.0 183.6,325.0 161.1,312.0 161.1,286.0 183.6,273.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="251.2,286.0 251.2,312.0 228.6,325.0 206.1,312.0 206.1,286.0 228.6,273.0" stroke="rgba(32,184,171,0.06)" stroke-width="0.75" fill="none" data-base="0.06"/>
+      <polygon points="296.2,286.0 296.2,312.0 273.7,325.0 251.2,312.0 251.2,286.0 273.7,273.0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="341.2,286.0 341.2,312.0 318.7,325.0 296.2,312.0 296.2,286.0 318.7,273.0" stroke="rgba(32,184,171,0.05)" stroke-width="0.75" fill="none" data-base="0.05"/>
+    </svg>
+  </div>
+
+  <div class="hzone br">
+    <svg width="340" height="300" viewBox="0 0 340 300" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(180deg)">
+      <polygon points="48.5,13 48.5,39 26,52 3.5,39 3.5,13 26,0" stroke="rgba(32,184,171,0.20)" stroke-width="1.5" fill="none" data-base="0.20"/>
+      <polygon points="93.5,13 93.5,39 71,52 48.5,39 48.5,13 71,0" stroke="rgba(32,184,171,0.21)" stroke-width="1.5" fill="none" data-base="0.21"/>
+      <polygon points="138.6,13 138.6,39 116.1,52 93.5,39 93.5,13 116.1,0" stroke="rgba(32,184,171,0.09)" stroke-width="1.1" fill="none" data-base="0.09"/>
+      <polygon points="183.6,13 183.6,39 161.1,52 138.6,39 138.6,13 161.1,0" stroke="rgba(32,184,171,0.14)" stroke-width="1.5" fill="none" data-base="0.14"/>
+      <polygon points="228.6,13 228.6,39 206.1,52 183.6,39 183.6,13 206.1,0" stroke="rgba(32,184,171,0.09)" stroke-width="1.1" fill="none" data-base="0.09"/>
+      <polygon points="273.7,13 273.7,39 251.2,52 228.6,39 228.6,13 251.2,0" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="71,52 71,78 48.5,91 26,78 26,52 48.5,39" stroke="rgba(32,184,171,0.23)" stroke-width="1.5" fill="none" data-base="0.23"/>
+      <polygon points="116.1,52 116.1,78 93.5,91 71,78 71,52 93.5,39" stroke="rgba(32,184,171,0.12)" stroke-width="1.5" fill="none" data-base="0.12"/>
+      <polygon points="161.1,52 161.1,78 138.6,91 116.1,78 116.1,52 138.6,39" stroke="rgba(32,184,171,0.14)" stroke-width="1.5" fill="none" data-base="0.14"/>
+      <polygon points="206.1,52 206.1,78 183.6,91 161.1,78 161.1,52 183.6,39" stroke="rgba(32,184,171,0.14)" stroke-width="1.5" fill="none" data-base="0.14"/>
+      <polygon points="251.2,52 251.2,78 228.6,91 206.1,78 206.1,52 228.6,39" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+      <polygon points="296.2,52 296.2,78 273.7,91 251.2,78 251.2,52 273.7,39" stroke="rgba(32,184,171,0.07)" stroke-width="1.1" fill="none" data-base="0.07"/>
+      <polygon points="48.5,91 48.5,117 26,130 3.5,117 3.5,91 26,78" stroke="rgba(32,184,171,0.13)" stroke-width="1.5" fill="none" data-base="0.13"/>
+      <polygon points="93.5,91 93.5,117 71,130 48.5,117 48.5,91 71,78" stroke="rgba(32,184,171,0.11)" stroke-width="1.1" fill="none" data-base="0.11"/>
+      <polygon points="138.6,91 138.6,117 116.1,130 93.5,117 93.5,91 116.1,78" stroke="rgba(32,184,171,0.17)" stroke-width="1.5" fill="none" data-base="0.17"/>
+      <polygon points="183.6,91 183.6,117 161.1,130 138.6,117 138.6,91 161.1,78" stroke="rgba(32,184,171,0.05)" stroke-width="0.75" fill="none" data-base="0.05"/>
+      <polygon points="228.6,91 228.6,117 206.1,130 183.6,117 183.6,91 206.1,78" stroke="rgba(32,184,171,0.06)" stroke-width="0.75" fill="none" data-base="0.06"/>
+      <polygon points="273.7,91 273.7,117 251.2,130 228.6,117 228.6,91 251.2,78" stroke="rgba(32,184,171,0.07)" stroke-width="0.75" fill="none" data-base="0.07"/>
+      <polygon points="71,130 71,156 48.5,169 26,156 26,130 48.5,117" stroke="rgba(32,184,171,0.06)" stroke-width="0.75" fill="none" data-base="0.06"/>
+      <polygon points="116.1,130 116.1,156 93.5,169 71,156 71,130 93.5,117" stroke="rgba(32,184,171,0.15)" stroke-width="1.5" fill="none" data-base="0.15"/>
+      <polygon points="161.1,130 161.1,156 138.6,169 116.1,156 116.1,130 138.6,117" stroke="rgba(32,184,171,0.08)" stroke-width="1.1" fill="none" data-base="0.08"/>
+      <polygon points="206.1,130 206.1,156 183.6,169 161.1,156 161.1,130 183.6,117" stroke="rgba(32,184,171,0.04)" stroke-width="0.75" fill="none" data-base="0.04"/>
+      <polygon points="251.2,130 251.2,156 228.6,169 206.1,156 206.1,130 228.6,117" stroke="rgba(32,184,171,0.10)" stroke-width="1.1" fill="none" data-base="0.10"/>
+      <polygon points="296.2,130 296.2,156 273.7,169 251.2,156 251.2,130 273.7,117" stroke="rgba(32,184,171,0.03)" stroke-width="0.75" fill="none" data-base="0.03"/>
+    </svg>
+  </div>
+
+  <div class="hzone tr">
+    <svg width="240" height="250" viewBox="0 0 240 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="48.5,13 48.5,39 26,52 3.5,39 3.5,13 26,0" stroke="rgba(32,184,171,0.20)" stroke-width="1.5" fill="none" data-base="0.20"/>
+      <polygon points="93.5,13 93.5,39 71,52 48.5,39 48.5,13 71,0" stroke="rgba(32,184,171,0.20)" stroke-width="1.5" fill="none" data-base="0.20"/>
+      <polygon points="138.6,13 138.6,39 116.1,52 93.5,39 93.5,13 116.1,0" stroke="rgba(32,184,171,0.07)" stroke-width="0.75" fill="none" data-base="0.07"/>
+      <polygon points="183.6,13 183.6,39 161.1,52 138.6,39 138.6,13 161.1,0" stroke="rgba(32,184,171,0.10)" stroke-width="1.1" fill="none" data-base="0.10"/>
+      <polygon points="71,52 71,78 48.5,91 26,78 26,52 48.5,39" stroke="rgba(32,184,171,0.22)" stroke-width="1.5" fill="none" data-base="0.22"/>
+      <polygon points="116.1,52 116.1,78 93.5,91 71,78 71,52 93.5,39" stroke="rgba(32,184,171,0.11)" stroke-width="1.1" fill="none" data-base="0.11"/>
+      <polygon points="161.1,52 161.1,78 138.6,91 116.1,78 116.1,52 138.6,39" stroke="rgba(32,184,171,0.11)" stroke-width="1.1" fill="none" data-base="0.11"/>
+      <polygon points="48.5,91 48.5,117 26,130 3.5,117 3.5,91 26,78" stroke="rgba(32,184,171,0.12)" stroke-width="1.1" fill="none" data-base="0.12"/>
+      <polygon points="93.5,91 93.5,117 71,130 48.5,117 48.5,91 71,78" stroke="rgba(32,184,171,0.09)" stroke-width="1.1" fill="none" data-base="0.09"/>
+      <polygon points="138.6,91 138.6,117 116.1,130 93.5,117 93.5,91 116.1,78" stroke="rgba(32,184,171,0.14)" stroke-width="1.5" fill="none" data-base="0.14"/>
+      <polygon points="71,130 71,156 48.5,169 26,156 26,130 48.5,117" stroke="rgba(32,184,171,0.05)" stroke-width="0.75" fill="none" data-base="0.05"/>
+      <polygon points="116.1,130 116.1,156 93.5,169 71,156 71,130 93.5,117" stroke="rgba(32,184,171,0.13)" stroke-width="1.5" fill="none" data-base="0.13"/>
+    </svg>
+  </div>
+
+  <div class="maintenance-card">
+    <!-- Logo + identidad -->
+    <div class="logo-wrapper">
+      <div class="logo-icon">
+        <span class="logo-text">BIENENHAUS</span>
+      </div>
+      <div class="logo-sub">PROPIEDADES</div>
+      <div class="cpi-badge"><strong>CPI.</strong> 1834</div>
+    </div>
+
+    <!-- Hexágono clickeable -->
+    <div class="status-pulse" id="hexagonTrigger">
+      <span class="hexagon-wrapper">
+        <span class="hexagon"></span>
+      </span>
+      <span class="status-text">En mantenimiento · <span class="highlight">¡Juega!</span></span>
+    </div>
+
+    <h1 class="maintenance-title">
+      Estamos renovando
+      <small>para ofrecerte una mejor experiencia</small>
+    </h1>
+
+    <div class="divider"></div>
+
+    <p class="message">
+      Estamos trabajando en nuestra plataforma digital. 
+      Muy pronto volveremos con novedades y el catálogo 
+      de propiedades seleccionadas.
+    </p>
+
+    <!-- Redes Sociales -->
+    <div class="social-links">
+      <a href="https://instagram.com/bienenhaus.prop" target="_blank" class="ig" rel="noopener noreferrer">
+        <span class="social-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+          </svg>
+        </span>
+        Instagram
+      </a>
+      <a href="https://facebook.com/Bienenhaus.prop" target="_blank" class="fb" rel="noopener noreferrer">
+        <span class="social-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
+        </span>
+        Facebook
+      </a>
+      <a href="https://www.youtube.com/@BienenhausPropiedades" target="_blank" class="yt" rel="noopener noreferrer">
+        <span class="social-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        </span>
+        YouTube
+      </a>
+      <a href="https://www.tiktok.com/@bienenhaus.prop" target="_blank" class="tt" rel="noopener noreferrer">
+        <span class="social-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.11-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.3-.69.32-1.06.1-2.23.04-4.47.04-6.71.02-1.69.04-3.37.02-5.06h-.02z"/>
+          </svg>
+        </span>
+        TikTok
+      </a>
+      <a href="mailto:bienenhaus.propiedades@gmail.com" class="email">
+        <span class="social-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z"/>
+            <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z"/>
+          </svg>
+        </span>
+        Email
+      </a>
+    </div>
+
+    <!-- JUEGO DINO -->
+    <div class="game-wrapper">
+      <div class="game-container" id="gameContainer">
+        <canvas id="gameCanvas" width="600" height="180"></canvas>
+      </div>
+      <div class="game-hint">
+        <div class="controls-hint">
+          <span><kbd>ESPACIO</kbd> saltar</span>
+          <span><kbd>⬇</kbd> agacharse</span>
+        </div>
+        <span class="score-display">🏆 <span id="scoreDisplay">0</span></span>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <span>Córdoba · Argentina</span>
+      <span class="sep">|</span>
+      <span>Catálogo Curado</span>
+      <span class="sep">|</span>
+      <span>2026</span>
+    </div>
+  </div>
+
+  <!-- MODAL MEMORAMA -->
+  <div class="modal-overlay" id="memoryModal">
+    <div class="modal-content">
+      <button class="modal-close" id="closeModal">✕</button>
+      <div class="modal-title">🏠 MEMORAMA</div>
+      <div class="modal-subtitle">Encuentra las parejas de propiedades</div>
+
+      <div class="modal-stats">
+        <span class="pairs-found">🔍 <span id="pairsFound">0</span>/6</span>
+        <span class="attempts">Intentos: <span id="attemptsCount">0</span></span>
+      </div>
+
+      <div class="memory-grid" id="memoryGrid"></div>
+
+      <div class="win-message" id="winMessage">🎉 ¡Felicidades! Encontraste todas las parejas</div>
+
+      <div class="modal-footer">
+        <button class="btn-restart" id="restartGame">🔄 Reiniciar juego</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // 1. ANIMACIÓN DE HEXÁGONOS (fondo)
+    // ============================================================
+    (function() {
+      const polygons = document.querySelectorAll('.hzone polygon');
+      if (!polygons.length) return;
+      let lit = [];
+
+      polygons.forEach(p => {
+        p.style.transition = 'stroke .9s ease, stroke-width .9s ease';
+      });
+
+      function pulseHex() {
+        lit.forEach(p => {
+          const base = parseFloat(p.dataset.base) || 0.10;
+          const w = base > 0.14 ? 1.5 : base > 0.08 ? 1.1 : 0.75;
+          p.setAttribute('stroke', `rgba(32,184,171,${base})`);
+          p.setAttribute('stroke-width', String(w));
+        });
+        lit = [];
+
+        const used = new Set();
+        const total = polygons.length;
+        const count = Math.min(6, total);
+        while (used.size < count) {
+          used.add(Math.floor(Math.random() * total));
+        }
+
+        used.forEach(i => {
+          const p = polygons[i];
+          p.setAttribute('stroke', 'rgba(32,184,171,0.6)');
+          p.setAttribute('stroke-width', '1.8');
+          lit.push(p);
+        });
+      }
+
+      pulseHex();
+      setInterval(pulseHex, 2800);
+    })();
+
+    // ============================================================
+    // 2. JUEGO DINO
+    // ============================================================
+    (function(){
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreSpan = document.getElementById('scoreDisplay');
+
+      const W = 600, H = 180;
+      canvas.width = W;
+      canvas.height = H;
+
+      const GROUND_Y = 155;
+      const GROUND_H = 25;
+
+      const DINO = {
+        x: 50,
+        y: GROUND_Y - 34,
+        w: 28,
+        h: 34,
+        vy: 0,
+        gravity: 0.6,
+        jumpPower: -10,
+        grounded: true,
+        ducking: false,
+        normalH: 34,
+        duckH: 20,
+        normalW: 28,
+        duckW: 36,
+      };
+
+      let obstacles = [];
+      const CACTUS_W = 12;
+      const CACTUS_MIN_H = 22;
+      const CACTUS_MAX_H = 34;
+      const BIRD_W = 22;
+      const BIRD_H = 16;
+      const BIRD_Y_MIN = GROUND_Y - 58;
+      const BIRD_Y_MAX = GROUND_Y - 34;
+
+      let speed = 5;
+      const BASE_SPEED = 5;
+      let frameCounter = 0;
+      const SPAWN_RATE = 50;
+      let gameOver = false;
+      let score = 0;
+      let highScore = 0;
+      let duckPressed = false;
+
+      function resetGame() {
+        DINO.y = GROUND_Y - DINO.normalH;
+        DINO.h = DINO.normalH;
+        DINO.w = DINO.normalW;
+        DINO.vy = 0;
+        DINO.grounded = true;
+        DINO.ducking = false;
+        obstacles = [];
+        speed = BASE_SPEED;
+        frameCounter = 0;
+        gameOver = false;
+        score = 0;
+        updateScore();
+      }
+
+      function updateScore() {
+        scoreSpan.textContent = Math.floor(score);
+      }
+
+      function rectCollide(ax, ay, aw, ah, bx, by, bw, bh) {
+        return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+      }
+
+      function spawnObstacle() {
+        const birdChance = Math.min(0.5, 0.25 + Math.floor(score / 150) * 0.05);
+        if (Math.random() < birdChance) {
+          const y = BIRD_Y_MIN + Math.random() * (BIRD_Y_MAX - BIRD_Y_MIN);
+          obstacles.push({ type: 'bird', x: W, y: y, w: BIRD_W, h: BIRD_H, wingPhase: Math.random() * Math.PI * 2 });
+        } else {
+          const h = Math.floor(Math.random() * (CACTUS_MAX_H - CACTUS_MIN_H + 1)) + CACTUS_MIN_H;
+          obstacles.push({ type: 'cactus', x: W, y: GROUND_Y - h, w: CACTUS_W, h: h });
+        }
+      }
+
+      function jump() {
+        if (gameOver) { resetGame(); return; }
+        if (DINO.grounded && !DINO.ducking) {
+          DINO.vy = DINO.jumpPower;
+          DINO.grounded = false;
+        }
+      }
+
+      function duck(active) {
+        if (gameOver) return;
+        duckPressed = active;
+        if (active && DINO.grounded) {
+          DINO.ducking = true;
+          DINO.h = DINO.duckH;
+          DINO.w = DINO.duckW;
+          DINO.y = GROUND_Y - DINO.duckH;
+        } else if (!active) {
+          DINO.ducking = false;
+          DINO.h = DINO.normalH;
+          DINO.w = DINO.normalW;
+          if (DINO.grounded) DINO.y = GROUND_Y - DINO.normalH;
+        }
+      }
+
+      function update() {
+        if (gameOver) return;
+        DINO.vy += DINO.gravity;
+        DINO.y += DINO.vy;
+        const currentH = DINO.ducking ? DINO.duckH : DINO.normalH;
+        if (DINO.y >= GROUND_Y - currentH) {
+          DINO.y = GROUND_Y - currentH;
+          DINO.vy = 0;
+          if (!DINO.grounded) {
+            DINO.grounded = true;
+            if (duckPressed) {
+              DINO.ducking = true;
+              DINO.h = DINO.duckH;
+              DINO.w = DINO.duckW;
+              DINO.y = GROUND_Y - DINO.duckH;
+            }
+          }
+        } else {
+          DINO.grounded = false;
+          if (DINO.ducking) {
+            DINO.ducking = false;
+            DINO.h = DINO.normalH;
+            DINO.w = DINO.normalW;
+          }
+        }
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+          const obs = obstacles[i];
+          obs.x -= speed;
+          let hit = false;
+          if (obs.type === 'cactus') {
+            hit = rectCollide(DINO.x, DINO.y, DINO.w, DINO.h, obs.x, obs.y, obs.w, obs.h);
+          } else if (obs.type === 'bird') {
+            const dinoH = DINO.ducking ? DINO.duckH : DINO.normalH;
+            const dinoY = DINO.ducking ? GROUND_Y - DINO.duckH : DINO.y;
+            hit = rectCollide(DINO.x, dinoY, DINO.w, dinoH, obs.x, obs.y, obs.w, obs.h);
+          }
+          if (hit) {
+            gameOver = true;
+            if (score > highScore) highScore = score;
+            return;
+          }
+          if (obs.x + obs.w < 0) {
+            obstacles.splice(i, 1);
+            score += 5;
+            updateScore();
+            speed = BASE_SPEED + Math.floor(score / 80) * 0.7;
+            if (speed > 15) speed = 15;
+          }
+        }
+        frameCounter++;
+        const spawnRate = Math.max(22, SPAWN_RATE - Math.floor(score / 25));
+        if (frameCounter >= spawnRate) {
+          spawnObstacle();
+          frameCounter = 0;
+        }
+        if (!gameOver) {
+          score += 0.12;
+          updateScore();
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = '#0b0b0b';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(0, GROUND_Y, W, GROUND_H);
+        ctx.strokeStyle = '#2a2a2a';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(0, GROUND_Y);
+        ctx.lineTo(W, GROUND_Y);
+        ctx.stroke();
+        ctx.strokeStyle = '#222';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < W; i += 25) {
+          const offset = (performance.now() / 30) % 25;
+          const x = (i - offset + W) % W;
+          ctx.beginPath();
+          ctx.moveTo(x, GROUND_Y + 6);
+          ctx.lineTo(x + 12, GROUND_Y + 6);
+          ctx.stroke();
+        }
+        const dx = DINO.x, dy = DINO.y, dw = DINO.w, dh = DINO.h;
+        ctx.fillStyle = '#3a9b7a';
+        ctx.fillRect(dx, dy, dw, dh);
+        if (DINO.ducking) {
+          ctx.fillStyle = '#f0f0f0';
+          ctx.fillRect(dx + 22, dy + 3, 6, 6);
+          ctx.fillStyle = '#111';
+          ctx.fillRect(dx + 26, dy + 5, 3, 3);
+          ctx.fillStyle = '#226644';
+          ctx.fillRect(dx + 2, dy + dh - 3, 14, 3);
+          ctx.fillStyle = '#2a7a5a';
+          ctx.fillRect(dx + 4, dy - 2, 4, 4);
+          ctx.fillRect(dx + 14, dy - 1, 4, 3);
+          ctx.fillStyle = '#1f5c44';
+          ctx.fillRect(dx + 4, dy + dh, 5, 4);
+          ctx.fillRect(dx + 24, dy + dh, 5, 4);
+        } else {
+          ctx.fillStyle = '#f0f0f0';
+          ctx.fillRect(dx + 18, dy + 4, 6, 6);
+          ctx.fillStyle = '#111';
+          ctx.fillRect(dx + 22, dy + 6, 3, 3);
+          ctx.fillStyle = '#226644';
+          ctx.fillRect(dx + 2, dy + dh - 4, 12, 3);
+          ctx.fillStyle = '#2a7a5a';
+          ctx.fillRect(dx + 6, dy - 4, 4, 6);
+          ctx.fillRect(dx + 14, dy - 3, 4, 5);
+          ctx.fillStyle = '#2a7a5a';
+          ctx.fillRect(dx - 3, dy + 10, 4, 8);
+          ctx.fillRect(dx + dw - 1, dy + 10, 4, 8);
+          if (DINO.grounded) {
+            ctx.fillStyle = '#1f5c44';
+            ctx.fillRect(dx + 3, dy + dh, 5, 6);
+            ctx.fillRect(dx + 18, dy + dh, 5, 6);
+          } else {
+            ctx.fillStyle = '#1f5c44';
+            ctx.fillRect(dx + 2, dy + dh - 2, 5, 8);
+            ctx.fillRect(dx + 19, dy + dh - 2, 5, 8);
+          }
+        }
+        obstacles.forEach(obs => {
+          if (obs.type === 'cactus') {
+            ctx.fillStyle = '#2d7a4a';
+            ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+            ctx.fillStyle = '#1f5c3a';
+            ctx.fillRect(obs.x - 2, obs.y + 6, 4, 3);
+            ctx.fillRect(obs.x - 2, obs.y + 14, 4, 3);
+            ctx.fillRect(obs.x + obs.w - 2, obs.y + 8, 4, 3);
+            ctx.fillRect(obs.x + obs.w - 2, obs.y + 18, 4, 3);
+            ctx.fillStyle = '#246a42';
+            ctx.fillRect(obs.x + 2, obs.y + 4, 2, obs.h - 8);
+            ctx.fillRect(obs.x + 7, obs.y + 6, 2, obs.h - 12);
+          } else if (obs.type === 'bird') {
+            const wingUp = Math.sin((obs.wingPhase || 0) + performance.now() / 80) > 0;
+            ctx.fillStyle = '#7a4a3a';
+            ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+            ctx.fillStyle = '#8a5a4a';
+            ctx.fillRect(obs.x + obs.w - 6, obs.y - 4, 8, 8);
+            ctx.fillStyle = '#cc8833';
+            ctx.fillRect(obs.x + obs.w, obs.y, 5, 4);
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(obs.x + obs.w - 4, obs.y - 2, 4, 4);
+            ctx.fillStyle = '#111';
+            ctx.fillRect(obs.x + obs.w - 2, obs.y, 2, 2);
+            ctx.fillStyle = wingUp ? '#6a3a2a' : '#8a5a4a';
+            if (wingUp) {
+              ctx.fillRect(obs.x - 4, obs.y - 6, 8, 6);
+              ctx.fillRect(obs.x + 6, obs.y - 8, 6, 6);
+            } else {
+              ctx.fillRect(obs.x - 4, obs.y + obs.h - 2, 8, 6);
+              ctx.fillRect(obs.x + 6, obs.y + obs.h - 4, 6, 6);
+            }
+            ctx.fillStyle = '#6a3a2a';
+            ctx.fillRect(obs.x - 6, obs.y + 4, 6, 6);
+          }
+        });
+        if (gameOver) {
+          ctx.fillStyle = 'rgba(0,0,0,0.55)';
+          ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 24px "Montserrat", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('GAME OVER', W/2, H/2 - 18);
+          ctx.font = '14px "Open Sans", sans-serif';
+          ctx.fillStyle = '#aaa';
+          ctx.fillText('Toca / Espacio para reiniciar', W/2, H/2 + 28);
+        }
+      }
+
+      function gameLoop() {
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+      }
+
+      function handleJump(e) { if (e) e.preventDefault(); jump(); }
+      function handleDuckStart(e) { if (e) e.preventDefault(); duck(true); }
+      function handleDuckEnd(e) { if (e) e.preventDefault(); duck(false); }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Space') { e.preventDefault(); handleJump(e); }
+        if (e.key === 'ArrowDown' || e.key === 'Down') { e.preventDefault(); handleDuckStart(e); }
+      });
+      document.addEventListener('keyup', (e) => {
+        if (e.key === 'ArrowDown' || e.key === 'Down') { e.preventDefault(); handleDuckEnd(e); }
+      });
+
+      const container = document.getElementById('gameContainer');
+      container.addEventListener('click', (e) => { e.preventDefault(); handleJump(e); });
+
+      let touchStartY = 0;
+      container.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        if (touch) touchStartY = touch.clientY;
+        if (e.touches.length >= 2) handleDuckStart(e);
+      }, { passive: false });
+      container.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (e.touches.length === 1) {
+          const touch = e.touches[0];
+          const deltaY = touch.clientY - touchStartY;
+          if (deltaY > 20) handleDuckStart(e);
+          else if (deltaY < -20) handleJump(e);
+        }
+      }, { passive: false });
+      container.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (e.touches.length === 0) handleDuckEnd(e);
+      }, { passive: false });
+
+      resetGame();
+      gameLoop();
+    })();
+
+    // ============================================================
+    // 3. MEMORAMA (con corrección definitiva del parpadeo)
+    // ============================================================
+    (function(){
+      const modal = document.getElementById('memoryModal');
+      const grid = document.getElementById('memoryGrid');
+      const pairsFoundSpan = document.getElementById('pairsFound');
+      const attemptsSpan = document.getElementById('attemptsCount');
+      const winMessage = document.getElementById('winMessage');
+      const restartBtn = document.getElementById('restartGame');
+      const closeBtn = document.getElementById('closeModal');
+      const hexTrigger = document.getElementById('hexagonTrigger');
+
+      const ICONS = ['🏠', '🏢', '🏘️', '🏡', '🏗️', '🏬'];
+
+      let cards = [];
+      let flippedIndices = [];
+      let matchedPairs = 0;
+      let attempts = 0;
+      let isLocked = false;
+      let gameWon = false;
+
+      function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      function initGame() {
+        let deck = [];
+        ICONS.forEach((icon, idx) => {
+          deck.push({ icon: icon, pairId: idx });
+          deck.push({ icon: icon, pairId: idx });
+        });
+        deck = shuffle(deck);
+
+        cards = deck.map((item, index) => ({
+          ...item,
+          index: index,
+          flipped: false,
+          matched: false
+        }));
+
+        flippedIndices = [];
+        matchedPairs = 0;
+        attempts = 0;
+        isLocked = false;
+        gameWon = false;
+        winMessage.classList.remove('show');
+        winMessage.style.display = 'none';
+
+        pairsFoundSpan.textContent = '0';
+        attemptsSpan.textContent = '0';
+
+        renderGrid();
+      }
+
+      function renderGrid() {
+        grid.innerHTML = '';
+        cards.forEach((card, index) => {
+          const div = document.createElement('div');
+          div.className = 'memory-card';
+          if (card.matched) div.classList.add('matched');
+          if (card.flipped) div.classList.add('flipped');
+
+          const front = document.createElement('div');
+          front.className = 'card-front';
+          front.textContent = card.icon;
+
+          const back = document.createElement('div');
+          back.className = 'card-back';
+          back.textContent = '?';
+
+          div.appendChild(front);
+          div.appendChild(back);
+
+          div.dataset.index = index;
+          div.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleCardClick(index);
+          });
+
+          grid.appendChild(div);
+        });
+      }
+
+      function handleCardClick(index) {
+        if (isLocked || gameWon) return;
+        const card = cards[index];
+        if (card.flipped || card.matched) return;
+
+        card.flipped = true;
+        flippedIndices.push(index);
+        renderGrid();
+
+        if (flippedIndices.length === 2) {
+          isLocked = true;
+          attempts++;
+          attemptsSpan.textContent = attempts;
+
+          const idx1 = flippedIndices[0];
+          const idx2 = flippedIndices[1];
+          const card1 = cards[idx1];
+          const card2 = cards[idx2];
+
+          if (card1.pairId === card2.pairId && idx1 !== idx2) {
+            card1.matched = true;
+            card2.matched = true;
+            matchedPairs++;
+            pairsFoundSpan.textContent = matchedPairs;
+            flippedIndices = [];
+            isLocked = false;
+            renderGrid();
+
+            if (matchedPairs === ICONS.length) {
+              gameWon = true;
+              setTimeout(() => {
+                winMessage.style.display = 'block';
+                winMessage.classList.add('show');
+              }, 300);
+            }
+          } else {
+            setTimeout(() => {
+              card1.flipped = false;
+              card2.flipped = false;
+              flippedIndices = [];
+              isLocked = false;
+              renderGrid();
+            }, 700);
+          }
+        }
+      }
+
+      function openModal() {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        initGame();
+      }
+
+      function closeModal() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        winMessage.classList.remove('show');
+        winMessage.style.display = 'none';
+        gameWon = false;
+      }
+
+      hexTrigger.addEventListener('click', openModal);
+      closeBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+      restartBtn.addEventListener('click', () => {
+        initGame();
+        winMessage.classList.remove('show');
+        winMessage.style.display = 'none';
+        gameWon = false;
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+          closeModal();
+        }
+      });
+    })();
+
+    // ============================================================
+    // 4. POLLING AUTO-RESTORE (30s)
+    // ============================================================
+    (function() {
+      const SUPABASE_URL = 'https://rnldqiwwzhjnurkguihu.supabase.co';
+      const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubGRxaXd3emhqbnVya2d1aWh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NDA4MzMsImV4cCI6MjEwMDUxNjgzM30.tzqe0Z1vS9R5GiCTxIe3m6uY4kkggF3kewPrRUY8BwE';
+
+      setInterval(async () => {
+        try {
+          const r = await fetch(`${SUPABASE_URL}/rest/v1/contenido_sitio?clave=eq.maintenance_mode&select=valor`, {
+            headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
+            signal: AbortSignal.timeout(2500)
+          });
+          const d = await r.json();
+          if (d?.[0]?.valor?.enabled === false) location.replace('/');
+        } catch {}
+      }, 30000);
+    })();
+  </script>
+</body>
+</html>

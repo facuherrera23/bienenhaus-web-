@@ -123,6 +123,9 @@
             <div class="user-role" id="userRole">Super Admin</div>
           </div>
         </div>
+        <button class="btn-secondary" id="btnTestMaintenance" style="width: 100%; margin-bottom: 8px;" title="Abre maintenance.html en nueva pestaña sin afectar el sitio">
+          <i class="fas fa-vial"></i> Probar Mantenimiento
+        </button>
         <button class="btn-logout" id="btnLogout">
           <i class="fas fa-sign-out-alt"></i>
           Cerrar Sesión
@@ -716,7 +719,7 @@
               <h3 class="settings-section-title">Configuración del Sitio</h3>
               <div class="form-row">
                 <div class="form-group switch">
-                  <input type="checkbox" id="maintenanceMode" checked>
+                  <input type="checkbox" id="maintenanceMode">
                   <span class="slider"></span>
                   <label style="cursor: pointer; font-weight: 500;">Modo Mantenimiento</label>
                 </div>
@@ -738,6 +741,13 @@
                   <label style="cursor: pointer; font-weight: 500;">Newsletter</label>
                 </div>
               </div>
+            </div>
+
+            <!-- Botón Guardar Configuración -->
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
+              <button class="btn-primary" id="btnSaveSettings" style="width: 100%;">
+                <i class="fas fa-save"></i> Guardar Configuración
+              </button>
             </div>
 
           <!-- Contact -->
