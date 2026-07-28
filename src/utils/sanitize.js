@@ -2,6 +2,7 @@
  * Utilidades de sanitización y escape para prevenir XSS
  * SOLO para salida HTML - NO para atributos, JS, CSS, URLs
  */
+/* eslint-disable no-control-regex */
 
 /**
  * Escapa caracteres HTML especiales

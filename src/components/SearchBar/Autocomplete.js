@@ -422,6 +422,6 @@ export function Autocomplete({
     </div>
   );
 }
- 
 // Default export
-export default Autocomplete;
+export default Autocomplete; 
+ 
