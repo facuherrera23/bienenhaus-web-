@@ -8,11 +8,25 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pg_net"; -- Para pg_cron con http requests
 
 -- Limpieza preventiva: elimina triggers existentes (por si se ejecuta varias veces)
-DROP TRIGGER IF EXISTS update_ml_credenciales_updated_at ON ml_credenciales;
-DROP TRIGGER IF EXISTS update_propiedades_updated_at ON propiedades;
-DROP TRIGGER IF EXISTS update_agentes_updated_at ON agentes;
-DROP TRIGGER IF EXISTS update_contenido_sitio_updated_at ON contenido_sitio;
-DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
+-- Se hace dentro de un DO block porque DROP TRIGGER requiere que la tabla exista
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'ml_credenciales') THEN
+    DROP TRIGGER IF EXISTS update_ml_credenciales_updated_at ON ml_credenciales;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'propiedades') THEN
+    DROP TRIGGER IF EXISTS update_propiedades_updated_at ON propiedades;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'agentes') THEN
+    DROP TRIGGER IF EXISTS update_agentes_updated_at ON agentes;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'contenido_sitio') THEN
+    DROP TRIGGER IF EXISTS update_contenido_sitio_updated_at ON contenido_sitio;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'profiles') THEN
+    DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
+  END IF;
+END $$;
 
 -- Función para updated_at (debe existir antes de los triggers)
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -348,18 +362,22 @@ CREATE POLICY "Public insert leads" ON leads FOR INSERT WITH CHECK (true);
 -- ================================================================
 -- 1. Settings > Database > Extensions > Enable pg_cron
 -- 2. Settings > Database > Extensions > Enable pg_net
--- 3. Settings > Database > Cron Jobs > Add job:
+-- 3. Reemplaza 'TU_SERVICE_ROLE_KEY' abajo por tu clave real
+--    (Supabase Dashboard > Settings > API > service_role key)
+-- 4. Settings > Database > Cron Jobs > Add job:
 --    Name: ml-refresh-token
 --    Schedule: */30 * * * *
 --    Command:
+-- ALTER DATABASE postgres SET app.settings.service_role_key = '...';  -- Configurar en Dashboard > Database > Parameters si se desea usar current_setting()
+
 SELECT cron.schedule(
   'ml-refresh-token',
   '*/30 * * * *',
   $$
   SELECT net.http_post(
-    url := 'https://TU_PROYECTO.supabase.co/functions/v1/ml-refresh-token',
+    url := 'https://rnldqiwwzhjnurkguihu.supabase.co/functions/v1/ml-refresh-token',
     headers := jsonb_build_object(
-      'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'),
+'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubGRxaXd3emhqbnVya2d1aWh1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDk0MDgzMywiZXhwIjoyMTAwNTE2ODMzfQ.mQ5NZTj8Qeb94runL0JYPgMMvPcRSQnSezdu1rQIzOQ',
       'Content-Type', 'application/json'
     ),
     body := '{}'::jsonb
@@ -374,9 +392,9 @@ SELECT cron.schedule(
 --    Schedule: */30 * * * *
 --    Command: 
 SELECT net.http_post(
-  url := 'https://TU_PROYECTO.supabase.co/functions/v1/ml-refresh-token',
+  url := 'https://rnldqiwwzhjnurkguihu.supabase.co/functions/v1/ml-refresh-token',
   headers := jsonb_build_object(
-    'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'),
+    'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubGRxaXd3emhqbnVya2d1aWh1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDk0MDgzMywiZXhwIjoyMTAwNTE2ODMzfQ.mQ5NZTj8Qeb94runL0JYPgMMvPcRSQnSezdu1rQIzOQ',
     'Content-Type', 'application/json'
   ),
   body := '{}'::jsonb

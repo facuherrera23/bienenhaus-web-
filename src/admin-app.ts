@@ -1652,7 +1652,8 @@ async function confirmImport() {
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importando...';
   
-  let imported = 0, updated = 0, errors = 0;
+  let imported = 0, updated = 0;
+  const errors = 0;
   
   try {
     for (const row of importData) {
@@ -2171,70 +2172,6 @@ async function loadMLSyncLog() {
     tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Error cargando historial</td></tr>';
   }
 }
-
-// ================================================================
-// IMAGE UPLOAD PREVIEWS
-// ================================================================
-function setupImageUploads() {
-  // Property images
-  const propUpload = document.getElementById('propImageUpload');
-  const propInput = document.getElementById('propImages');
-  const propPreview = document.getElementById('propImagesPreview');
-  
-  if (propUpload && propInput) {
-    // Make file input cover the upload area for native click handling
-    propInput.style.cssText = 'position:absolute;inset:0;opacity:0;cursor:pointer;z-index:10;';
-    propUpload.style.position = 'relative';
-    
-    propUpload.addEventListener('dragover', e => { e.preventDefault(); propUpload.classList.add('dragover'); });
-    propUpload.addEventListener('dragleave', () => propUpload.classList.remove('dragover'));
-    propUpload.addEventListener('drop', e => {
-      e.preventDefault();
-      propUpload.classList.remove('dragover');
-      handleFiles(e.dataTransfer.files, 'property');
-    });
-    propInput.addEventListener('change', e => handleFiles(e.target.files, 'property'));
-  }
-  
-  // Agent avatar
-  const agentUpload = document.getElementById('agentAvatarUpload');
-  const agentInput = document.getElementById('agentAvatar');
-  
-  if (agentUpload && agentInput) {
-    agentInput.style.cssText = 'position:absolute;inset:0;opacity:0;cursor:pointer;z-index:10;';
-    agentUpload.style.position = 'relative';
-    
-    agentUpload.addEventListener('dragover', e => { e.preventDefault(); agentUpload.classList.add('dragover'); });
-    agentUpload.addEventListener('dragleave', () => agentUpload.classList.remove('dragover'));
-    agentUpload.addEventListener('drop', e => {
-      e.preventDefault();
-      agentUpload.classList.remove('dragover');
-      handleFiles(e.dataTransfer.files, 'agent');
-    });
-    agentInput.addEventListener('change', e => handleFiles(e.target.files, 'agent'));
-  }
-}
-
-function handleFiles(files, type) {
-  const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
-  if (validFiles.length === 0) return;
-  
-  if (type === 'property') {
-    const remaining = 15 - uploadedPropertyImages.length;
-    const toAdd = validFiles.slice(0, remaining);
-    uploadedPropertyImages.push(...toAdd);
-    renderPropertyImagePreviews();
-  } else if (type === 'agent') {
-    const file = validFiles[0];
-    uploadedAgentAvatar = file;
-    const preview = document.getElementById('agentAvatarPreview');
-    const url = URL.createObjectURL(file);
-    preview.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
-    preview.style.background = 'none';
-  }
-}
-
-function renderPropertyImagePreviews() {
   const preview = document.getElementById('propImagesPreview');
   if (!preview) return;
   preview.innerHTML = '';
@@ -2502,7 +2439,6 @@ function setupMarkdownTextareas() {
         element.setAttribute('data-md-initialized', 'true');
       });
 }, 100);
-  }
 }
 
 function markedParse(text) {
@@ -2555,8 +2491,92 @@ window.filterProperties = filterProperties;
 window.filterAgents = filterAgents;
 
 // ================================================================
-// INIT
+// IMAGE UPLOAD PREVIEWS
 // ================================================================
+function setupImageUploads() {
+  // Property images
+  const propUpload = document.getElementById('propImageUpload');
+  const propInput = document.getElementById('propImages');
+  const propPreview = document.getElementById('propImagesPreview');
+  
+  if (propUpload && propInput) {
+    // Make file input cover the upload area for native click handling
+    propInput.style.cssText = 'position:absolute;inset:0;opacity:0;cursor:pointer;z-index:10;';
+    propUpload.style.position = 'relative';
+    
+    propUpload.addEventListener('dragover', e => { e.preventDefault(); propUpload.classList.add('dragover'); });
+    propUpload.addEventListener('dragleave', () => propUpload.classList.remove('dragover'));
+    propUpload.addEventListener('drop', e => {
+      e.preventDefault();
+      propUpload.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files, 'property');
+    });
+    propInput.addEventListener('change', e => handleFiles(e.target.files, 'property'));
+  }
+  
+  // Agent avatar
+  const agentUpload = document.getElementById('agentAvatarUpload');
+  const agentInput = document.getElementById('agentAvatar');
+  
+  if (agentUpload && agentInput) {
+    agentInput.style.cssText = 'position:absolute;inset:0;opacity:0;cursor:pointer;z-index:10;';
+    agentUpload.style.position = 'relative';
+    
+    agentUpload.addEventListener('dragover', e => { e.preventDefault(); agentUpload.classList.add('dragover'); });
+    agentUpload.addEventListener('dragleave', () => agentUpload.classList.remove('dragover'));
+    agentUpload.addEventListener('drop', e => {
+      e.preventDefault();
+      agentUpload.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files, 'agent');
+    });
+    agentInput.addEventListener('change', e => handleFiles(e.target.files, 'agent'));
+  }
+}
+
+function handleFiles(files, type) {
+  const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (validFiles.length === 0) return;
+  
+  if (type === 'property') {
+    const remaining = 15 - uploadedPropertyImages.length;
+    if (remaining <= 0) {
+      showToast('Máximo 15 imágenes por propiedad', 'warning');
+      return;
+    }
+    const filesToAdd = validFiles.slice(0, remaining);
+    filesToAdd.forEach(file => {
+      uploadedPropertyImages.push(file);
+      const reader = new FileReader();
+      reader.onload = e => {
+        const preview = document.getElementById('propImagesPreview');
+        if (!preview) return;
+        const div = document.createElement('div');
+        div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:var(--radius);overflow:hidden;border:2px solid var(--gray-200);';
+        div.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;"><span style="position:absolute;top:2px;right:2px;background:var(--gray-900);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${uploadedPropertyImages.length}</span>`;
+        preview.appendChild(div);
+      };
+      reader.readAsDataURL(file);
+    });
+    if (validFiles.length > remaining) {
+      showToast(`Solo se agregaron ${remaining} imágenes (máx. 15)`, 'warning');
+    }
+  } else if (type === 'agent') {
+    if (validFiles.length > 1) {
+      showToast('Solo se permite 1 imagen para avatar de agente', 'warning');
+      return;
+    }
+    uploadedAgentAvatar = validFiles[0];
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('agentAvatarPreview');
+      if (preview) {
+        preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+        preview.style.background = 'none';
+      }
+    };
+    reader.readAsDataURL(validFiles[0]);
+  }
+}
 document.addEventListener('DOMContentLoaded', async () => {
   // Setup image uploads
   setupImageUploads();

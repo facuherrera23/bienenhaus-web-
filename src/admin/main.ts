@@ -33,7 +33,7 @@ const loginAttempts = new Map<string, { count: number; lockedUntil: number }>();
 let currentUser: any = null;
 let propertiesCache: any[] = [];
 let agentsCache: any[] = [];
-let selectedPropertyIds = new Set<number>();
+const selectedPropertyIds = new Set<number>();
 let sessionTimer: number | null = null;
 let lastActivity = Date.now();
 

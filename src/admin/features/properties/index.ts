@@ -81,13 +81,10 @@ async function loadProperties(): Promise<void> {
 
 function updatePropertyStats(): void {
   const total = propertiesCache.length;
-  propertiesCache.filter(p => p.destacado).length;
-  propertiesCache.filter(p => p.operacion === 'venta').length;
-  propertiesCache.filter(p => p.operacion === 'alquiler').length;
 
   document.getElementById('statProperties')!.textContent = String(total);
   document.getElementById('statAgents')!.textContent = String(agentsCache.filter(a => a.activo).length);
-  document.getElementById('propTrend')!.innerHTML = '<i class="fas fa-arrow-up"></i> —';
+  document.getElementById('propTrend')!.innerHTML = '<i class="fas fa-arrow-up</i> —';
   document.getElementById('propTrend')!.className = 'stat-trend';
 }
 

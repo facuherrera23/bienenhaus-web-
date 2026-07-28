@@ -8,17 +8,18 @@
 -- ================================================================
 -- JOB: Refrescar tokens de MercadoLibre cada 30 minutos
 -- ================================================================
--- Reemplaza TU_PROYECTO por tu project ref de Supabase
--- (lo encuentras en Settings > General > Reference ID)
+-- Project ref: rnldqiwwzhjnurkguihu (Settings > General > Reference ID)
+
+-- ALTER DATABASE postgres SET app.settings.service_role_key = '...';  -- Opcional: configurar en Dashboard > Database > Parameters
 
 SELECT cron.schedule(
   'ml-refresh-token',
   '*/30 * * * *',  -- cada 30 minutos
   $$
   SELECT net.http_post(
-    url := 'https://TU_PROYECTO.supabase.co/functions/v1/ml-refresh-token',
+    url := 'https://rnldqiwwzhjnurkguihu.supabase.co/functions/v1/ml-refresh-token',
     headers := jsonb_build_object(
-      'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'),
+'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubGRxaXd3emhqbnVya2d1aWh1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDk0MDgzMywiZXhwIjoyMTAwNTE2ODMzfQ.mQ5NZTj8Qeb94runL0JYPgMMvPcRSQnSezdu1rQIzOQ',
       'Content-Type', 'application/json'
     ),
     body := '{}'::jsonb
@@ -40,9 +41,9 @@ SELECT cron.schedule(
 -- TEST MANUAL (ejecutar para probar ahora mismo)
 -- ================================================================
 -- SELECT net.http_post(
---   url := 'https://TU_PROYECTO.supabase.co/functions/v1/ml-refresh-token',
+--   url := 'https://rnldqiwwzhjnurkguihu.supabase.co/functions/v1/ml-refresh-token',
 --   headers := jsonb_build_object(
---     'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'),
+--     'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubGRxaXd3emhqbnVya2d1aWh1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDk0MDgzMywiZXhwIjoyMTAwNTE2ODMzfQ.mQ5NZTj8Qeb94runL0JYPgMMvPcRSQnSezdu1rQIzOQ',
 --     'Content-Type', 'application/json'
 --   ),
 --   body := '{}'::jsonb

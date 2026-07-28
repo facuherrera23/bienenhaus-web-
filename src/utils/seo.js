@@ -207,8 +207,8 @@ export function generateJSONLD(type, data) {
     return '';
   }
   
-  const data = generator(data);
-  return `<script type="application/ld+json">${JSON.stringify(data)}</script>`;
+  const result = generator(data);
+  return `<script type="application/ld+json">${JSON.stringify(result)}</script>`;
 }
 
 /**

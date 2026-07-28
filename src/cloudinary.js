@@ -19,7 +19,7 @@ export async function uploadToCloudinary(file, folder, preset) {
     return { url: response.data.secure_url, public_id: response.data.public_id };
   } catch (error) {
     console.error('Error subiendo a Cloudinary:', error);
-    throw new Error('Error al subir imagen. Intenta de nuevo.');
+    throw new Error('Error al subir imagen. Intenta de nuevo.', { cause: error });
   }
 }
 
