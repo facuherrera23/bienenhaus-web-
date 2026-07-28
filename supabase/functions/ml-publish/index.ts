@@ -11,7 +11,7 @@ import {
   MLItem,
   MLAttribute,
   CategoryAttribute
-} from "./ml-mapper.ts"
+} from "../shared/ml-mapper.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

@@ -1,8 +1,51 @@
-import { MLItem, Property } from '../ml-import/index.ts';
+// Shared ML Mapper - No circular dependencies, defines types locally
 
 const ML_API = "https://api.mercadolibre.com";
 
-interface CategoryAttribute {
+// Types
+export interface Property {
+  id?: number;
+  titulo: string;
+  precio: number;
+  moneda: string;
+  operacion: 'venta' | 'alquiler';
+  ubicacion: string;
+  tipo: string;
+  habitaciones: number;
+  banos: number;
+  m2: number;
+  antiguedad: string;
+  descripcion: string;
+  imagenes?: Array<{ url: string; cloudinary_public_id: string; orden: number; es_principal: boolean }>;
+  caracteristicas?: string[];
+  ml_item_id?: string;
+  ml_status?: string;
+  ml_permalink?: string;
+  ml_last_sync?: string;
+}
+
+export interface MLItem {
+  id: string;
+  site_id: string;
+  title: string;
+  price: number;
+  currency_id: string;
+  available_quantity: number;
+  sold_quantity: number;
+  buying_mode: string;
+  listing_type_id: string;
+  condition: string;
+  permalink: string;
+  thumbnail: string;
+  pictures: Array<{ source: string }>;
+  attributes: Array<{ id: string; value_name?: string; value_id?: string; value_struct?: { number: number; unit: string } }>;
+  status: string;
+  date_created: string;
+  last_updated: string;
+  category_id: string;
+}
+
+export interface CategoryAttribute {
   id: string;
   name: string;
   value_type: string;
@@ -12,19 +55,62 @@ interface CategoryAttribute {
   tags?: string[];
 }
 
-interface CategoryAttributesResponse {
-  attributes: CategoryAttribute[];
+export interface MLAttribute {
+  id: string;
+  value_name?: string;
+  value_id?: string;
+  value_struct?: { number: number; unit: string };
 }
 
-interface DomainDiscoveryResult {
-  category_id: string;
-  category_name: string;
-  domain_id: string;
-  domain_name: string;
-  attributes: Array<{ id: string; name: string; required: boolean }>;
+// Category mapping
+const ML_CATEGORY_MAP: Record<string, string> = {
+  'venta_piso': 'MLA1459',
+  'venta_chalet': 'MLA1459',
+  'venta_atico': 'MLA1459',
+  'venta_local': 'MLA1461',
+  'venta_terreno': 'MLA1463',
+  'alquiler_piso': 'MLA1540',
+  'alquiler_chalet': 'MLA1540',
+  'alquiler_atico': 'MLA1540',
+  'alquiler_local': 'MLA1542',
+  'alquiler_terreno': 'MLA1544',
+};
+
+export function getCategoryId(operacion: string, tipo: string): string {
+  const key = `${operacion}_${tipo}`;
+  return ML_CATEGORY_MAP[key] || (operacion === 'alquiler' ? 'MLA1540' : 'MLA1459');
 }
 
-const CATEGORY_CACHE = new Map<string, { categoryId: string; attributes: CategoryAttribute[] }>();
+// Category attributes cache
+const CATEGORY_ATTR_CACHE = new Map<string, CategoryAttribute[]>();
+
+export async function fetchCategoryAttributes(
+  accessToken: string,
+  categoryId: string
+): Promise<CategoryAttribute[]> {
+  if (CATEGORY_ATTR_CACHE.has(categoryId)) {
+    return CATEGORY_ATTR_CACHE.get(categoryId)!;
+  }
+
+  try {
+    const res = await fetch(`${ML_API}/categories/${categoryId}/attributes`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!res.ok) {
+      console.warn(`No se pudieron obtener atributos para categoría ${categoryId}: ${res.status}`);
+      return [];
+    }
+
+    const data = await res.json();
+    const attrs: CategoryAttribute[] = data.attributes || [];
+    CATEGORY_ATTR_CACHE.set(categoryId, attrs);
+    return attrs;
+  } catch (err) {
+    console.warn(`Error fetching category attributes for ${categoryId}:`, err);
+    return [];
+  }
+}
 
 function getOperationType(operacion: string): 'venta' | 'alquiler' {
   return operacion === 'alquiler' ? 'alquiler' : 'venta';
@@ -41,119 +127,74 @@ function getPropertyType(tipo: string): string {
   return typeMap[tipo] || 'apartment';
 }
 
-async function fetchCategoryAttributes(accessToken: string, categoryId: string): Promise<CategoryAttribute[]> {
-  const cached = CATEGORY_CACHE.get(categoryId);
-  if (cached) return cached.attributes;
+export function buildMLAttributes(prop: Property, categoryAttributes: CategoryAttribute[]): MLAttribute[] {
+  const attrs: MLAttribute[] = [
+    { id: 'ROOMS', value_name: String(prop.habitaciones || 0) },
+    { id: 'FULL_BATHROOMS', value_name: String(prop.banos || 0) },
+    { id: 'COVERED_AREA', value_struct: { number: prop.m2 || 0, unit: 'm²' } },
+  ];
 
-  try {
-    const res = await fetch(`${ML_API}/categories/${categoryId}/attributes`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+  if (prop.antiguedad) {
+    attrs.push({ 
+      id: 'ITEM_CONDITION', 
+      value_name: prop.antiguedad === 'nuevo' ? 'new' : 'used' 
     });
-
-    if (!res.ok) {
-      console.warn(`No se pudieron obtener atributos para categoría ${categoryId}: ${res.status}`);
-      return [];
-    }
-
-    const data: CategoryAttributesResponse = await res.json();
-    CATEGORY_CACHE.set(categoryId, { categoryId, attributes: data.attributes });
-    return data.attributes;
-  } catch (err) {
-    console.warn(`Error fetching category attributes for ${categoryId}:`, err);
-    return [];
-  }
-}
-
-async function discoverCategory(accessToken: string, operacion: string, tipo: string): Promise<string> {
-  const operationType = getOperationType(operacion);
-  const propertyType = getPropertyType(tipo);
-
-  const searchTerms = operationType === 'alquiler' 
-    ? ['alquiler', 'renta', 'arriendo']
-    : ['venta', 'comprar'];
-
-  for (const term of searchTerms) {
-    try {
-      const res = await fetch(
-        `${ML_API}/sites/MLA/domain_discovery/search?q=${encodeURIComponent(term + ' ' + propertyType)}&limit=5`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-
-      if (!res.ok) continue;
-
-      const data = await res.json();
-      if (data && data.length > 0) {
-        return data[0].category_id;
-      }
-    } catch (err) {
-      console.warn(`Domain discovery failed for ${term}:`, err);
-    }
   }
 
-  const fallbackMap: Record<string, string> = {
-    'venta_apartment': 'MLA1459',
-    'venta_house': 'MLA1459',
-    'venta_commercial': 'MLA1461',
-    'venta_land': 'MLA1463',
-    'alquiler_apartment': 'MLA1540',
-    'alquiler_house': 'MLA1540',
-    'alquiler_commercial': 'MLA1542',
-    'alquiler_land': 'MLA1544',
+  if (prop.operacion === 'alquiler') {
+    attrs.push({ id: 'OPERATION', value_name: 'Rent' });
+    attrs.push({ id: 'OPERATION_SUBTYPE', value_name: 'Residential' });
+  } else {
+    attrs.push({ id: 'OPERATION', value_name: 'Sale' });
+  }
+
+  const propertyTypeMap: Record<string, string> = {
+    'piso': 'Apartment',
+    'chalet': 'House',
+    'atico': 'Penthouse',
+    'local': 'Commercial',
+    'terreno': 'Lot',
   };
-
-  const key = `${operationType}_${propertyType}`;
-  return fallbackMap[key] || (operationType === 'alquiler' ? 'MLA1540' : 'MLA1459');
-}
-
-export async function getCategoryId(
-  accessToken: string,
-  operacion: string,
-  tipo: string
-): Promise<{ categoryId: string; attributes: CategoryAttribute[] }> {
-  const categoryId = await discoverCategory(accessToken, operacion, tipo);
-  const attributes = await fetchCategoryAttributes(accessToken, categoryId);
-  return { categoryId, attributes };
-}
-
-export function buildMLItemAttributes(
-  prop: Property,
-  categoryAttributes: CategoryAttribute[]
-): Array<{ id: string; value_name?: string; value_id?: string; value_struct?: { number: number; unit: string } }> {
-  const attrs: Array<{ id: string; value_name?: string; value_id?: string; value_struct?: { number: number; unit: string } }> = [];
-
-  const requiredAttrs = categoryAttributes.filter(a => a.required);
-  const attrIds = new Set(categoryAttributes.map(a => a.id));
-
-  if (prop.habitaciones && attrIds.has('ROOMS')) {
-    attrs.push({ id: 'ROOMS', value_name: String(prop.habitaciones) });
-  }
-
-  if (prop.banos && attrIds.has('FULL_BATHROOMS')) {
-    attrs.push({ id: 'FULL_BATHROOMS', value_name: String(prop.banos) });
-  }
-
-  if (prop.m2 && attrIds.has('COVERED_AREA')) {
-    attrs.push({ id: 'COVERED_AREA', value_struct: { number: prop.m2, unit: 'm²' } });
-  }
-
-  if (prop.antiguedad && attrIds.has('ITEM_CONDITION')) {
-    const condition = prop.antiguedad === 'nuevo' ? 'new' : 'used';
-    attrs.push({ id: 'ITEM_CONDITION', value_name: condition });
+  if (propertyTypeMap[prop.tipo]) {
+    attrs.push({ id: 'PROPERTY_TYPE', value_name: propertyTypeMap[prop.tipo] });
   }
 
   if (prop.caracteristicas?.length) {
+    const featureMap: Record<string, string> = {
+      'ascensor': 'HAS_LIFT',
+      'terraza': 'HAS_TERRACE',
+      'garaje': 'HAS_GARAGE',
+      'piscina': 'HAS_SWIMMING_POOL',
+      'quincho': 'HAS_BARBECUE_AREA',
+      'jardin': 'HAS_GARDEN',
+      'balcon': 'HAS_BALCONY',
+      'calefaccion': 'HAS_HEATING',
+      'aire acondicionado': 'HAS_AIR_CONDITIONING',
+      'amueblado': 'FURNISHED',
+      'seguridad': 'HAS_SECURITY',
+      'cochera': 'HAS_COVERED_PARKING',
+    };
+
     prop.caracteristicas.forEach(c => {
-      if (attrIds.has('MAINTENANCE_FEE')) {
-        attrs.push({ id: 'MAINTENANCE_FEE', value_name: c });
+      const normalized = c.toLowerCase().trim();
+      const attrId = featureMap[normalized];
+      if (attrId) {
+        attrs.push({ id: attrId, value_name: 'Yes' });
       }
     });
   }
 
-  requiredAttrs.forEach(req => {
-    if (!attrs.some(a => a.id === req.id)) {
-      console.warn(`Atributo requerido faltante: ${req.id} (${req.name})`);
-    }
-  });
+  // Validate against category requirements
+  const requiredAttrs = categoryAttributes
+    .filter(a => a.required && a.tags?.includes('required'))
+    .map(a => a.id);
+
+  const providedIds = new Set(attrs.map(a => a.id));
+  const missing = requiredAttrs.filter(id => !providedIds.has(id));
+  
+  if (missing.length > 0) {
+    console.warn(`Atributos requeridos faltantes para la categoría: ${missing.join(', ')}`);
+  }
 
   return attrs;
 }
@@ -177,7 +218,7 @@ export function mapPropertyToMLItem(
   categoryId: string,
   categoryAttributes: CategoryAttribute[]
 ): any {
-  const attrs = buildMLItemAttributes(prop, categoryAttributes);
+  const attrs = buildMLAttributes(prop, categoryAttributes);
 
   const pictures = prop.imagenes?.map((img, i) => ({
     source: img.url,
