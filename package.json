@@ -37,12 +37,9 @@
     "workbox-window": "^7.4.1"
   },
   "dependencies": {
-    "@sentry/browser": "^10.68.0",
-    "@sentry/vite-plugin": "^5.4.0",
     "@supabase/supabase-js": "^2.45.0",
     "axios": "^1.7.0",
-    "cropperjs": "^2.1.1",
-    "preact": "^10.19.0",
-    "xlsx": "^0.18.5"
+    "cropperjs": "^1.6.2",
+    "preact": "^10.19.0"
   }
 }

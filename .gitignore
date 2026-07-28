@@ -25,6 +25,11 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# Temp/backup files
+*.tmp
+*.fixed
+*.bak
+
 # Testing
 coverage/
 

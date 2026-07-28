@@ -17,8 +17,8 @@ export default defineConfig({
       input: { main: './index.html', admin: './admin.html' },
       output: {
         manualChunks: (id) => {
-          if (id.includes('@supabase/supabase-js') || id.includes('axios')) return 'vendor';
-          if (id.includes('cropperjs') || id.includes('xlsx')) return 'admin-vendor';
+          if (id.includes('node_modules/@supabase/') || id.includes('node_modules/axios') || id.includes('node_modules/tslib')) return 'vendor';
+          if (id.includes('node_modules/cropperjs')) return 'admin-vendor';
           if (id.includes('/admin/features/properties/') || id.includes('/admin/shared/utils.ts')) return 'admin-properties';
           if (id.includes('/admin/features/agents/')) return 'admin-agents';
           if (id.includes('/admin/features/content/')) return 'admin-content';
