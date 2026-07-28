@@ -2,14 +2,12 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettierConfig from 'eslint-config-prettier';
-import reactPlugin from 'eslint-plugin-react';
 
 export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   prettierConfig,
   {
-    plugins: { react: reactPlugin },
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -105,7 +103,6 @@ export default tseslint.config(
         L: 'readonly',
       },
     },
-    settings: { react: { version: '18.2' } },
     rules: {
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
@@ -120,8 +117,6 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       'no-empty': ['error', { allowEmptyCatch: true }],
       'no-useless-assignment': 'off',
-      'react/jsx-uses-react': 'off',
-      'react/react-in-jsx-scope': 'off',
     },
   },
   { ignores: ['**/*.d.ts', 'src/types/**', 'src/components/SearchBar/Autocomplete.js'] }
