@@ -17,12 +17,18 @@ export function initHero() {
 
   heroElement = createHero();
 
-  // Insert after header
-  const header = document.querySelector('header') || document.querySelector('.header');
-  if (header && header.parentNode) {
-    header.parentNode.insertBefore(heroElement, header.nextSibling);
+  // Replace hero placeholder
+  const placeholder = document.getElementById('hero-placeholder');
+  if (placeholder && placeholder.parentNode) {
+    placeholder.parentNode.replaceChild(heroElement, placeholder);
   } else {
-    document.body.insertBefore(heroElement, document.body.firstChild);
+    // Fallback: insert after header
+    const header = document.querySelector('header') || document.querySelector('.header');
+    if (header && header.parentNode) {
+      header.parentNode.insertBefore(heroElement, header.nextSibling);
+    } else {
+      document.body.insertBefore(heroElement, document.body.firstChild);
+    }
   }
 
   bindEvents();

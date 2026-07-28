@@ -17,7 +17,12 @@ export function initFooter() {
   }
 
   footerElement = createFooter();
-  document.body.appendChild(footerElement);
+  const placeholder = document.getElementById('footer-placeholder');
+  if (placeholder && placeholder.parentNode) {
+    placeholder.parentNode.replaceChild(footerElement, placeholder);
+  } else {
+    document.body.appendChild(footerElement);
+  }
   bindEvents();
 }
 
