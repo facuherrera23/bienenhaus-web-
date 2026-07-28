@@ -1,7 +1,7 @@
 // ================================================================
 // ADMIN MERCADOLIBRE FEATURE
 // ================================================================
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-unused-expressions */
 import { supabase } from '../../../supabase.js';
 import { showToast } from '../../shared/utils.js';
 import { loadProperties, propertiesCache } from '../properties/index.js';

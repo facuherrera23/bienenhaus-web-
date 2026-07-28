@@ -93,6 +93,7 @@ export default tseslint.config(
         Uint32Array: 'readonly',
         Float32Array: 'readonly',
         Float64Array: 'readonly',
+        crypto: 'readonly',
       },
     },
     rules: {

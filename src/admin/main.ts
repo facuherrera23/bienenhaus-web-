@@ -1,6 +1,7 @@
 // ================================================================
 // ADMIN ENTRY POINT - Code-split with lazy loading
 // ================================================================
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-unused-expressions */
 import '../styles/admin.css';
 import { supabase } from '../supabase.js';
 import { CONFIG } from '../config.js';

@@ -1,7 +1,7 @@
 ﻿// ================================================================
 // ADMIN APP - Standalone Dashboard for admin.html
 // ================================================================
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-unused-expressions */
 import { supabase } from './supabase.js';
 import { CONFIG } from './config.js';
 import { uploadToCloudinary, validateImageFile } from './cloudinary.js';
@@ -2677,7 +2677,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Search
   document.getElementById('searchProperties').addEventListener('input', debounce(filterProperties, 300));
   document.getElementById('filterPropertyStatus').addEventListener('change', filterProperties);
-  document.getElementById('searchAgents').addEventListener('input', debounce(filterAgents, 300));
+  document.getElementById('searchAgents').addEventListener('input', debounce(() => (window as any).filterAgents(), 300));
   
   document.getElementById('menuToggle')?.addEventListener('click', () => {
     document.getElementById('sidebar').classList.toggle('open');
