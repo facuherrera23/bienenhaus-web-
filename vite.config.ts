@@ -3,7 +3,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import preact from '@preact/preset-vite';
 
 export default defineConfig({
-  base: '/',
+  base: '/bienenhaus-web-/',
   root: '.',
   publicDir: 'public',
   build: {

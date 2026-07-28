@@ -1,54 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Página no encontrada - Bienenhaus</title>
-  <meta name="robots" content="noindex, follow">
-  <link rel="canonical" href="https://bienenhaus.com.ar/">
-  <meta property="og:title" content="Página no encontrada - Bienenhaus">
-  <meta property="og:description" content="La página que buscas no existe. Redirigiendo al inicio...">
-  <meta property="og:type" content="website">
-  <meta name="robots" content="noindex, follow">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', -apple-system, sans-serif; background: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; font-family: 'Inter', -apple-system, sans-serif; }
-    .container { text-align: center; padding: 40px 24px; max-width: 400px; }
-    .icon { font-size: 80px; color: #1f6ed4; margin-bottom: 24px; }
-    h1 { font-size: 2.5rem; color: #0b2b4a; margin-bottom: 12px; font-weight: 800; }
-    p { color: #64748b; margin-bottom: 32px; line-height: 1.6; }
-    .btn { display: inline-flex; align-items: center; gap: 10px; background: #1f6ed4; color: white; padding: 16px 32px; border-radius: 60px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(31,110,212,0.3); }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="icon">🏠</div>
-    <h1>404 - Página no encontrada</h1>
-    <p>La página que buscas no existe o ha sido movida. No te preocupes, te llevamos al inicio.</    <a href="/" class="btn" style="display: inline-flex; margin-top: 24px;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12"></polyline></svg>
-      Volver al inicio
-    </a>
-    <p style="margin-top: 24px; color: #94a3b8; font-size: 0.875rem;">Si crees que esto es un error, <a href="mailto:bienenhaus.propiedades@gmail.com" style="color: #1f6ed4;">contáctanos</a>.</p>
-  </div>
-  <script>
-    // SPA redirect for GitHub Pages / SPA routing
-    (function() {
-      var path = window.location.pathname;
-      var search = window.location.search;
-      var hash = window.location.hash;
-      
-      var basePath = '';
-      if (window.location.pathname.startsWith('/bienenhaus-web-')) {
-        basePath = '/bienenhaus-web-';
-      }
-      
-      var expectedIndex = '/index.html';
-      if (window.location.pathname === '/' || window.location.pathname === '/index.html') return;
-      
-      var destination = '/index.html' + window.location.search + window.location.hash;
-      window.location.replace(destination);
-    })();
-  </script>
-</body>
-</html>
+<script>
+  sessionStorage.redirect = location.href;
+</script>
+<meta http-equiv="refresh" content="0;url=/bienenhaus-web-/">
