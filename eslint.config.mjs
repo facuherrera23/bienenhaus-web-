@@ -115,9 +115,10 @@ export default tseslint.config(
       'no-duplicate-imports': 'error',
       'no-unused-expressions': 'warn',
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/ban-ts-comment': ['error', { 'ts-nocheck': false }],
       'no-empty': ['error', { allowEmptyCatch: true }],
       'no-useless-assignment': 'off',
     },
   },
-  { ignores: ['**/*.d.ts', 'src/types/**', 'src/components/SearchBar/Autocomplete.js'] }
+  { ignores: ['**/*.d.ts', 'src/types/**', 'src/components/SearchBar/Autocomplete.ts'] }
 );

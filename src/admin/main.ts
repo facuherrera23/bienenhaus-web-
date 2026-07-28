@@ -2,15 +2,15 @@
 // ADMIN ENTRY POINT - Wires up all feature modules
 // ================================================================
 import '../styles/admin.css';
-import { supabase } from '../supabase.js';
-import { CONFIG } from '../config.js';
-import { showToast, parsePipeArray, closeConfirmModal, executeDelete, formatDate } from './shared/utils.js';
+import { supabase } from '../supabase.ts';
+import { CONFIG } from '../config.ts';
+import { showToast, parsePipeArray, closeConfirmModal, executeDelete, formatDate } from './shared/utils.ts';
 
 // Feature modules (import eagerly so they register window functions)
-import { loadProperties as loadPropertiesModule, propertiesCache, openPropertyModal as openPropertyModalFn, filterProperties as filterPropertiesFn } from './features/properties/index.js';
-import { loadAgents as loadAgentsModule, agentsCache, openAgentModal, filterAgents as filterAgentsFn } from './features/agents/index.js';
-import { loadMercadoLibre, connectMercadoLibre, importFromMercadoLibre } from './features/mercadoLibre/index.js';
-import { loadSettings } from './features/settings/index.js';
+import { loadProperties as loadPropertiesModule, propertiesCache, openPropertyModal as openPropertyModalFn, filterProperties as filterPropertiesFn } from './features/properties/index.ts';
+import { loadAgents as loadAgentsModule, agentsCache, openAgentModal, filterAgents as filterAgentsFn } from './features/agents/index.ts';
+import { loadMercadoLibre, connectMercadoLibre, importFromMercadoLibre } from './features/mercadoLibre/index.ts';
+import { loadSettings } from './features/settings/index.ts';
 
 // ================================================================
 // AUTH SECURITY CONFIG

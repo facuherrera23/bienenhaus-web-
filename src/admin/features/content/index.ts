@@ -2,7 +2,7 @@
 // ADMIN CONTENT FEATURE - Gestión de textos del sitio
 // ================================================================
  
-import { supabase } from '../../../supabase.js';
+import { supabase } from '../../../supabase.ts';
 
 const contentCache: Record<string, any> = {};
 

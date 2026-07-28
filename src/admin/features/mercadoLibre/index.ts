@@ -2,9 +2,9 @@
 // ADMIN MERCADOLIBRE FEATURE
 // ================================================================
  
-import { supabase } from '../../../supabase.js';
-import { showToast } from '../../shared/utils.js';
-import { loadProperties, propertiesCache } from '../properties/index.js';
+import { supabase } from '../../../supabase.ts';
+import { showToast } from '../../shared/utils.ts';
+import { loadProperties, propertiesCache } from '../properties/index.ts';
 
 let mlConnected = false;
 let mlUserId: string | null = null;

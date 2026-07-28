@@ -2,11 +2,11 @@
 // ADMIN PROPERTIES FEATURE
 // ================================================================
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { supabase } from '../../../supabase.js';
-import { CONFIG } from '../../../config.js';
-import { uploadToCloudinary, validateImageFile } from '../../../cloudinary.js';
-import { showToast, formatPrice } from '../../shared/utils.js';
-import { loadMLSyncLog } from '../mercadoLibre/index.js';
+import { supabase } from '../../../supabase.ts';
+import { CONFIG } from '../../../config.ts';
+import { uploadToCloudinary, validateImageFile } from '../../../cloudinary.ts';
+import { showToast, formatPrice } from '../../shared/utils.ts';
+import { loadMLSyncLog } from '../mercadoLibre/index.ts';
 import Cropper from 'cropperjs';
 
 interface Property {

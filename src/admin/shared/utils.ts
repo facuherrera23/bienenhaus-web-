@@ -92,17 +92,17 @@ export async function executeDelete(): Promise<void> {
 
   try {
     if (type === 'property') {
-      const { data: images } = await import('../../supabase.js').then(m => m.supabase
+      const { data: images } = await import('../../supabase.ts').then(m => m.supabase
         .from('imagenes').select('cloudinary_public_id').eq('propiedad_id', id));
       if (images?.length) {
         // TODO: Delete from Cloudinary via signed request
       }
-      const { error } = await import('../../supabase.js').then(m => m.supabase
+      const { error } = await import('../../supabase.ts').then(m => m.supabase
         .from('propiedades').delete().eq('id', id));
       if (error) throw error;
       // Reload will be handled by caller
     } else if (type === 'agent') {
-      const { error } = await import('../../supabase.js').then(m => m.supabase
+      const { error } = await import('../../supabase.ts').then(m => m.supabase
         .from('agentes').update({ activo: false }).eq('id', id));
       if (error) throw error;
     }
