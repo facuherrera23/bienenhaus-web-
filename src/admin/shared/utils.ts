@@ -74,14 +74,14 @@ let pendingDelete: { type: string | null; id: number | null; name: string | null
 
 export function confirmDelete(type: string, id: number, name: string): void {
   pendingDelete = { type, id, name };
-  const messageEl = document.getElementById('confirmMessage');
+  const messageEl = document.getElementById('deleteConfirmMessage');
   if (messageEl) messageEl.textContent = `¿Eliminar "${name}"? Esta acción no se puede deshacer.`;
-  const modal = document.getElementById('confirmModal');
+  const modal = document.getElementById('deleteConfirmModal');
   if (modal) modal.classList.add('active');
 }
 
 export function closeConfirmModal(): void {
-  const modal = document.getElementById('confirmModal');
+  const modal = document.getElementById('deleteConfirmModal');
   if (modal) modal.classList.remove('active');
   pendingDelete = { type: null, id: null, name: null };
 }

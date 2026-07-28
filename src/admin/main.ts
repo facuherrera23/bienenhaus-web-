@@ -4,7 +4,7 @@
 import '../styles/admin.css';
 import { supabase } from '../supabase.js';
 import { CONFIG } from '../config.js';
-import { showToast, parsePipeArray, closeConfirmModal, formatDate } from './shared/utils.js';
+import { showToast, parsePipeArray, closeConfirmModal, executeDelete, formatDate } from './shared/utils.js';
 
 // Feature modules (import eagerly so they register window functions)
 import { loadProperties as loadPropertiesModule, propertiesCache, openPropertyModal as openPropertyModalFn, filterProperties as filterPropertiesFn } from './features/properties/index.js';
@@ -492,14 +492,14 @@ function setupEventListeners(): void {
   }
 
   // Confirm modal buttons
-  const btnConfirmYes = document.getElementById('btnConfirmYes');
-  if (btnConfirmYes) btnConfirmYes.addEventListener('click', async () => { await executeDelete(); loadAllData(); });
+  const btnConfirmDelete = document.getElementById('confirmDeleteBtn');
+  if (btnConfirmDelete) btnConfirmDelete.addEventListener('click', async () => { await executeDelete(); loadAllData(); });
 
-  const btnConfirmNo = document.getElementById('btnConfirmNo');
-  if (btnConfirmNo) btnConfirmNo.addEventListener('click', closeConfirmModal);
+  const btnCancelDelete = document.getElementById('cancelDeleteBtn');
+  if (btnCancelDelete) btnCancelDelete.addEventListener('click', closeConfirmModal);
 
-  const closeConfirm = document.getElementById('closeConfirmModal');
-  if (closeConfirm) closeConfirm.addEventListener('click', closeConfirmModal);
+  const closeDeleteModal = document.getElementById('closeDeleteModal');
+  if (closeDeleteModal) closeDeleteModal.addEventListener('click', closeConfirmModal);
 
   // ML buttons
   const btnConnectML = document.getElementById('btnConnectML');

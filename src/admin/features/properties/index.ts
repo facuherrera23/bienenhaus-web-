@@ -84,7 +84,7 @@ function updatePropertyStats(): void {
 
   document.getElementById('statProperties')!.textContent = String(total);
   document.getElementById('statAgents')!.textContent = String(agentsCache.filter(a => a.activo).length);
-  document.getElementById('propTrend')!.innerHTML = '<i class="fas fa-arrow-up</i> —';
+  document.getElementById('propTrend')!.innerHTML = '<i class="fas fa-arrow-up"></i> —';
   document.getElementById('propTrend')!.className = 'stat-trend';
 }
 
