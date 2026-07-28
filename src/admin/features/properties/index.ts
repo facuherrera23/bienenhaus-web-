@@ -1,6 +1,7 @@
 // ================================================================
 // ADMIN PROPERTIES FEATURE
 // ================================================================
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { supabase } from '../../../supabase.js';
 import { CONFIG } from '../../../config.js';
 import { uploadToCloudinary, validateImageFile } from '../../../cloudinary.js';

@@ -260,7 +260,7 @@ export function ConversionUX({
 
   return (
     <>
-      {/* Sticky CTA Mobile */}
+{/* Sticky CTA Mobile */}
       {showSticky && (
         <div 
           className={`conversion-ux__sticky-cta ${className}`} 
@@ -269,9 +269,8 @@ export function ConversionUX({
         >
           <button 
             className="conversion-ux__sticky-btn conversion-ux__sticky-btn--secondary"
-            onClick={scrollToTop}
+            onClick={() => { scrollToTop(); trackCTA('scroll_top', 'back_to_top'); }}
             aria-label="Volver al inicio"
-            onClick={() => trackCTA('scroll_top', 'back_to_top')}
           >
             <i className="fas fa-arrow-up" aria-hidden="true"></i>
             <span>Arriba</span>
@@ -279,9 +278,8 @@ export function ConversionUX({
           
           <button 
             className="conversion-ux__sticky-btn conversion-ux__sticky-btn--primary"
-            onClick={() => openWhatsAppModal({ section: 'sticky_cta' })}
+            onClick={() => { openWhatsAppModal({ section: 'sticky_cta' }); trackCTA('whatsapp', 'sticky_cta'); }}
             aria-label="Contactar por WhatsApp"
-            onClick={() => trackCTA('whatsapp', 'sticky_cta')}
           >
             <i className="fab fa-whatsapp" aria-hidden="true"></i>
             <span>WhatsApp</span>
@@ -291,22 +289,24 @@ export function ConversionUX({
           {property && (
             <button 
               className="conversion-ux__sticky-btn conversion-ux__sticky-btn--alert"
-              onClick={() => openPriceAlert({ 
-                minPrice: Math.max(0, property.precio - 500000),
-                maxPrice: property.precio + 500000,
-                location: property.ubicacion,
-                propertyType: property.tipo,
-                operation: property.operacion
-              })}
+              onClick={() => { 
+                openPriceAlert({ 
+                  minPrice: Math.max(0, property.precio - 500000),
+                  maxPrice: property.precio + 500000,
+                  location: property.ubicacion,
+                  propertyType: property.tipo,
+                  operation: property.operacion
+                }); 
+                trackCTA('price_alert', 'sticky_cta');
+              }}
               aria-label="Crear alerta de precio"
-              onClick={() => trackCTA('price_alert', 'sticky_cta')}
             >
-              <i className="fas fa-bell" aria-hidden="true"></i>
+<i className="fas fa-bell" aria-hidden="true"></i>
               <span>Alerta precio</span>
             </button>
           )}
         </div>
-      }
+      )}
 
       {/* WhatsApp Modal */}
       {showWhatsApp && (
@@ -423,10 +423,6 @@ export function ConversionUX({
             )}
           </div>
         </div>
-      </div>
-      <div className="conversion-ux__modal-overlay" onClick={closeWhatsAppModal} />
-      </div>
-    </div>
       )}
 
       {/* Price Alert Modal */}
@@ -453,11 +449,13 @@ export function ConversionUX({
                   <i className="fas fa-check-circle" aria-hidden="true"></i>
                 </div>
                 <h3>¡Alerta creada!</h3>
-                <p>Te avisaremos por email cuando haya propiedades que coincidan.</              </div>
+                <p>Te avisaremos por email cuando haya propiedades que coincidan.</p>
+              </div>
             ) : (
               <form onSubmit={handleAlertSubmit} className="conversion-ux__modal-form" noValidate>
                 <div className="conversion-ux__modal-context" aria-live="polite">
-                  <p>Recibe notificaciones cuando una propiedad coincida con tus criterios.</                </div>
+                  <p>Recibe notificaciones cuando una propiedad coincida con tus criterios.</p>
+                </div>
 
                 {alertError && (
                   <div className="conversion-ux__error" role="alert">
@@ -594,19 +592,14 @@ export function ConversionUX({
             )}
           </div>
         </div>
-      </div>
-      <div className="conversion-ux__modal-overlay" onClick={closePriceAlert} />
-      </div>
-    </div>
       )}
 
       {/* Floating WhatsApp Button */}
       <div className="conversion-ux__floating-whatsapp">
         <button 
           className="conversion-ux__floating-btn"
-          onClick={() => openWhatsAppModal({ section: 'floating_btn' })}
+          onClick={() => { openWhatsAppModal({ section: 'floating_btn' }); trackCTA('whatsapp', 'floating_btn'); }}
           aria-label="Contactar por WhatsApp"
-          onClick={() => trackCTA('whatsapp', 'floating_btn')}
         >
           <i className="fab fa-whatsapp" aria-hidden="true"></i>
         </button>
@@ -622,9 +615,8 @@ export function ConversionUX({
       <button 
         ref={backToTopRef}
         className="conversion-ux__back-to-top"
-        onClick={scrollToTop}
+        onClick={() => { scrollToTop(); trackCTA('scroll_top', 'back_to_top'); }}
         aria-label="Volver al inicio"
-        onClick={() => trackCTA('scroll_top', 'back_to_top')}
       >
         <i className="fas fa-arrow-up" aria-hidden="true"></i>
       </button>

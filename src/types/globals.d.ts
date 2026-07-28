@@ -7,13 +7,11 @@ declare module '../../supabase.js' {
 }
 
 declare module '../../../supabase.js' {
-  import { SupabaseClient } from '@supabase/supabase-js';
   export const supabase: SupabaseClient<any>;
   export function handleSupabaseError(error: any, context: string): never;
 }
 
 declare module '../supabase.js' {
-  import { SupabaseClient } from '@supabase/supabase-js';
   export const supabase: SupabaseClient<any>;
   export function handleSupabaseError(error: any, context: string): never;
 }

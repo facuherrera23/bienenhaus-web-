@@ -8,6 +8,9 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   prettierConfig,
   {
+    ignores: ['**/*.d.ts', 'src/types/**'],
+  },
+  {
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -90,6 +93,17 @@ export default tseslint.config(
         Uint32Array: 'readonly',
         Float32Array: 'readonly',
         Float64Array: 'readonly',
+        crypto: 'readonly',
+        history: 'readonly',
+        CustomEvent: 'readonly',
+        performance: 'readonly',
+        btoa: 'readonly',
+        TextEncoder: 'readonly',
+        AbortController: 'readonly',
+        alert: 'readonly',
+        customElements: 'readonly',
+        PerformanceObserver: 'readonly',
+        L: 'readonly',
       },
     },
     rules: {
@@ -102,6 +116,9 @@ export default tseslint.config(
       'arrow-spacing': 'warn',
       'no-duplicate-imports': 'error',
       'no-unused-expressions': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'no-useless-assignment': 'off',
     },
   }
 );

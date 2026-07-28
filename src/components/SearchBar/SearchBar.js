@@ -41,12 +41,18 @@ export function initSearchBar() {
 
   searchBarElement = createSearchBar();
   
-  // Insert after hero
-  const hero = document.getElementById('hero') || document.querySelector('.hero');
-  if (hero && hero.parentNode) {
-    hero.parentNode.insertBefore(searchBarElement, hero.nextSibling);
+  // Replace search-bar-placeholder
+  const placeholder = document.getElementById('search-bar-placeholder');
+  if (placeholder && placeholder.parentNode) {
+    placeholder.parentNode.replaceChild(searchBarElement, placeholder);
   } else {
-    document.body.insertBefore(searchBarElement, document.body.firstChild);
+    // Fallback: insert after hero
+    const hero = document.getElementById('hero') || document.querySelector('.hero');
+    if (hero && hero.parentNode) {
+      hero.parentNode.insertBefore(searchBarElement, hero.nextSibling);
+    } else {
+      document.body.insertBefore(searchBarElement, document.body.firstChild);
+    }
   }
   
   // Initialize Autocomplete

@@ -1,12 +1,12 @@
 // ================================================================
 // ADMIN AGENTS FEATURE
 // ================================================================
+ 
 import { supabase } from '../../../supabase.js';
 import { uploadToCloudinary, validateImageFile } from '../../../cloudinary.js';
-import { showToast } from '../../shared/utils.js';
+import { showToast, getInitials } from '../../shared/utils.js';
 import { CONFIG } from '../../../config.js';
 import { propertiesCache } from '../properties/index.js';
-import { getInitials } from '../../shared/utils.js';
 
 interface Agent {
   id: number;

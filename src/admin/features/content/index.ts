@@ -1,6 +1,7 @@
 // ================================================================
 // ADMIN CONTENT FEATURE - Gestión de textos del sitio
 // ================================================================
+ 
 import { supabase } from '../../../supabase.js';
 
 const contentCache: Record<string, any> = {};

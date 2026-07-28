@@ -34,6 +34,9 @@ export default defineConfig({
     preact(),
     VitePWA({
       registerType: 'autoUpdate',
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       includeAssets: ['favicon.svg', 'robots.txt', 'og-image.svg'],
       manifest: {
         name: 'Bienenhaus Propiedades',
@@ -55,16 +58,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,woff}'],
         cleanupOutdatedCaches: true,
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        runtimeCaching: [
-          { urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i, handler: 'NetworkFirst', options: { cacheName: 'supabase-api', expiration: { maxEntries: 100, maxAgeSeconds: 86400 }, networkTimeoutSeconds: 10 } },
-          { urlPattern: /^https:\/\/.*\.cloudinary\.com\/.*/i, handler: 'CacheFirst', options: { cacheName: 'cloudinary-images', expiration: { maxEntries: 200, maxAgeSeconds: 2592000 } } },
-          { urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i, handler: 'StaleWhileRevalidate', options: { cacheName: 'google-fonts-styles' } },
-          { urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i, handler: 'CacheFirst', options: { cacheName: 'google-fonts-webfonts', expiration: { maxEntries: 30, maxAgeSeconds: 31536000 } } },
-          { urlPattern: /^https:\/\/unpkg\.com\/leaflet@.*/i, handler: 'CacheFirst', options: { cacheName: 'leaflet-assets', expiration: { maxEntries: 50, maxAgeSeconds: 2592000 } } },
-          { urlPattern: /^https:\/\/api\.cloudinary\.com\/.*/i, handler: 'NetworkFirst', options: { cacheName: 'cloudinary-api', expiration: { maxEntries: 50, maxAgeSeconds: 86400 } } },
-          { urlPattern: /^https:\/\/nominatim\.openstreetmap\.org\/.*/i, handler: 'NetworkFirst', options: { cacheName: 'geocoding-api', expiration: { maxEntries: 200, maxAgeSeconds: 604800 }, networkTimeoutSeconds: 10 } }
-        ]
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
       }
     })
   ]

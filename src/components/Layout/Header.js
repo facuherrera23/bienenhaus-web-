@@ -17,7 +17,12 @@ export function initHeader() {
   }
 
   headerElement = createHeader();
-  document.body.insertBefore(headerElement, document.body.firstChild);
+  const placeholder = document.getElementById('header-placeholder');
+  if (placeholder && placeholder.parentNode) {
+    placeholder.parentNode.replaceChild(headerElement, placeholder);
+  } else {
+    document.body.insertBefore(headerElement, document.body.firstChild);
+  }
   bindEvents();
   handleScroll();
 }
