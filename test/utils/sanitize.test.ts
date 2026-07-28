@@ -9,10 +9,24 @@ import {
 } from '../../src/utils/sanitize';
 
 describe('escapeHtml', () => {
-  it('escapes apostrophes using entity', () => {
-    const result = escapeHtml("it's a test");
-    expect(result).not.toContain("it's");
-    expect(result).toContain('amp;');
+  it('escapes ampersands', () => {
+    expect(escapeHtml('a & b')).toBe('a &amp; b');
+  });
+
+  it('escapes angle brackets', () => {
+    expect(escapeHtml('<script>alert(1)</script>')).toBe('&lt;script&gt;alert(1)&lt;/script&gt;');
+  });
+
+  it('escapes double quotes', () => {
+    expect(escapeHtml('"quoted"')).toBe('&quot;quoted&quot;');
+  });
+
+  it('escapes single quotes', () => {
+    expect(escapeHtml("it's a test")).toBe('it&#x27;s a test');
+  });
+
+  it('escapes all special characters together', () => {
+    expect(escapeHtml('<div class="test">')).toBe('&lt;div class=&quot;test&quot;&gt;');
   });
 
   it('returns empty string for non-string input', () => {
@@ -25,9 +39,13 @@ describe('escapeHtml', () => {
     expect(escapeHtml('hello world')).toBe('hello world');
   });
 
-  it('preserves angle brackets and quotes (identity replacements)', () => {
-    const input = '<div class="test">';
-    expect(escapeHtml(input)).toBe(input);
+  it('handles XSS payload', () => {
+    const xss = '<img src=x onerror=alert(1)>';
+    const escaped = escapeHtml(xss);
+    expect(escaped).not.toContain('<');
+    expect(escaped).not.toContain('>');
+    expect(escaped).toContain('&lt;');
+    expect(escaped).toContain('&gt;');
   });
 });
 

@@ -1,26 +1,44 @@
-// @ts-nocheck
 /**
  * Router - Simple Hash-based Router for SPA
  * Supports: routes with params, nested routes, guards, scroll restoration
  */
+import { escapeHtml } from './utils/sanitize.ts';
+
+interface RouteConfig {
+  component: (() => Promise<{ default?: any }>) | string;
+  guards?: Array<(_to: any, _from: any, _next: () => void) => any>;
+  meta?: Record<string, any>;
+}
+
+interface RouteMatch {
+  path: string;
+  regex: RegExp;
+  keys: string[];
+  component: RouteConfig['component'];
+  guards: RouteConfig['guards'];
+  meta: RouteConfig['meta'];
+}
+
+interface NavigateTo {
+  path: string;
+  params: Record<string, string>;
+  query: Record<string, string>;
+  state: any;
+  meta: Record<string, any>;
+}
 
 export class Router {
-  #routes = new Map();
-  #currentRoute = null;
-  #guards = [];
-  #scrollPositions = new Map();
+  #routes = new Map<string, RouteMatch>();
+  #currentRoute: NavigateTo | null = null;
+  #guards: Array<(_to: any, _from: any, _next: () => void) => any> = [];
+  #scrollPositions = new Map<string, number>();
   #listening = false;
 
-  /**
-   * Add a route
-   * @param {string} path - Route path (e.g., '/propiedades', '/propiedad/:id')
-   * @param {Object} config - Route config { component, guards?, meta? }
-   */
-  add(path, config) {
-    const keys = [];
+  add(path: string, config: RouteConfig): this {
+    const keys: string[] = [];
     const pattern = path
       .replace(/\/+/g, '/')
-      .replace(/:(\w+)/g, (_, key) => {
+      .replace(/:(\w+)/g, (_, key: string) => {
         keys.push(key);
         return '([^/]+)';
       })
@@ -40,21 +58,12 @@ export class Router {
     return this;
   }
 
-  /**
-   * Add global navigation guard
-   * @param {Function} guard - async (to, from, next) => void
-   */
-  beforeEach(guard) {
+  beforeEach(guard: (_to: any, _from: any, _next: () => void) => any): this {
     this.#guards.push(guard);
     return this;
   }
 
-  /**
-   * Navigate to a path
-   * @param {string} path - Target path
-   * @param {Object} options - { replace?: boolean, state?: any }
-   */
-  async navigate(path, options = {}) {
+  async navigate(path: string, options: { replace?: boolean; state?: any } = {}): Promise<boolean> {
     const { replace = false, state = null } = options;
     const url = path.startsWith('/') ? path : `/${path}`;
     
@@ -78,10 +87,10 @@ export class Router {
     }
 
     const { route, params } = match;
-    const to = { path: url, params, query: this.#parseQuery(url), state, meta: route.meta };
+    const to: NavigateTo = { path: url, params, query: this.#parseQuery(url), state, meta: route.meta || {} };
 
     // Run route guards
-    for (const guard of route.guards) {
+    for (const guard of route.guards || []) {
       const result = await guard(to, this.#currentRoute, () => {});
       if (result === false) return false;
       if (typeof result === 'string') return this.navigate(result, { replace: true });
@@ -109,17 +118,12 @@ export class Router {
     return true;
   }
 
-  /**
-   * Start listening for hash changes
-   */
-  start() {
-    if (this.#listening) return;
+  start(): this {
+    if (this.#listening) return this;
 
-    // Handle initial load
     const initialHash = window.location.hash.slice(1) || '/';
     this.navigate(initialHash, { replace: true });
 
-    // Listen for hash changes (browser back/forward, direct URL)
     window.addEventListener('hashchange', () => {
       const hash = window.location.hash.slice(1) || '/';
       this.navigate(hash, { replace: false });
@@ -129,30 +133,21 @@ export class Router {
     return this;
   }
 
-  /**
-   * Get current route
-   */
-  getCurrentRoute() {
+  getCurrentRoute(): NavigateTo | null {
     return this.#currentRoute;
   }
 
-  /**
-   * Generate URL with params
-   * @param {string} path - Route path with params
-   * @param {Object} params - Params to replace
-   */
-  generate(path, params = {}) {
-    return path.replace(/:(\w+)/g, (_, key) => params[key] || '');
+  generate(path: string, params: Record<string, string> = {}): string {
+    return path.replace(/:(\w+)/g, (_, key: string) => params[key] || '');
   }
 
-  // Private methods
-  #match(url) {
+  #match(url: string): { route: RouteMatch; params: Record<string, string> } | null {
     const [pathname] = url.split('?');
     for (const route of this.#routes.values()) {
       const match = pathname.match(route.regex);
       if (match) {
-        const params = {};
-        route.keys.forEach((key, i) => {
+        const params: Record<string, string> = {};
+        route.keys.forEach((key: string, i: number) => {
           params[key] = decodeURIComponent(match[i + 1]);
         });
         return { route, params };
@@ -161,24 +156,23 @@ export class Router {
     return null;
   }
 
-  #parseQuery(url) {
+  #parseQuery(url: string): Record<string, string> {
     const [, query = ''] = url.split('?');
     const params = new URLSearchParams(query);
-    const result = {};
+    const result: Record<string, string> = {};
     for (const [key, value] of params) {
       result[key] = value;
     }
     return result;
   }
 
-  async #loadRoute(route, to) {
+  async #loadRoute(route: RouteMatch, to: NavigateTo): Promise<void> {
     const outlet = document.getElementById('app-outlet');
     if (!outlet) {
       console.error('Router outlet not found: #app-outlet');
       return;
     }
 
-    // Show loading
     outlet.innerHTML = '<div class="spinner-overlay active"><div class="spinner"></div></div>';
 
     try {
@@ -203,11 +197,12 @@ export class Router {
       }
     } catch (error) {
       console.error('Route load error:', error);
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
       outlet.innerHTML = `
         <div class="section" style="text-align:center;padding:4rem;">
           <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:var(--color-warning);margin-bottom:1rem;"></i>
           <h2>Error cargando la página</h2>
-          <p style="color:var(--color-gray-500);margin-top:1rem;">${error.message}</p>
+          <p style="color:var(--color-gray-500);margin-top:1rem;">${escapeHtml(msg)}</p>
           <button class="btn btn-primary mt-4" onclick="window.location.reload()">Recargar</button>
         </div>
       `;
@@ -219,12 +214,12 @@ export class Router {
 export const router = new Router();
 
 // Helper for lazy loading components
-export function lazyLoad(importFn) {
+export function lazyLoad(importFn: () => Promise<any>): () => Promise<{ default?: any }> {
   return () => importFn().then(module => ({ default: module.default || module }));
 }
 
 // Helper for defining routes
-export function defineRoutes(routes) {
+export function defineRoutes(routes: Array<{ path: string; component: RouteConfig['component']; guards?: RouteConfig['guards']; meta?: RouteConfig['meta'] }>): Router {
   routes.forEach(({ path, component, guards, meta }) => {
     router.add(path, { component, guards, meta });
   });

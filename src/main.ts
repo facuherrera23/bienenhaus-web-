@@ -1,4 +1,3 @@
-// @ts-nocheck
 // ================================================================
 // MAIN.JS - Landing Page Entry Point (Simplified - No Router)
 // ================================================================
@@ -13,6 +12,7 @@ import { initHeader } from './components/Layout/Header.ts';
 import { cargarContenidoSitio } from './content.ts';
 import { initAnalytics, trackPageView } from './utils/analytics.ts';
 import { auditAndLog, autoFixAccessibility } from './utils/a11yAudit.ts';
+import { escapeHtml } from './utils/sanitize.ts';
 
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
@@ -22,12 +22,14 @@ if ('serviceWorker' in navigator) {
         console.log('SW registered:', registration.scope);
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('New SW available, reload to update');
-              showToast('Nueva versión disponible. Recarga para actualizar.', 'info', 0, true);
-            }
-          });
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('New SW available, reload to update');
+                showToast('Nueva versión disponible. Recarga para actualizar.', 'info', 0, true);
+              }
+            });
+          }
         });
       })
       .catch(error => console.log('SW registration failed:', error));
@@ -42,11 +44,11 @@ window.propiedadActual = null;
 
 // Toast notification system
 let toastId = 0;
-export function showToast(message, type = 'success', duration = 4000, persistent = false) {
+export function showToast(message: string, type = 'success', duration = 4000, persistent = false): number {
   const container = getOrCreateToastContainer();
   const id = ++toastId;
   
-  const icons = {
+  const icons: Record<string, string> = {
     success: 'fa-check-circle',
     error: 'fa-times-circle',
     warning: 'fa-exclamation-triangle',
@@ -55,10 +57,10 @@ export function showToast(message, type = 'success', duration = 4000, persistent
   
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  toast.dataset.toastId = id;
+  toast.dataset.toastId = String(id);
   toast.innerHTML = `
-    <i class="fas ${icons[type]} toast-icon"></i>
-    <span>${message}</span>
+    <i class="fas ${icons[type] || 'fa-info-circle'} toast-icon"></i>
+    <span>${escapeHtml(message)}</span>
     ${!persistent ? `<button class="toast-close" aria-label="Cerrar"><i class="fas fa-times"></i></button>` : ''}
   `;
   
@@ -81,7 +83,7 @@ export function showToast(message, type = 'success', duration = 4000, persistent
   return id;
 }
 
-function removeToast(id) {
+function removeToast(id: number): void {
   const toast = document.querySelector(`[data-toast-id="${id}"]`);
   if (toast) {
     toast.classList.remove('show');
@@ -90,7 +92,7 @@ function removeToast(id) {
   }
 }
 
-function getOrCreateToastContainer() {
+function getOrCreateToastContainer(): HTMLDivElement {
   let container = document.getElementById('toast-container');
   if (!container) {
     container = document.createElement('div');
@@ -98,14 +100,14 @@ function getOrCreateToastContainer() {
     container.className = 'toast-container';
     document.body.appendChild(container);
   }
-  return container;
+  return container as HTMLDivElement;
 }
 
 // Make globally available
 window.showToast = showToast;
 
 // Initialize application
-async function init() {
+async function init(): Promise<void> {
   try {
     // 1. Load site content (SEO, texts, etc.)
     await cargarContenidoSitio();
@@ -132,9 +134,9 @@ async function init() {
       }, 1000);
     }
     
-    console.log('✅ Bienenhaus Landing Page inicializada correctamente');
+    console.log('Bienenhaus Landing Page inicializada correctamente');
   } catch (error) {
-    console.error('❌ Error en init:', error);
+    console.error('Error en init:', error);
     showToast('Error al cargar la aplicación', 'error');
   }
 }
@@ -142,7 +144,6 @@ async function init() {
 // Global exports for backward compatibility
 window.loadProperties = loadProperties;
 window.cargarContenidoSitio = cargarContenidoSitio;
-window.showToast = showToast;
 
 // Run init
 init();

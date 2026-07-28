@@ -4,6 +4,7 @@
 // ================================================================
 
 import './Hero.css';
+import { escapeHtml } from '../../utils/sanitize.ts';
 
 let heroElement = null;
 
@@ -185,16 +186,16 @@ function updateHeroContent(content) {
       const el = heroElement.querySelector(`#${id}`);
       if (el) {
         if (key === 'hero_badges' && Array.isArray(content[key])) {
-          el.innerHTML = content[key].map(b => `<span class="hero-badge"><i class="fas fa-check-circle" aria-hidden="true"></i> ${b}</span>`).join('');
+          el.innerHTML = content[key].map(b => `<span class="hero-badge"><i class="fas fa-check-circle" aria-hidden="true"></i> ${escapeHtml(String(b))}</span>`).join('');
         } else if (key === 'hero_stats' && Array.isArray(content[key])) {
           el.innerHTML = content[key].map(s => `
-            <div class="stat"><div class="number" data-target="${parseInt(s.valor) || 0}">${s.valor}</div><div class="label">${s.label}</div></div>
+            <div class="stat"><div class="number" data-target="${parseInt(s.valor) || 0}">${escapeHtml(String(s.valor))}</div><div class="label">${escapeHtml(s.label)}</div></div>
           `).join('');
           initStatsAnimation();
         } else if (key === 'hero_cta_primario' || key === 'hero_cta_secundario') {
-          el.innerHTML = `<i class="${content[key].icon || 'fas fa-arrow-right'}" aria-hidden="true"></i> ${content[key].text || content[key]}`;
+          el.innerHTML = `<i class="${escapeHtml(content[key].icon || 'fas fa-arrow-right')}" aria-hidden="true"></i> ${escapeHtml(content[key].text || String(content[key]))}`;
         } else {
-          el.innerHTML = content[key];
+          el.innerHTML = escapeHtml(String(content[key]));
         }
       }
     }

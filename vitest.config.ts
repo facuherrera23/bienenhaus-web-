@@ -20,9 +20,9 @@ export default defineConfig({
         '*.d.ts',
         '*.config.ts',
         '*.config.js',
-        'src/main.js',
-        'src/router.js',
-        'src/sentry.client.config.js'
+        'src/main.ts',
+        'src/router.ts',
+        'src/sw.ts'
       ],
       thresholds: {
         lines: 50,
@@ -38,8 +38,8 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, './src'),
       '@components': resolve(__dirname, './src/components'),
-      '@utils': resolve(__dirname, './utils'),
-      '@hooks': resolve(__dirname, './hooks')
+      '@utils': resolve(__dirname, './src/utils'),
+      '@hooks': resolve(__dirname, './src/hooks')
     }
   },
   define: {

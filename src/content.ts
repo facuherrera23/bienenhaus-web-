@@ -3,7 +3,7 @@
 // CONTENT LOADER - Carga contenido dinámico desde Supabase
 // ================================================================
 import { supabase } from './supabase.ts';
-import { sanitizeHtml, sanitizeUrl, sanitizeClassName, sanitizeShortText, escapeHtml } from './utils/sanitize.ts';
+import { sanitizeHtml, sanitizeUrl, escapeHtml } from './utils/sanitize.ts';
 
 let siteContent = {};
 
@@ -161,12 +161,12 @@ function renderHeroBadges(value) {
 
 function renderHeroCtaPrimario(value) {
   const el = document.getElementById('heroCtaPrimario');
-  if (el) el.innerHTML = `<i class="fas fa-search"></i> ${value}`;
+  if (el) el.innerHTML = `<i class="fas fa-search"></i> ${escapeHtml(value)}`;
 }
 
 function renderHeroCtaSecundario(value) {
   const el = document.getElementById('heroCtaSecundario');
-  if (el) el.innerHTML = `<i class="fas fa-comment-dots"></i> ${value}`;
+  if (el) el.innerHTML = `<i class="fas fa-comment-dots"></i> ${escapeHtml(value)}`;
 }
 
 function renderHeroStats(value) {
@@ -178,9 +178,9 @@ function renderHeroStats(value) {
   container.innerHTML = stats.map(stat => `
     <div class="stat">
       <div class="number" style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">
-        ${stat.valor || stat.valor === 0 ? stat.valor : '—'}
+        ${stat.valor || stat.valor === 0 ? escapeHtml(String(stat.valor)) : '—'}
       </div>
-      <div class="label">${stat.label || ''}</div>
+      <div class="label">${escapeHtml(stat.label || '')}</div>
     </div>
   `).join('');
 }
@@ -195,7 +195,7 @@ function renderAboutTitulo(value) {
 
 function renderAboutDescripcion(value) {
   const el = document.getElementById('aboutDescripcion');
-  if (el) el.innerHTML = value.replace(/\n/g, '<br>');
+  if (el) el.innerHTML = escapeHtml(value).replace(/\n/g, '<br>');
 }
 
 function renderAboutValores(value) {
@@ -206,9 +206,9 @@ function renderAboutValores(value) {
   
   container.innerHTML = valores.map(v => `
     <div class="valor-item">
-      <i class="${v.icono || 'fas fa-star'}" aria-hidden="true"></i>
-      <h4>${v.titulo || ''}</h4>
-      <p>${v.descripcion || ''}</p>
+      <i class="${escapeHtml(v.icono || 'fas fa-star')}" aria-hidden="true"></i>
+      <h4>${escapeHtml(v.titulo || '')}</h4>
+      <p>${escapeHtml(v.descripcion || '')}</p>
     </div>
   `).join('');
 }
@@ -234,9 +234,9 @@ function renderServiciosLista(value) {
   
   container.innerHTML = servicios.map(s => `
     <div class="servicio-item">
-      <i class="${s.icono || 'fas fa-home'}" aria-hidden="true"></i>
-      <h4>${s.titulo || ''}</h4>
-      <p>${s.descripcion || ''}</p>
+      <i class="${escapeHtml(s.icono || 'fas fa-home')}" aria-hidden="true"></i>
+      <h4>${escapeHtml(s.titulo || '')}</h4>
+      <p>${escapeHtml(s.descripcion || '')}</p>
     </div>
   `).join('');
 }
@@ -246,7 +246,7 @@ function renderServiciosLista(value) {
 // ================================================================
 function renderPorQueTitulo(value) {
   const el = document.getElementById('porQueTitulo');
-  if (el) el.innerHTML = `<i class="fas fa-star"></i> ${value}`;
+  if (el) el.innerHTML = `<i class="fas fa-star"></i> ${escapeHtml(value)}`;
 }
 
 function renderPorQueSubtitulo(value) {
@@ -262,9 +262,9 @@ function renderPorQueRazones(value) {
   
   container.innerHTML = razones.map(r => `
     <div class="porque-item">
-      <div class="icono" style="font-size:2.5rem;">${r.emoji || '⭐'}</div>
-      <h4>${r.titulo || ''}</h4>
-      <p>${r.descripcion || ''}</p>
+      <div class="icono" style="font-size:2.5rem;">${escapeHtml(r.emoji || '⭐')}</div>
+      <h4>${escapeHtml(r.titulo || '')}</h4>
+      <p>${escapeHtml(r.descripcion || '')}</p>
     </div>
   `).join('');
 }
@@ -274,7 +274,7 @@ function renderPorQueRazones(value) {
 // ================================================================
 function renderEquipoTitulo(value) {
   const el = document.getElementById('equipoTitulo');
-  if (el) el.innerHTML = `<i class="fas fa-users"></i> ${value}`;
+  if (el) el.innerHTML = `<i class="fas fa-users"></i> ${escapeHtml(value)}`;
 }
 
 function renderEquipoSubtitulo(value) {
@@ -287,7 +287,7 @@ function renderEquipoSubtitulo(value) {
 // ================================================================
 function renderOficinasTitulo(value) {
   const el = document.getElementById('oficinasTitulo');
-  if (el) el.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${value}`;
+  if (el) el.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${escapeHtml(value)}`;
 }
 
 function renderOficinasSubtitulo(value) {
@@ -300,7 +300,7 @@ function renderOficinasSubtitulo(value) {
 // ================================================================
 function renderFooterMarca(value) {
   const el = document.getElementById('footerMarca');
-  if (el) el.innerHTML = value;
+  if (el) el.innerHTML = escapeHtml(value);
 }
 
 function renderFooterDescripcion(value) {
@@ -310,7 +310,7 @@ function renderFooterDescripcion(value) {
 
 function renderFooterContacto(value) {
   const el = document.getElementById('footerContacto');
-  if (el) el.innerHTML = value.replace(/\n/g, '<br>');
+  if (el) el.innerHTML = escapeHtml(value).replace(/\n/g, '<br>');
 }
 
 function renderFooterLinks(value) {
@@ -320,7 +320,7 @@ function renderFooterLinks(value) {
   const links = Array.isArray(value) ? value : parsePipeArray(value, ['texto', 'url']);
   
   container.innerHTML = links.map(l => 
-    `<li><a href="${l.url || '#'}"><i class="fas fa-chevron-right"></i> ${l.texto || ''}</a></li>`
+    `<li><a href="${sanitizeUrl(l.url || '#')}"><i class="fas fa-chevron-right"></i> ${escapeHtml(l.texto || '')}</a></li>`
   ).join('');
 }
 
@@ -331,7 +331,7 @@ function renderFooterServicios(value) {
   const servicios = Array.isArray(value) ? value : parsePipeArray(value, ['texto', 'url']);
   
   container.innerHTML = servicios.map(s => 
-    `<li><a href="${s.url || '#'}"><i class="fas fa-chevron-right"></i> ${s.texto || ''}</a></li>`
+    `<li><a href="${sanitizeUrl(s.url || '#')}"><i class="fas fa-chevron-right"></i> ${escapeHtml(s.texto || '')}</a></li>`
   ).join('');
 }
 
@@ -381,7 +381,10 @@ function renderSeoSchema(value) {
   const schema = document.querySelector('script[type="application/ld+json"]');
   if (schema && value) {
     try {
-      schema.textContent = value;
+      const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return;
+      if (!parsed['@context'] || !parsed['@type']) return;
+      schema.textContent = JSON.stringify(parsed);
     } catch (e) {
       console.warn('Schema JSON inválido:', e);
     }
@@ -399,7 +402,7 @@ function renderSiteNombre(value) {
 function renderSiteEslogan(value) {
   // Se puede usar en hero badge o tagline
   const badge = document.getElementById('heroBadgeTop');
-  if (badge) badge.innerHTML = `<i class="fas fa-crown"></i> ${value}`;
+  if (badge) badge.innerHTML = `<i class="fas fa-crown"></i> ${escapeHtml(value)}`;
 }
 
 function renderSiteTelefono(value) {
@@ -450,7 +453,7 @@ function renderSiteCobertura(value) {
 // ================================================================
 function renderFaqTitulo(value) {
   const el = document.getElementById('faqTitulo');
-  if (el) el.innerHTML = `<i class="fas fa-question-circle"></i> ${value}`;
+  if (el) el.innerHTML = `<i class="fas fa-question-circle"></i> ${escapeHtml(value)}`;
 }
 
 function renderFaqSubtitulo(value) {
@@ -466,8 +469,8 @@ function renderFaqGrid(value) {
   
   container.innerHTML = faqs.map(faq => `
     <div class="faq-item">
-      <h4><i class="fas fa-chevron-right"></i> ${faq.pregunta || ''}</h4>
-      <p>${faq.respuesta || ''}</p>
+      <h4><i class="fas fa-chevron-right"></i> ${escapeHtml(faq.pregunta || '')}</h4>
+      <p>${escapeHtml(faq.respuesta || '')}</p>
     </div>
   `).join('');
 }
@@ -477,7 +480,7 @@ function renderFaqGrid(value) {
 // ================================================================
 function renderContactoTitulo(value) {
   const el = document.getElementById('contactoTitulo');
-  if (el) el.innerHTML = `<i class="fas fa-envelope"></i> ${value}`;
+  if (el) el.innerHTML = `<i class="fas fa-envelope"></i> ${escapeHtml(value)}`;
 }
 
 function renderContactoSubtitulo(value) {

@@ -6,6 +6,7 @@
 import './Footer.css';
 import { supabase } from '../../supabase.ts';
 import { showToast } from '../../main.ts';
+import { escapeHtml, sanitizeUrl } from '../../utils/sanitize.ts';
 
 let footerElement = null;
 
@@ -144,7 +145,7 @@ export function updateFooterContent(content) {
   
   if (content.footer_marca) {
     const brand = footerElement.querySelector('#footerBrand h3');
-    if (brand) brand.innerHTML = `<i class="fas fa-building" aria-hidden="true"></i> <span>${content.footer_marca}</span>`;
+    if (brand) brand.innerHTML = `<i class="fas fa-building" aria-hidden="true"></i> <span>${escapeHtml(content.footer_marca)}</span>`;
   }
   
   if (content.footer_descripcion) {
@@ -155,14 +156,14 @@ export function updateFooterContent(content) {
   if (content.footer_links) {
     const list = footerElement.querySelector('#footerLinks');
     if (list && Array.isArray(content.footer_links)) {
-      list.innerHTML = content.footer_links.map(l => `<li><a href="${l.url}"><i class="fas fa-chevron-right" aria-hidden="true"></i> ${l.texto}</a></li>`).join('');
+      list.innerHTML = content.footer_links.map(l => `<li><a href="${sanitizeUrl(l.url)}"><i class="fas fa-chevron-right" aria-hidden="true"></i> ${escapeHtml(l.texto)}</a></li>`).join('');
     }
   }
   
   if (content.footer_servicios) {
     const list = footerElement.querySelector('#footerServicios');
     if (list && Array.isArray(content.footer_servicios)) {
-      list.innerHTML = content.footer_servicios.map(s => `<li><a href="${s.url}"><i class="fas fa-chevron-right" aria-hidden="true"></i> ${s.texto}</a></li>`).join('');
+      list.innerHTML = content.footer_servicios.map(s => `<li><a href="${sanitizeUrl(s.url)}"><i class="fas fa-chevron-right" aria-hidden="true"></i> ${escapeHtml(s.texto)}</a></li>`).join('');
     }
   }
   

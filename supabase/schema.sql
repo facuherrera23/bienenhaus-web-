@@ -362,22 +362,25 @@ CREATE POLICY "Public insert leads" ON leads FOR INSERT WITH CHECK (true);
 -- ================================================================
 -- 1. Settings > Database > Extensions > Enable pg_cron
 -- 2. Settings > Database > Extensions > Enable pg_net
--- 3. Reemplaza 'TU_SERVICE_ROLE_KEY' abajo por tu clave real
---    (Supabase Dashboard > Settings > API > service_role key)
+-- 3. Configura los parámetros en Supabase Dashboard > Database > Parameters:
+--    - app.settings.supabase_url = https://tu-proyecto.supabase.co
+--    - app.settings.service_role_key = tu-service-role-key
 -- 4. Settings > Database > Cron Jobs > Add job:
 --    Name: ml-refresh-token
 --    Schedule: */30 * * * *
 --    Command:
--- ALTER DATABASE postgres SET app.settings.service_role_key = '...';  -- Configurar en Dashboard > Database > Parameters si se desea usar current_setting()
+
+-- IMPORTANTE: El token de abajo es un EJEMPLO. Usa current_setting() para
+-- evitar commitear service_role keys en el repositorio.
 
 SELECT cron.schedule(
   'ml-refresh-token',
   '*/30 * * * *',
   $$
   SELECT net.http_post(
-    url := 'https://rnldqiwwzhjnurkguihu.supabase.co/functions/v1/ml-refresh-token',
+    url := current_setting('app.settings.supabase_url') || '/functions/v1/ml-refresh-token',
     headers := jsonb_build_object(
-'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubGRxaXd3emhqbnVya2d1aWh1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDk0MDgzMywiZXhwIjoyMTAwNTE2ODMzfQ.mQ5NZTj8Qeb94runL0JYPgMMvPcRSQnSezdu1rQIzOQ',
+      'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key'),
       'Content-Type', 'application/json'
     ),
     body := '{}'::jsonb
@@ -386,19 +389,14 @@ SELECT cron.schedule(
 );
 
 -- Para configurar manualmente en Supabase Dashboard:
--- 1. Settings > Edge Functions > ml-refresh-token > Copy URL
--- 2. Settings > Database > Cron Jobs > Add job:
+-- 1. Settings > Database > Parameters:
+--    - app.settings.supabase_url = https://tu-proyecto.supabase.co
+--    - app.settings.service_role_key = tu-service-role-key
+-- 2. Settings > Edge Functions > ml-refresh-token > Copy URL
+-- 3. Settings > Database > Cron Jobs > Add job:
 --    Name: ml-refresh-token
 --    Schedule: */30 * * * *
---    Command: 
-SELECT net.http_post(
-  url := 'https://rnldqiwwzhjnurkguihu.supabase.co/functions/v1/ml-refresh-token',
-  headers := jsonb_build_object(
-    'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubGRxaXd3emhqbnVya2d1aWh1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDk0MDgzMywiZXhwIjoyMTAwNTE2ODMzfQ.mQ5NZTj8Qeb94runL0JYPgMMvPcRSQnSezdu1rQIzOQ',
-    'Content-Type', 'application/json'
-  ),
-  body := '{}'::jsonb
-);
+--    Command:
 
 -- ================================================================
 -- EDGE FUNCTIONS REQUERIDAS (desplegar por separado en Supabase)

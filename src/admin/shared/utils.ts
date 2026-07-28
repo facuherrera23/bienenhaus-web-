@@ -1,6 +1,10 @@
 // ================================================================
 // ADMIN SHARED UTILITIES
 // ================================================================
+import { escapeHtml } from '../../utils/sanitize.ts';
+import { trapFocus } from '../../utils/focusTrap.ts';
+
+let activeFocusTrapCleanup: (() => void) | null = null;
 
 export function showToast(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success', duration = 4000): void {
   const container = document.getElementById('toastContainer');
@@ -23,7 +27,7 @@ export function showToast(message: string, type: 'success' | 'error' | 'warning'
     max-width: 400px;
     animation: slideInRight 0.3s ease;
   `;
-  toast.innerHTML = `<i class="fas ${icons[type]}" style="color: ${colors[type]}; font-size: 1.2rem;"></i><span>${message}</span>`;
+  toast.innerHTML = `<i class="fas ${icons[type]}" style="color: ${colors[type]}; font-size: 1.2rem;"></i><span>${escapeHtml(message)}</span>`;
 
   container.appendChild(toast);
 
@@ -77,12 +81,16 @@ export function confirmDelete(type: string, id: number, name: string): void {
   const messageEl = document.getElementById('deleteConfirmMessage');
   if (messageEl) messageEl.textContent = `¿Eliminar "${name}"? Esta acción no se puede deshacer.`;
   const modal = document.getElementById('deleteConfirmModal');
-  if (modal) modal.classList.add('active');
+  if (modal) {
+    modal.classList.add('active');
+    activeFocusTrapCleanup = trapFocus(modal);
+  }
 }
 
 export function closeConfirmModal(): void {
   const modal = document.getElementById('deleteConfirmModal');
   if (modal) modal.classList.remove('active');
+  if (activeFocusTrapCleanup) { activeFocusTrapCleanup(); activeFocusTrapCleanup = null; }
   pendingDelete = { type: null, id: null, name: null };
 }
 

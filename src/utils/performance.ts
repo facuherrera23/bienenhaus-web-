@@ -58,6 +58,7 @@ export function measureWebVitals(onReport) {
       }
     }
   }
+}
 
 /**
  * Lazy load images with IntersectionObserver
@@ -381,4 +382,3 @@ export default {
   prefersReducedMotion,
   prefersReducedData
 };
-}

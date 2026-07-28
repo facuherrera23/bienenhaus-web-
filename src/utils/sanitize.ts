@@ -11,13 +11,8 @@
  */
 export function escapeHtml(str) {
   if (typeof str !== 'string') return '';
-  const apos = String.fromCharCode(39) + 'amp;';
-  return str
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"')
-    .replace(/\x27/g, apos);
+  const entityMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' };
+  return str.replace(/[&<>"']/g, c => entityMap[c]);
 }
 
 /**
