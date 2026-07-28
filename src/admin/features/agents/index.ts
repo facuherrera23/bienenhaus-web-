@@ -1,7 +1,7 @@
 // ================================================================
 // ADMIN AGENTS FEATURE
 // ================================================================
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-unused-expressions */
+ 
 import { supabase } from '../../../supabase.js';
 import { uploadToCloudinary, validateImageFile } from '../../../cloudinary.js';
 import { showToast, getInitials } from '../../shared/utils.js';

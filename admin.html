@@ -15,7 +15,7 @@
   <!-- Admin Styles -->
   <link rel="stylesheet" href="/src/styles/admin.css">
   <!-- Main Entry Point -->
-  <script type="module" src="/src/admin/main.ts"></script>
+  <script type="module" src="/src/admin-app.ts"></script>
 </head>
 <body class="login-page" id="app">
   <!-- ================================================================
@@ -1033,102 +1033,93 @@
             <textarea id="propDescription" rows="6" placeholder="Descripción detallada de la propiedad..."></textarea>
           </div>
         </div>
-        
+
         <!-- Tab: Imágenes -->
         <div class="modal-tabpanel" id="panel-images" role="tabpanel" hidden>
           <div class="form-group full">
-            <label>Imágenes (máximo 15, arrastra para reordenar)</label>
-            <div class="image-upload" id="propImageUpload">
+            <label>Imágenes de la Propiedad (máx. 15, ordenables)</label>
+            <div class="image-upload-area" id="propImagesUploadArea">
               <input type="file" id="propImages" accept="image/*" multiple style="display: none;">
               <i class="fas fa-cloud-upload-alt"></i>
-              <p>Click o arrastra para subir imágenes</p>
-              <small>JPG, PNG, WebP · Máx. 10MB cada una</small>
+              <p>Arrastra imágenes aquí o <button type="button" class="btn-link" id="btnSelectPropImages">selecciona archivos</button></p>
+              <small>Formatos: JPG, PNG, WebP · Máx. 10MB cada una · La primera será la principal</small>
             </div>
-            <div id="propImagesPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;"></div>
+            <div id="propImagesPreview" class="images-preview" style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;"></div>
           </div>
         </div>
-        
+
         <!-- Tab: SEO -->
         <div class="modal-tabpanel" id="panel-seo" role="tabpanel" hidden>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Meta Title</label>
-              <input type="text" id="propSeoTitle" placeholder="Título para buscadores (máx. 60 chars)" maxlength="60">
-            </div>
-            <div class="form-group">
-              <label>Meta Description</label>
-              <input type="text" id="propSeoDesc" placeholder="Descripción para buscadores (máx. 160 chars)" maxlength="160">
-            </div>
+          <div class="form-group full">
+            <label>Meta Title</label>
+            <input type="text" id="propSeoTitle" placeholder="Título SEO de la propiedad" maxlength="60">
+            <small class="text-muted">Máx. 60 caracteres</small>
+          </div>
+          <div class="form-group full">
+            <label>Meta Description</label>
+            <textarea id="propSeoDesc" rows="3" placeholder="Descripción SEO para buscadores" maxlength="160"></textarea>
+            <small class="text-muted">Máx. 160 caracteres</small>
           </div>
           <div class="form-group full">
             <label>Keywords (separadas por coma)</label>
-            <input type="text" id="propSeoKeywords" placeholder="piso, venta, córdoba, ático, terraza">
+            <input type="text" id="propSeoKeywords" placeholder="venta, departamento, córdoba, ático">
           </div>
           <div class="form-group full">
             <label>OG Image URL</label>
-            <input type="url" id="propSeoOgImage" placeholder="https://...">
+            <input type="url" id="propSeoOgImage" placeholder="https://bienenhaus.com.ar/propiedad/123/og.jpg">
           </div>
           <div class="form-group full">
-            <label>Schema.org JSON-LD (opcional)</label>
+            <label>Schema.org JSON-LD (Property)</label>
             <textarea id="propSeoSchema" rows="6" placeholder='{"@context":"https://schema.org","@type":"RealEstateListing",...}'></textarea>
           </div>
         </div>
-        
+
         <!-- Tab: MercadoLibre -->
         <div class="modal-tabpanel" id="panel-mercadolibre" role="tabpanel" hidden>
-          <div class="form-group full">
-            <div class="switch">
-              <input type="checkbox" id="propMlEnabled">
-              <span class="slider"></span>
-              <label style="cursor: pointer; font-weight: 500;">Sincronizar con MercadoLibre</label>
-            </div>
+          <div class="form-group switch">
+            <input type="checkbox" id="propMlEnabled">
+            <span class="slider"></span>
+            <label style="cursor: pointer; font-weight: 500;">Sincronizar con MercadoLibre</label>
           </div>
           <div class="form-row">
             <div class="form-group">
               <label>ML Item ID</label>
-              <input type="text" id="propMlItemId" placeholder="MLA123456789" readonly style="background: var(--gray-100);">
+              <input type="text" id="propMlItemId" placeholder="MLA1234567890" readonly style="background: var(--gray-100);">
             </div>
             <div class="form-group">
               <label>Estado en ML</label>
               <select id="propMlStatus" disabled>
                 <option value="draft">Borrador</option>
-                <option value="published">Publicada</option>
+                <option value="active">Activa</option>
                 <option value="paused">Pausada</option>
                 <option value="closed">Cerrada</option>
               </select>
             </div>
           </div>
           <div class="form-group full">
-            <label>Última sincronización</label>
-            <input type="text" id="propMlLastSync" readonly style="background: var(--gray-100);" placeholder="Nunca sincronizada">
+            <label>Última Sincronización</label>
+            <input type="text" id="propMlLastSync" placeholder="Nunca sincronizada" readonly style="background: var(--gray-100);">
           </div>
-          <div class="form-group full" style="margin-top: 16px;">
-            <button type="button" class="btn-secondary" id="btnSyncPropertyML" style="display:none;">
-              <i class="fas fa-sync"></i> Sincronizar ahora
+          <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button type="button" class="btn-primary" id="btnSyncPropertyML" style="display:none;">
+              <i class="fas fa-sync"></i> Sincronizar Ahora
             </button>
             <button type="button" class="btn-primary" id="btnPublishPropertyML" style="display:none;">
-              <i class="fas fa-upload"></i> Publicar en MercadoLibre
+              <i class="fas fa-upload"></i> Publicar en ML
             </button>
           </div>
         </div>
-        
+
         <!-- Tab: Historial -->
         <div class="modal-tabpanel" id="panel-history" role="tabpanel" hidden>
-          <div class="form-group full">
-            <label>Historial de cambios</label>
-            <div id="propertyHistoryLog" style="max-height:400px;overflow-y:auto;">
-              <div class="empty-state" style="padding:40px 20px;">
-                <i class="fas fa-history"></i>
-                <h4>No hay historial disponible</h4>
-                <p>El historial de cambios aparecerá aquí después de guardar la propiedad.</p>
-              </div>
-            </div>
-            <small class="text-muted">Los cambios se registran automáticamente al guardar la propiedad.</small>
+          <div id="propertyHistoryLog" style="max-height: 400px; overflow-y: auto;">
+            <div class="empty-state" style="padding:40px 20px;"><i class="fas fa-spinner fa-spin"></i> Cargando historial...</div>
           </div>
         </div>
       </form>
+      
       <div class="modal-footer">
-        <button type="button" class="btn-secondary" id="cancelPropertyModal">Cancelar</button>
+        <button type="button" class="btn-secondary" id="cancelPropertyBtn">Cancelar</button>
         <button type="submit" form="propertyForm" class="btn-primary" id="savePropertyBtn">
           <i class="fas fa-save"></i> Guardar
         </button>
@@ -1138,75 +1129,102 @@
 
   <!-- Agent Modal -->
   <div class="modal-overlay" id="agentModal" role="dialog" aria-modal="true" aria-labelledby="agentModalTitle">
-    <div class="modal">
+    <div class="modal" style="max-width: 600px;">
       <div class="modal-header">
         <h2 class="modal-title" id="agentModalTitle">Nuevo Agente</h2>
         <button class="modal-close" id="closeAgentModal" aria-label="Cerrar">&times;</button>
       </div>
+      
       <form id="agentForm" class="modal-body">
         <input type="hidden" id="agentId">
+        
         <div class="form-row">
-          <div class="form-group"><label>Nombre *</label><input type="text" id="agentName" required placeholder="Laura"></div>
-          <div class="form-group"><label>Apellido *</label><input type="text" id="agentSurname" required placeholder="Gómez"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Especialidad *</label><input type="text" id="agentSpecialty" required placeholder="Venta · Lujo"></div>
-          <div class="form-group"><label>Email</label><input type="email" id="agentEmail" placeholder="laura@bienenhaus.com"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Teléfono</label><input type="tel" id="agentPhone" placeholder="+54 9 351 123-4567"></div>
-          <div class="form-group"><label>Orden</label><input type="number" id="agentOrder" placeholder="1" value="99" min="0"></div>
-        </div>
-        <div class="form-group full">
-          <label>Descripción</label>
-          <textarea id="agentDescription" rows="3" placeholder="Descripción del agente..."></textarea>
-        </div>
-        <div class="form-group full">
-          <label>Avatar</label>
-          <div class="image-upload" id="agentAvatarUpload">
-            <input type="file" id="agentAvatar" accept="image/*" style="display: none;">
-            <i class="fas fa-user-plus"></i>
-            <p>Subir foto del agente</p>
-            <small>JPG, PNG · Máx. 5MB</small>
+          <div class="form-group">
+            <label>Avatar</label>
+            <div class="avatar-upload" id="agentAvatarUpload">
+              <input type="file" id="agentAvatar" accept="image/*" style="display: none;">
+              <div id="agentAvatarPreview" style="width: 100px; height: 100px; border-radius: 50%; background: var(--gray-200); display: flex; align-items: center; justify-content: center; color: var(--gray-500); font-size: 2rem; margin-bottom: 12px; overflow: hidden;">👤</div>
+              <button type="button" class="btn-secondary" id="btnSelectAgentAvatar"><i class="fas fa-upload"></i> Subir Avatar</button>
+            </div>
           </div>
-          <div id="agentAvatarPreview" style="width:100px;height:100px;border-radius:50%;overflow:hidden;margin-top:12px;background:var(--gray-200);display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:var(--gray-500);"><span>👤</span></div>
-        </div>
-        <div class="form-group full">
-          <label>Activo</label>
-          <div class="switch">
-            <input type="checkbox" id="agentActive" checked>
-            <span class="slider"></span>
-            <label style="cursor: pointer; font-weight: 500;">Agente activo y visible</label>
+          <div class="form-group full">
+            <label>Nombre *</label>
+            <input type="text" id="agentName" required placeholder="Juan">
+          </div>
+          <div class="form-group full">
+            <label>Apellido *</label>
+            <input type="text" id="agentSurname" required placeholder="Pérez">
+          </div>
+          <div class="form-group full">
+            <label>Especialidad *</label>
+            <input type="text" id="agentSpecialty" required placeholder="Venta, Alquiler, Tasaciones">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="agentEmail" placeholder="juan@bienenhaus.com.ar">
+            </div>
+            <div class="form-group">
+              <label>Teléfono</label>
+              <input type="tel" id="agentPhone" placeholder="+54 351 123-4567">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Orden</label>
+              <input type="number" id="agentOrder" value="99" min="0">
+            </div>
+            <div class="form-group switch">
+              <input type="checkbox" id="agentActive" checked>
+              <span class="slider"></span>
+              <label style="cursor: pointer; font-weight: 500;">Activo</label>
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Descripción</label>
+            <textarea id="agentDescription" rows="4" placeholder="Biografía del agente..."></textarea>
           </div>
         </div>
-      </form>
+      
       <div class="modal-footer">
-        <button type="button" class="btn-secondary" id="cancelAgentModal">Cancelar</button>
+        <button type="button" class="btn-secondary" id="cancelAgentBtn">Cancelar</button>
         <button type="submit" form="agentForm" class="btn-primary" id="saveAgentBtn">
           <i class="fas fa-save"></i> Guardar
         </button>
       </div>
     </div>
+  </div>
 
-  <!-- Confirm Delete Modal -->
-  <div class="modal-overlay" id="confirmModal" role="dialog" aria-modal="true">
+  <!-- Delete Confirm Modal -->
+  <div class="modal-overlay" id="deleteConfirmModal" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
     <div class="modal" style="max-width: 400px;">
       <div class="modal-header">
-        <h2 class="modal-title">Confirmar Eliminación</h2>
-        <button class="modal-close" id="closeConfirmModal" aria-label="Cerrar">&times;</button>
+        <h2 class="modal-title" id="deleteConfirmTitle">Confirmar Eliminación</h2>
+        <button class="modal-close" id="closeDeleteModal" aria-label="Cerrar">&times;</button>
       </div>
       <div class="modal-body">
-        <p id="confirmMessage">¿Estás seguro de que quieres eliminar este elemento? Esta acción no se puede deshacer.</p>
+        <p id="deleteConfirmMessage">¿Estás seguro de que quieres eliminar este elemento?</p>
+        <p class="text-muted" style="font-size: 0.85rem;">Esta acción no se puede deshacer.</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn-secondary" id="cancelConfirm">Cancelar</button>
-        <button type="button" class="btn-danger" id="confirmDelete">Eliminar</button>
+        <button type="button" class="btn-secondary" id="cancelDeleteBtn">Cancelar</button>
+        <button type="button" class="btn-danger" id="confirmDeleteBtn">Eliminar</button>
       </div>
     </div>
+  </div>
 
   <!-- Toast Container -->
-  <div id="toastContainer" style="position: fixed; bottom: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 12px;"></div>
+  <div id="toastContainer" style="position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px;"></div>
 
-  <script type="module" src="/src/admin/main.ts"></script>
+  <style>
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+  </style>
 </body>
 </html>

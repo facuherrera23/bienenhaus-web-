@@ -1,7 +1,7 @@
 ﻿// ================================================================
 // ADMIN APP - Standalone Dashboard for admin.html
 // ================================================================
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-unused-expressions */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { supabase } from './supabase.js';
 import { CONFIG } from './config.js';
 import { uploadToCloudinary, validateImageFile } from './cloudinary.js';

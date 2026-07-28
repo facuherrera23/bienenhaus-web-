@@ -133,9 +133,10 @@ export function generateJSONLD(type, data) {
       } : undefined,
       numberOfRooms: data.numberOfRooms,
       numberOfBathrooms: data.numberOfBathrooms,
-      petsAllowed: data.petsAllowed
+petsAllowed: data.petsAllowed
     }),
-    Organization: (data) => ({
+    
+    BreadcrumbList: (breadcrumbs) => ({
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: breadcrumbs.map((crumb, index) => ({
@@ -144,6 +145,7 @@ export function generateJSONLD(type, data) {
         name: crumb.name,
         item: crumb.url
       })),
+    }),
     
     Organization: (data) => ({
       '@context': 'https://schema.org',
@@ -172,7 +174,7 @@ export function generateJSONLD(type, data) {
       currenciesAccepted: data.currenciesAccepted,
       paymentAccepted: data.paymentAccepted,
       areaServed: data.areaServed
-    },
+    }),
     
     WebSite: (data) => ({
       '@context': 'https://schema.org',
@@ -185,10 +187,10 @@ export function generateJSONLD(type, data) {
           '@type': 'EntryPoint',
           urlTemplate: data.searchUrl || `${data.url}/propiedades?search={search_term_string}`
         },
-        'query-input': 'required name=search_term_string'
+'query-input': 'required name=search_term_string'
       }
-    },
-    
+    }),
+  
     FAQPage: (faqs) => ({
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
@@ -200,7 +202,7 @@ export function generateJSONLD(type, data) {
           text: faq.answer
         }
       }))
-    }
+    })
   };
   
   const generator = schemas[type];

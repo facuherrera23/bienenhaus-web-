@@ -3,6 +3,8 @@
 // ================================================================
 
 import './Footer.css';
+import { supabase } from '../../supabase.js';
+import { showToast } from '../../main.js';
 
 let footerElement = null;
 
