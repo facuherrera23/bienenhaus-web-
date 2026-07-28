@@ -1,4 +1,4 @@
-/// <reference types="@types/serviceworker" />
+/// <reference lib="webworker" />
 
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
@@ -6,7 +6,7 @@ import { NetworkFirst, CacheFirst, StaleWhileRevalidate } from 'workbox-strategi
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
-declare const self: ServiceWorkerGlobalScope;
+declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: any[]; skipWaiting: () => void };
 
 // ===== PRECACHING =====
 precacheAndRoute(self.__WB_MANIFEST);
@@ -44,9 +44,14 @@ async function checkMaintenance(): Promise<boolean> {
 }
 
 // ===== MAINTENANCE ROUTE =====
+interface FetchEvent extends ExtendableEvent {
+  request: Request;
+}
+
 const maintenanceRoute = new NavigationRoute(async ({ event }) => {
-  const url = event.request.url;
-  if (url.includes('/admin') || url.includes('/maintenance.html')) return fetch(event.request);
+  const e = event as FetchEvent;
+  const url = e.request.url;
+  if (url.includes('/admin') || url.includes('/maintenance.html')) return fetch(e.request);
   if (await checkMaintenance()) {
     const cache = await caches.open('maintenance-cache');
     let resp = await cache.match(MAINTENANCE_URL);
@@ -59,7 +64,7 @@ const maintenanceRoute = new NavigationRoute(async ({ event }) => {
       headers: { 'Content-Type': 'text/html; charset=utf-8', 'Retry-After': '30', 'Cache-Control': 'no-cache, no-store, must-revalidate', 'X-Maintenance-Mode': 'true' }
     });
   }
-  return fetch(event.request);
+  return fetch(e.request);
 });
 registerRoute(maintenanceRoute);
 
@@ -101,4 +106,4 @@ registerRoute(
 );
 
 // ===== MESSAGE HANDLER =====
-self.addEventListener('message', (e) => { if (e.data?.type === 'SKIP_WAITING') self.skipWaiting(); });
+self.addEventListener('message', (e: ExtendableMessageEvent) => { if (e.data?.type === 'SKIP_WAITING') self.skipWaiting(); });
