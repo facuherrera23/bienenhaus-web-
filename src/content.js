@@ -2,6 +2,7 @@
 // CONTENT LOADER - Carga contenido dinámico desde Supabase
 // ================================================================
 import { supabase } from './supabase.js';
+import { sanitizeHtml, sanitizeUrl, sanitizeClassName, sanitizeShortText, escapeHtml } from './utils/sanitize.js';
 
 let siteContent = {};
 
@@ -139,7 +140,7 @@ function renderHeroBadge(value) {
 
 function renderHeroTitulo(value) {
   const el = document.getElementById('heroTitulo');
-  if (el) el.innerHTML = value.replace(/\n/g, '<br>');
+  if (el) el.innerHTML = sanitizeHtml(value).replace(/\n/g, '<br>');
 }
 
 function renderHeroSubtitulo(value) {
@@ -150,10 +151,10 @@ function renderHeroSubtitulo(value) {
 function renderHeroBadges(value) {
   const container = document.getElementById('heroBadges');
   if (!container) return;
-  
+
   const badges = Array.isArray(value) ? value : value.split('\n').filter(b => b.trim());
-  container.innerHTML = badges.map(badge => 
-    `<span class="hero-badge"><i class="fas fa-check-circle"></i> ${badge.trim()}</span>`
+  container.innerHTML = badges.map(badge =>
+    `<span class="hero-badge"><i class="fas fa-check-circle" aria-hidden="true"></i> ${escapeHtml(String(badge).trim())}</span>`
   ).join('');
 }
 
