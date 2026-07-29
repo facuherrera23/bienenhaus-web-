@@ -122,7 +122,7 @@ jobs:
   deploy-edge-functions:
     name: Deploy Edge Functions
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     needs: [test, build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     env:
@@ -136,6 +136,13 @@ jobs:
         uses: supabase/setup-cli@v1
         with:
           version: latest
+
+      - name: Vendor Edge Function dependencies
+        run: |
+          cd supabase/functions
+          deno vendor --import-map=import_map.json
+        env:
+          DENO_DIR: ${{ runner.temp }}/deno_cache
 
       - name: Deploy Edge Functions
         run: |
