@@ -136,11 +136,24 @@ function removeActivityListeners(): void {
 // AUTHENTICATION
 // ================================================================
 async function checkAuth(): Promise<boolean> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session && session.user.email === CONFIG.ADMIN_EMAIL) {
-    currentUser = session.user;
-    showDashboard();
-    return true;
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      // Handle auth errors gracefully (expired tokens, etc.)
+      if (error.message.includes('refresh_token') || error.message.includes('Invalid Refresh Token')) {
+        // Token expired, force logout
+        await supabase.auth.signOut();
+      }
+      throw error;
+    }
+    if (session && session.user.email === CONFIG.ADMIN_EMAIL) {
+      currentUser = session.user;
+      showDashboard();
+      return true;
+    }
+  } catch (e) {
+    // Auth check failed, show login
+    logWarn('Auth check failed', e, 'auth');
   }
   showLogin();
   return false;
@@ -192,20 +205,26 @@ async function logout(): Promise<void> {
 }
 
 function showLogin(): void {
-  document.getElementById('loginView')!.classList.remove('d-none');
-  document.getElementById('dashboardView')!.classList.add('d-none');
+  const loginView = document.getElementById('loginView');
+  const dashboardView = document.getElementById('dashboardView');
+  if (loginView) loginView.classList.remove('d-none');
+  if (dashboardView) dashboardView.classList.add('d-none');
   document.body.className = 'login-page';
   if (sessionTimer) { clearInterval(sessionTimer); sessionTimer = null; }
   removeActivityListeners();
 }
 
 function showDashboard(): void {
-  document.getElementById('loginView')!.classList.add('d-none');
-  document.getElementById('dashboardView')!.classList.remove('d-none');
+  const loginView = document.getElementById('loginView');
+  const dashboardView = document.getElementById('dashboardView');
+  const userName = document.getElementById('userName');
+  const userAvatar = document.getElementById('userAvatar');
+  if (loginView) loginView.classList.add('d-none');
+  if (dashboardView) dashboardView.classList.remove('d-none');
   document.body.className = 'dashboard-page';
   if (currentUser) {
-    document.getElementById('userName')!.textContent = currentUser.email.split('@')[0];
-    document.getElementById('userAvatar')!.textContent = currentUser.email.split('@')[0].charAt(0).toUpperCase();
+    if (userName) userName.textContent = currentUser.email.split('@')[0];
+    if (userAvatar) userAvatar.textContent = currentUser.email.split('@')[0].charAt(0).toUpperCase();
   }
   setupActivityListeners();
   startSessionTimer();
@@ -842,5 +861,22 @@ async function saveSettings(): Promise<void> {
 
 document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
+  
+  // Listen for auth state changes to handle token refresh failures
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'TOKEN_REFRESHED' && session) {
+      currentUser = session.user;
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      showLogin();
+    } else if (event === 'TOKEN_REFRESHED' && !session) {
+      // Token refresh failed
+      logError('Auth error - token refresh failed', { event }, 'auth');
+      supabase.auth.signOut();
+      currentUser = null;
+      showLogin();
+    }
+  });
+  
   await checkAuth();
 });

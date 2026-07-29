@@ -48,3 +48,563 @@
         <i class="fas fa-sign-in-alt"></i>
         <span>Iniciar Sesión</span>
       </button>
+    </form>
+  </div>
+
+  <!-- ================================================================
+     DASHBOARD VIEW (hidden initially)
+     ================================================================ -->
+  <div class="dashboard-container d-none" id="dashboardView">
+    <!-- Top Bar -->
+    <header class="dashboard-header" role="banner">
+      <div class="header-left">
+        <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar" aria-expanded="false">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="brand">
+          <i class="fas fa-building"></i>
+          <span>Bienenhaus Admin</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="search-box" role="search">
+          <i class="fas fa-search"></i>
+          <input type="search" placeholder="Buscar..." id="globalSearch" aria-label="Búsqueda global">
+        </div>
+        <div class="user-menu">
+          <button type="button" class="user-avatar" id="userAvatarBtn" aria-label="Usuario" aria-expanded="false" aria-haspopup="true">
+            <span id="userAvatar">U</span>
+          </button>
+          <div class="user-dropdown" id="userDropdown" role="menu" hidden>
+            <div class="dropdown-header">
+              <span id="userName" class="dropdown-name">Usuario</span>
+              <small class="dropdown-email">admin@bienenhaus.com.ar</small>
+            </div>
+            <hr class="dropdown-divider">
+            <a href="#" class="dropdown-item" role="menuitem" data-action="profile"><i class="fas fa-user"></i> Mi Perfil</a>
+            <a href="#" class="dropdown-item" role="menuitem" data-action="settings"><i class="fas fa-cog"></i> Configuración</a>
+            <hr class="dropdown-divider">
+            <button type="button" class="dropdown-item logout-btn" role="menuitem" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Navegación principal">
+      <nav class="sidebar-nav">
+        <ul class="nav-list" role="list">
+          <li class="nav-item">
+            <a href="#dashboard" class="nav-link active" data-section="dashboard" role="menuitem">
+              <i class="fas fa-tachometer-alt"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#properties" class="nav-link" data-section="properties" role="menuitem">
+              <i class="fas fa-building"></i>
+              <span>Propiedades</span>
+              <span class="badge" id="propCountBadge">0</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#agents" class="nav-link" data-section="agents" role="menuitem">
+              <i class="fas fa-users"></i>
+              <span>Agentes</span>
+              <span class="badge" id="agentCountBadge">0</span>
+            </a>
+          </li>
+          <li class="nav-divider"></li>
+          <li class="nav-item">
+            <a href="#mercadoLibre" class="nav-link" data-section="mercadoLibre" role="menuitem">
+              <i class="fab fa-mercadolibre"></i>
+              <span>MercadoLibre</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#settings" class="nav-link" data-section="settings" role="menuitem">
+              <i class="fas fa-cog"></i>
+              <span>Configuración</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="sidebar-footer">
+        <small class="version-info">v1.0.0</small>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent" role="main">
+      <!-- Dashboard Section -->
+      <section class="settings-panel active" id="section-dashboard" aria-labelledby="dashboard-title">
+        <header class="section-header">
+          <h2 id="dashboard-title">Dashboard</h2>
+          <div class="header-actions">
+            <button type="button" class="btn btn-primary" data-action="refresh-dashboard">
+              <i class="fas fa-sync-alt"></i> Actualizar
+            </button>
+          </div>
+        </header>
+        <div class="stats-grid" role="region" aria-label="Estadísticas principales">
+          <article class="stat-card">
+            <div class="stat-icon"><i class="fas fa-building"></i></div>
+            <div class="stat-content">
+              <span class="stat-value" id="statProperties">0</span>
+              <span class="stat-label">Propiedades</span>
+            </div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-content">
+              <span class="stat-value" id="statAgents">0</span>
+              <span class="stat-label">Agentes</span>
+            </div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon"><i class="fas fa-sync-alt"></i></div>
+            <div class="stat-content">
+              <span class="stat-value" id="statMLSync">0</span>
+              <span class="stat-label">Sync ML</span>
+            </div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="stat-content">
+              <span class="stat-value" id="statErrors">0</span>
+              <span class="stat-label">Errores</span>
+            </div>
+          </article>
+        </div>
+        <section class="recent-activity" aria-labelledby="recent-title">
+          <h3 id="recent-title">Actividad Reciente</h3>
+          <div class="activity-list" id="activityList">
+            <p class="empty-state">No hay actividad reciente</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- Properties Section -->
+      <section class="settings-panel" id="section-properties" aria-labelledby="properties-title" hidden>
+        <header class="section-header">
+          <h2 id="properties-title">Propiedades</h2>
+          <div class="header-actions">
+            <div class="search-filter">
+              <input type="search" id="propertiesSearch" placeholder="Filtrar propiedades..." aria-label="Filtrar propiedades">
+            </div>
+            <button type="button" class="btn btn-primary" data-action="add-property">
+              <i class="fas fa-plus"></i> Nueva Propiedad
+            </button>
+          </div>
+        </header>
+        <div class="table-wrapper">
+          <table class="data-table" id="propertiesTable" role="grid">
+            <thead>
+              <tr>
+                <th scope="col">Imagen</th>
+                <th scope="col">Título</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Operación</th>
+                <th scope="col">Precio</th>
+                <th scope="col">Ubicación</th>
+                <th scope="col">Agente</th>
+                <th scope="col">Estado</th>
+                <th scope="col">ML</th>
+                <th scope="col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="propertiesBody">
+              <tr><td colspan="10" class="empty-state">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <nav class="pagination" id="propertiesPagination" aria-label="Paginación de propiedades"></nav>
+      </section>
+
+      <!-- Agents Section -->
+      <section class="settings-panel" id="section-agents" aria-labelledby="agents-title" hidden>
+        <header class="section-header">
+          <h2 id="agents-title">Agentes</h2>
+          <div class="header-actions">
+            <button type="button" class="btn btn-primary" data-action="add-agent">
+              <i class="fas fa-plus"></i> Nuevo Agente
+            </button>
+          </div>
+        </header>
+        <div class="table-wrapper">
+          <table class="data-table" id="agentsTable" role="grid">
+            <thead>
+              <tr>
+                <th scope="col">Avatar</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Email</th>
+                <th scope="col">Teléfono</th>
+                <th scope="col">Especialidad</th>
+                <th scope="col">Activo</th>
+                <th scope="col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="agentsBody">
+              <tr><td colspan="7" class="empty-state">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- MercadoLibre Section -->
+      <section class="settings-panel" id="section-mercadoLibre" aria-labelledby="ml-title" hidden>
+        <header class="section-header">
+          <h2 id="ml-title">MercadoLibre</h2>
+        </header>
+        <div class="ml-dashboard">
+          <div class="ml-status-card">
+            <h3>Estado de Conexión</h3>
+            <div class="status-indicator" id="mlConnectionStatus">
+              <span class="status-dot"></span>
+              <span class="status-text">Desconectado</span>
+            </div>
+            <div class="ml-actions">
+              <button type="button" class="btn btn-primary" id="mlConnectBtn" data-action="ml-connect">
+                <i class="fas fa-link"></i> Conectar
+              </button>
+              <button type="button" class="btn btn-secondary" id="mlImportBtn" data-action="ml-import" disabled>
+                <i class="fas fa-download"></i> Importar Propiedades
+              </button>
+              <button type="button" class="btn btn-secondary" id="mlSyncBtn" data-action="ml-sync" disabled>
+                <i class="fas fa-sync"></i> Sincronizar
+              </button>
+            </div>
+          </div>
+          <div class="ml-logs">
+            <h3>Log de Sincronización</h3>
+            <div class="log-list" id="mlLogList">
+              <p class="empty-state">Sin actividad</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings / Content Section -->
+      <section class="settings-panel" id="section-settings" aria-labelledby="settings-title" hidden>
+        <header class="section-header">
+          <h2 id="settings-title">Configuración</h2>
+        </header>
+        <nav class="settings-tabs" role="tablist" aria-label="Configuración">
+          <button role="tab" class="tab-btn active" data-tab="general" aria-selected="true">General</button>
+          <button role="tab" class="tab-btn" data-tab="content" aria-selected="false">Textos del Sitio</button>
+          <button role="tab" class="tab-btn" data-tab="integrations" aria-selected="false">Integraciones</button>
+        </nav>
+        <div class="tab-panels">
+          <div role="tabpanel" id="tab-general" class="tab-panel active">
+            <form class="settings-form" id="generalSettingsForm">
+              <fieldset>
+                <legend>Información del Sitio</legend>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="siteName">Nombre del Sitio</label>
+                    <input type="text" id="siteName" name="site_name" value="Bienenhaus Propiedades">
+                  </div>
+                  <div class="form-group">
+                    <label for="sitePhone">Teléfono</label>
+                    <input type="tel" id="sitePhone" name="site_phone" value="+54 351 123-4567">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="siteEmail">Email</label>
+                    <input type="email" id="siteEmail" name="site_email" value="bienenhaus.propiedades@gmail.com">
+                  </div>
+                  <div class="form-group">
+                    <label for="siteAddress">Dirección</label>
+                    <input type="text" id="siteAddress" name="site_address" value="Córdoba, Argentina">
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset>
+                <legend>Redes Sociales</legend>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="socialFacebook">Facebook</label>
+                    <input type="url" id="socialFacebook" name="social_facebook" placeholder="https://facebook.com/...">
+                  </div>
+                  <div class="form-group">
+                    <label for="socialInstagram">Instagram</label>
+                    <input type="url" id="socialInstagram" name="social_instagram" placeholder="https://instagram.com/...">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="socialWhatsApp">WhatsApp</label>
+                    <input type="text" id="socialWhatsApp" name="social_whatsapp" placeholder="+54 9 351 123-4567">
+                  </div>
+                </div>
+              </fieldset>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+              </div>
+            </form>
+          </div>
+          <div role="tabpanel" id="tab-content" class="tab-panel" hidden>
+            <p class="info-text">Gestiona los textos y contenidos estáticos del sitio público.</p>
+            <div class="content-editor" id="contentEditor">
+              <div class="empty-state">Cargando editor...</div>
+            </div>
+          </div>
+          <div role="tabpanel" id="tab-integrations" class="tab-panel" hidden>
+            <h3>Integraciones</h3>
+            <div class="integration-cards">
+              <article class="integration-card">
+                <div class="integration-icon"><i class="fab fa-mercadolibre"></i></div>
+                <div class="integration-info">
+                  <h4>MercadoLibre</h4>
+                  <p>Sincroniza propiedades con tu cuenta de MercadoLibre</p>
+                </div>
+                <a href="#mercadoLibre" class="btn btn-secondary">Configurar</a>
+              </article>
+              <article class="integration-card">
+                <div class="integration-icon"><i class="fas fa-cloud"></i></div>
+                <div class="integration-info">
+                  <h4>Cloudinary</h4>
+                  <p>Gestión y optimización de imágenes</p>
+                </div>
+                <button class="btn btn-secondary" disabled>Configurado</button>
+              </article>
+              <article class="integration-card">
+                <div class="integration-icon"><i class="fab fa-whatsapp"></i></div>
+                <div class="integration-info">
+                  <h4>WhatsApp Business</h4>
+                  <p>Botón de contacto directo</p>
+                </div>
+                <button class="btn btn-secondary" disabled>Configurado</button>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Content Editor Section (for settings-content tab) -->
+      <section class="settings-panel" id="section-settings-content" aria-labelledby="content-editor-title" hidden>
+        <header class="section-header">
+          <h2 id="content-editor-title">Editor de Contenidos</h2>
+        </header>
+        <div id="contentEditorFull">
+          <div class="empty-state">Cargando editor...</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="propertyModal" role="dialog" aria-modal="true" aria-labelledby="propertyModalTitle" hidden>
+    <div class="modal" role="document">
+      <header class="modal-header">
+        <h3 id="propertyModalTitle">Nueva Propiedad</h3>
+        <button type="button" class="modal-close" aria-label="Cerrar">&times;</button>
+      </header>
+      <form class="modal-form" id="propertyForm">
+        <input type="hidden" name="id" id="propertyId">
+        <div class="form-tabs" role="tablist">
+          <button role="tab" class="tab-btn active" data-tab="basic" aria-selected="true">Datos Básicos</button>
+          <button role="tab" class="tab-btn" data-tab="details" aria-selected="false">Detalles</button>
+          <button role="tab" class="tab-btn" data-tab="ml" aria-selected="false">MercadoLibre</button>
+          <button role="tab" class="tab-btn" data-tab="images" aria-selected="false">Imágenes</button>
+        </div>
+        <div class="tab-panels">
+          <div role="tabpanel" class="tab-panel active" id="tab-basic">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="propTitle">Título *</label>
+                <input type="text" id="propTitle" name="titulo" required>
+              </div>
+              <div class="form-group">
+                <label for="propType">Tipo *</label>
+                <select id="propType" name="tipo" required>
+                  <option value="casa">Casa</option>
+                  <option value="departamento">Departamento</option>
+                  <option value="terreno">Terreno</option>
+                  <option value="local">Local Comercial</option>
+                  <option value="oficina">Oficina</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="propOperation">Operación *</label>
+                <select id="propOperation" name="operacion" required>
+                  <option value="venta">Venta</option>
+                  <option value="alquiler">Alquiler</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="propPrice">Precio *</label>
+                <input type="number" id="propPrice" name="precio" step="1000" min="0" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="propCurrency">Moneda</label>
+                <select id="propCurrency" name="moneda">
+                  <option value="USD">USD</option>
+                  <option value="ARS">ARS</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="propDescription">Descripción</label>
+              <textarea id="propDescription" name="descripcion" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="propLocation">Ubicación *</label>
+              <input type="text" id="propLocation" name="ubicacion" required placeholder="Ej: Cerro de las Rosas, Córdoba">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="propLat">Latitud</label>
+                <input type="number" id="propLat" name="latitud" step="0.000001">
+              </div>
+              <div class="form-group">
+                <label for="propLng">Longitud</label>
+                <input type="number" id="propLng" name="longitud" step="0.000001">
+              </div>
+            </div>
+          </div>
+          <div role="tabpanel" class="tab-panel" id="tab-details" hidden>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="propBedrooms">Dormitorios</label>
+                <input type="number" id="propBedrooms" name="dormitorios" min="0" value="0">
+              </div>
+              <div class="form-group">
+                <label for="propBathrooms">Baños</label>
+                <input type="number" id="propBathrooms" name="banos" min="0" value="0">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="propGarage">Cocheras</label>
+                <input type="number" id="propGarage" name="cochera" min="0" value="0">
+              </div>
+              <div class="form-group">
+                <label for="propSurface">Superficie (m²)</label>
+                <input type="number" id="propSurface" name="superficie" min="0" step="0.1">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="propSurfaceCovered">Superficie Cubierta (m²)</label>
+                <input type="number" id="propSurfaceCovered" name="superficie_cubierta" min="0" step="0.1">
+              </div>
+              <div class="form-group">
+                <label for="propAntiquity">Antigüedad (años)</label>
+                <input type="number" id="propAntiquity" name="antiguedad" min="0">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="propFeatures">Características (separadas por comas)</label>
+              <input type="text" id="propFeatures" name="caracteristicas" placeholder="Pileta, Quincho, Aire acondicionado, ...">
+            </div>
+          </div>
+          <div role="tabpanel" class="tab-panel" id="tab-ml" hidden>
+            <div class="ml-sync-options">
+              <h4>Sincronización con MercadoLibre</h4>
+              <div class="checkbox-group">
+                <label><input type="checkbox" name="ml_enabled" value="1"> Publicar en MercadoLibre</label>
+                <label><input type="checkbox" name="ml_auto_sync" value="1"> Sincronizar automáticamente</label>
+              </div>
+              <div class="form-group">
+                <label for="mlCategory">Categoría ML</label>
+                <input type="text" id="mlCategory" name="ml_categoria" placeholder="MLA1459 (ej: Casas en venta)">
+              </div>
+            </div>
+          </div>
+          <div role="tabpanel" class="tab-panel" id="tab-images" hidden>
+            <div class="image-upload-area" id="imageUploadArea">
+              <input type="file" id="propImages" name="images" accept="image/*" multiple hidden>
+              <div class="upload-placeholder">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Arrastra imágenes aquí o haz clic para seleccionar</p>
+                <small>Formatos: JPG, PNG, WebP. Máx 10MB cada una.</small>
+              </div>
+              <div class="image-previews" id="imagePreviews"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-action="cancel-property">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Propiedad</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="agentModal" role="dialog" aria-modal="true" aria-labelledby="agentModalTitle" hidden>
+    <div class="modal" role="document">
+      <header class="modal-header">
+        <h3 id="agentModalTitle">Nuevo Agente</h3>
+        <button type="button" class="modal-close" aria-label="Cerrar">&times;</button>
+      </header>
+      <form class="modal-form" id="agentForm">
+        <input type="hidden" name="id" id="agentId">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="agentName">Nombre *</label>
+            <input type="text" id="agentName" name="nombre" required>
+          </div>
+          <div class="form-group">
+            <label for="agentEmail">Email *</label>
+            <input type="email" id="agentEmail" name="email" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="agentPhone">Teléfono</label>
+            <input type="tel" id="agentPhone" name="telefono">
+          </div>
+          <div class="form-group">
+            <label for="agentSpecialty">Especialidad</label>
+            <input type="text" id="agentSpecialty" name="especialidad" placeholder="Ej: Zona Norte, Venta, Alquiler">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="agentAvatar">Avatar</label>
+          <div class="avatar-upload" id="agentAvatarUpload">
+            <input type="file" id="agentAvatarFile" name="avatar" accept="image/*" hidden>
+            <div class="avatar-preview" id="agentAvatarPreview">
+              <i class="fas fa-user"></i>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="agentAvatarBtn">Seleccionar imagen</button>
+          </div>
+        </div>
+        <div class="checkbox-group">
+          <label><input type="checkbox" name="activo" value="1" checked> Activo</label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-action="cancel-agent">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Agente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
+    <div class="modal modal-sm" role="document">
+      <header class="modal-header">
+        <h3 id="confirmTitle">Confirmar</h3>
+      </header>
+      <div class="modal-body">
+        <p id="confirmMessage">¿Estás seguro?</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="confirmCancel">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmOk">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer" role="region" aria-label="Notificaciones" aria-live="polite"></div>
+
+  <!-- Sidebar Overlay for mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+</body>
+</html>
