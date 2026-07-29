@@ -1,0 +1,130 @@
+/* ================================================================
+   HERO SECTION
+   ================================================================ */
+
+.hero {
+  background: var(--color-surface-1);
+  padding: var(--space-8) var(--space-5) var(--space-7);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-7);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(32,184,171,0.08) 0%, transparent 50%, rgba(0,0,0,0.3) 100%);
+  pointer-events: none;
+}
+.hero.has-bg-image {
+  background-image: url('/hero-bg.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.hero.has-bg-image::before {
+  background: linear-gradient(135deg, rgba(10,8,7,0.7) 0%, rgba(10,8,7,0.5) 50%, rgba(10,8,7,0.8) 100%);
+}
+
+.hero-content { position: relative; z-index: 1; max-width: var(--container-max); margin: 0 auto; }
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-brand-glow);
+  backdrop-filter: blur(4px);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand);
+  margin-bottom: var(--space-5);
+  border: 1px solid var(--color-brand-border);
+  letter-spacing: var(--letter-spacing-label);
+}
+.hero-badge i { color: var(--color-brand); }
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-display);
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  max-width: 50rem;
+}
+.hero h1 .highlight { color: var(--color-brand); position: relative; }
+.hero h1 .highlight::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: var(--color-brand-glow);
+  border-radius: 10px;
+}
+
+.hero p {
+  font-size: clamp(1.125rem, 2vw, 1.25rem);
+  margin-top: var(--space-5);
+  opacity: 0.9;
+  max-width: 36.25rem;
+  color: var(--color-text-secondary);
+}
+
+.hero-badges { display: flex; gap: var(--space-4); flex-wrap: wrap; margin-top: var(--space-6); }
+.hero-badge-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-surface-3);
+  backdrop-filter: blur(4px);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  transition: var(--transition-fast);
+}
+.hero-badge-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--color-border-medium); }
+.hero-badge-item i { color: var(--color-brand); font-size: 1.125rem; }
+
+.hero-cta { display: flex; gap: var(--space-4); flex-wrap: wrap; margin-top: var(--space-6); }
+.hero-cta .btn { padding: var(--space-4) var(--space-7); font-size: var(--text-body); }
+
+.hero-stats {
+  display: flex;
+  gap: var(--space-7);
+  margin-top: var(--space-7);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+.hero-stat .number {
+  font-family: var(--font-numbers);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-brand);
+  letter-spacing: var(--letter-spacing-numbers);
+  line-height: 1;
+}
+.hero-stat .label { font-size: var(--text-sm); color: var(--color-text-secondary); font-weight: var(--font-weight-medium); }
+
+@media (max-width: 768px) {
+  .hero { padding: var(--space-7) var(--space-4) var(--space-6); border-radius: var(--radius-md); }
+  .hero-stats { gap: var(--space-5); }
+  .hero-stat .number { font-size: 1.5rem; }
+}
+
+/* ----- HERO VARIANTS ----- */
+.hero-compact { padding: var(--space-6) var(--space-5); border-radius: var(--radius-md); }
+.hero-compact h1 { font-size: var(--text-headline); }
+.hero-compact .hero-stats { margin-top: var(--space-5); padding-top: var(--space-4); }

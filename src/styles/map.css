@@ -1,0 +1,91 @@
+/* ================================================================
+   MAP CONTAINER & CUSTOM MARKERS
+   ================================================================ */
+
+.map-container {
+  width: 100%;
+  height: 37.5rem;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+}
+@media (max-width: 768px) { .map-container { height: 28.125rem; } }
+
+/* Leaflet customizations */
+.leaflet-container { font-family: var(--font-body); background: var(--color-surface-1); }
+.leaflet-control-zoom { border: none !important; box-shadow: var(--shadow-md) !important; border-radius: var(--radius-md) !important; overflow: hidden; }
+.leaflet-control-zoom a { background: var(--color-surface-2) !important; color: var(--color-text) !important; border: none !important; border-bottom: 1px solid var(--color-border) !important; width: 40px !important; height: 40px !important; line-height: 40px !important; font-size: 1.25rem !important; }
+.leaflet-control-zoom a:hover { background: var(--color-brand) !important; color: var(--color-text-on-brand) !important; }
+.leaflet-control-attribution { background: rgba(10,8,7,0.8) !important; color: var(--color-text-muted) !important; border-radius: 0 0 var(--radius-md) var(--radius-md); backdrop-filter: blur(8px); }
+.leaflet-popup-content-wrapper { border-radius: var(--radius-md) !important; box-shadow: var(--shadow-xl) !important; padding: 0 !important; background: var(--color-surface-2) !important; color: var(--color-text) !important; border: 1px solid var(--color-border) !important; }
+.leaflet-popup-content { margin: 0 !important; width: auto !important; font-family: inherit !important; }
+.leaflet-popup-tip { background: var(--color-surface-2) !important; border: 1px solid var(--color-border); border-width: 0 1px 1px 0; }
+
+/* Custom markers */
+.custom-marker { display: flex; flex-direction: column; align-items: center; }
+.marker-pin {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  border: 3px solid var(--color-bg);
+}
+.marker-pin.venta { background: var(--color-brand); }
+.marker-pin.alquiler { background: var(--color-success); }
+.marker-pin i { color: var(--color-text-on-brand); font-size: 1.125rem; transform: rotate(45deg); margin-bottom: 2px; }
+.marker-badge {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  white-space: nowrap;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-on-brand);
+}
+.marker-badge.venta { background: var(--color-brand); }
+.marker-badge.alquiler { background: var(--color-success); }
+
+/* Cluster markers */
+.cluster-marker {
+  width: 100%; height: 100%;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-on-brand);
+  box-shadow: var(--shadow-md);
+  border: 3px solid var(--color-bg);
+  transition: var(--transition-fast);
+}
+.cluster-marker:hover { transform: scale(1.1); }
+.cluster-small { background: var(--color-brand); width: 30px !important; height: 30px !important; font-size: var(--text-sm) !important; }
+.cluster-medium { background: var(--color-warning); width: 40px !important; height: 40px !important; font-size: 1rem !important; }
+.cluster-large { background: var(--color-danger); width: 50px !important; height: 50px !important; font-size: 1.125rem !important; }
+
+/* Custom popup */
+.map-popup { font-family: inherit; }
+.map-popup img { border-radius: 0 0 var(--radius-md) var(--radius-md); }
+.map-popup .popup-image { width: 100%; height: 160px; object-fit: cover; margin-bottom: var(--space-3); border-radius: var(--radius-md) var(--radius-md) 0 0; }
+.map-popup .popup-title { font-weight: var(--font-weight-bold); font-size: var(--text-body); margin-bottom: var(--space-2); color: var(--color-text); }
+.map-popup .popup-price { font-family: var(--font-numbers); font-size: 1.25rem; font-weight: var(--font-weight-black); color: var(--color-brand); margin-bottom: var(--space-2); }
+.map-popup .popup-location { display: flex; align-items: center; gap: var(--space-1); font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: var(--space-3); }
+.map-popup .popup-location i { color: var(--color-brand); }
+.map-popup .popup-features { display: flex; gap: var(--space-4); font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: var(--space-3); flex-wrap: wrap; }
+.map-popup .popup-btn {
+  display: block; width: 100%; text-align: center;
+  background: var(--color-brand); color: var(--color-text-on-brand);
+  border: none; padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-full); font-weight: var(--font-weight-bold);
+  cursor: pointer; transition: var(--transition-fast); font-family: inherit;
+}
+.map-popup .popup-btn:hover { background: var(--color-brand-dark); transform: translateY(-1px); }

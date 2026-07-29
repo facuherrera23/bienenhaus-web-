@@ -1,0 +1,132 @@
+/* ================================================================
+   FOOTER - Dark Surface
+   ================================================================ */
+
+.footer {
+  background: var(--color-surface-1);
+  color: var(--color-text-secondary);
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-8) var(--space-5) var(--space-5);
+}
+
+.footer-inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  gap: var(--space-7);
+  margin-bottom: var(--space-7);
+}
+@media (max-width: 1024px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr; } }
+
+/* Brand column */
+.footer-brand h3 {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-black);
+  margin-bottom: var(--space-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.footer-brand h3 span { color: var(--color-brand); }
+.footer-brand h3 i { color: var(--color-brand); margin-right: var(--space-2); }
+.footer-brand p { font-size: var(--text-sm); max-width: 18.75rem; line-height: 1.7; }
+
+.footer-brand .social { display: flex; gap: var(--space-4); margin-top: var(--space-4); }
+.footer-brand .social a {
+  color: var(--color-text-secondary);
+  font-size: 1.125rem;
+  transition: var(--transition-fast);
+  background: var(--color-surface-3);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.footer-brand .social a:hover { color: var(--color-text); background: var(--color-brand); transform: translateY(-3px); }
+
+/* Footer columns */
+.footer-col h4 {
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-bold);
+  font-size: 1.125rem;
+  margin-bottom: var(--space-4);
+  position: relative;
+  padding-bottom: var(--space-2);
+}
+.footer-col h4::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 30px;
+  height: 2px;
+  background: var(--color-brand);
+}
+.footer-col ul { list-style: none; padding: 0; }
+.footer-col ul li { margin-bottom: var(--space-2); }
+.footer-col ul li a {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: var(--transition-fast);
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.footer-col ul li a:hover { color: var(--color-text); padding-left: var(--space-2); }
+.footer-col ul li i { width: 16px; color: var(--color-brand); font-size: var(--text-xs); }
+
+/* Newsletter */
+.footer-newsletter p { font-size: var(--text-sm); margin-bottom: var(--space-3); }
+.footer-newsletter .input-group { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.footer-newsletter input {
+  flex: 1;
+  min-width: 10rem;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-3);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-family: inherit;
+  transition: var(--transition-fast);
+}
+.footer-newsletter input::placeholder { color: var(--color-text-disabled); }
+.footer-newsletter input:focus { outline: none; border-color: var(--color-brand); }
+.footer-newsletter .btn-subscribe {
+  background: var(--color-brand);
+  color: var(--color-text-on-brand);
+  border: none;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-family: inherit;
+  white-space: nowrap;
+}
+.footer-newsletter .btn-subscribe:hover { background: var(--color-brand-dark); transform: translateY(-2px); }
+
+/* Footer bottom */
+.footer-bottom {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-5);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
+}
+.footer-bottom .footer-links { display: flex; gap: var(--space-6); flex-wrap: wrap; }
+.footer-bottom .footer-links a { color: var(--color-text-secondary); text-decoration: none; transition: color var(--transition-fast); }
+.footer-bottom .footer-links a:hover { color: var(--color-text); }

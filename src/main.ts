@@ -6,22 +6,22 @@
 import './scripts/maintenance.ts';
 import './scripts/redirect.ts';
 
-// Admin button handler (replaces inline onclick in index.html)
-function setupAdminButton(): void {
-  const btnAdmin = document.getElementById('btnAdmin');
-  if (btnAdmin) {
-    btnAdmin.addEventListener('click', () => {
-      // Admin panel logic would go here
-      logInfo('Admin button clicked', undefined, 'main');
-      // For now, just open admin page if it exists
-      window.location.href = '/admin.html';
-    });
-  }
-}
+// Design System - The Midnight Hive
+import './styles/design-system.css';
+import './styles/components.css';
+import './styles/layout.css';
+import './styles/header.css';
+import './styles/footer.css';
+import './styles/hero.css';
+import './styles/searchbar.css';
+import './styles/property-card.css';
+import './styles/property-grid.css';
+import './styles/property-detail.css';
+import './styles/map.css';
+import './styles/conversion-ux.css';
+import './styles/ml-auth.css';
 
 import { logInfo, logError, logDebug } from './utils/logger.ts';
-import './styles/critical.css';
-import './styles/global.css';
 import { initHero } from './components/Hero/Hero.ts';
 import { initSearchBar } from './components/SearchBar/SearchBar.ts';
 import { initPropertyGrid, loadProperties } from './components/PropertyGrid/PropertyGrid.ts';
@@ -31,6 +31,17 @@ import { cargarContenidoSitio } from './content.ts';
 import { initAnalytics, trackPageView } from './utils/analytics.ts';
 import { auditAndLog, autoFixAccessibility } from './utils/a11yAudit.ts';
 import { escapeHtml } from './utils/sanitize.ts';
+
+// Admin button handler (replaces inline onclick in index.html)
+function setupAdminButton(): void {
+  const btnAdmin = document.getElementById('btnAdmin');
+  if (btnAdmin) {
+    btnAdmin.addEventListener('click', () => {
+      logInfo('Admin button clicked', undefined, 'main');
+      window.location.href = '/admin.html';
+    });
+  }
+}
 
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
