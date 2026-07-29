@@ -120,9 +120,9 @@ function renderPropertiesTable(filter = ''): void {
       <td>
         <input type="checkbox" class="row-checkbox" value="${p.id}" ${selectedPropertyIds.has(p.id) ? 'checked' : ''}>
       </td>
-      <td>
-        <img src="${p.imagen_principal || 'https://via.placeholder.com/80x60?text=Sin+imagen'}"
-             alt="${p.titulo}" style="width: 60px; height: 45px; object-fit: cover; border-radius: var(--radius);">
+<td>
+      <img src="${p.imagen_principal || 'https://via.placeholder.com/80x60?text=Sin+imagen'}"
+           alt="${p.titulo}" style="width: 60px; height: 45px; object-fit: cover; border-radius: 8px;">
       </td>
       <td><strong>${p.titulo}</strong></td>
       <td>${p.ubicacion}</td>
@@ -334,12 +334,12 @@ function createBulkActionsBar(): void {
     justify-content: space-between;
     gap: 16px;
     padding: 12px 20px;
-    background: var(--primary);
-    color: white;
-    border-radius: var(--radius) var(--radius) 0 0;
+    background: var(--admin-color-primary);
+    color: var(--admin-color-text-on-primary);
+    border-radius: var(--admin-radius-md) var(--admin-radius-md) 0 0;
     margin-bottom: -1px;
     z-index: 10;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--admin-shadow-md);
   `;
 
   bar.innerHTML = `
@@ -378,13 +378,13 @@ function createBulkActionsBar(): void {
     const style = document.createElement('style');
     style.id = 'bulk-actions-styles';
     style.textContent = `
-      .bulk-btn { padding: 8px 16px; border: none; border-radius: var(--radius); font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-      .bulk-btn:not(.btn-bulk-secondary) { background: white; color: var(--primary); }
-      .bulk-btn:not(.btn-bulk-secondary):hover { background: var(--gray-100); }
-      .bulk-btn.bulk-btn-danger { background: var(--danger); color: white; }
-      .bulk-btn.bulk-btn-danger:hover { background: #b91c1c; }
-      .bulk-btn.bulk-btn-secondary { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); }
-      .bulk-btn.bulk-btn-secondary:hover { background: rgba(255,255,255,0.3); }
+      .bulk-btn { padding: 8px 16px; border: none; border-radius: var(--admin-radius-md); font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: var(--admin-transition-base); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+      .btn-bulk-primary { background: var(--admin-color-text-on-primary); color: var(--admin-color-primary); }
+      .btn-bulk-primary:hover { background: var(--admin-color-primary-light); }
+      .btn-bulk-secondary { background: rgba(255,255,255,0.2); color: var(--admin-color-text-on-primary); border: 1px solid rgba(255,255,255,0.3); }
+      .btn-bulk-secondary:hover { background: rgba(255,255,255,0.3); }
+      .btn-bulk-danger { background: var(--admin-color-danger); color: white; }
+      .btn-bulk-danger:hover { background: #b91c1c; }
       @media (max-width: 768px) {
         #bulkActionsBar { flex-direction: column; align-items: stretch; }
         .bulk-actions { justify-content: center; }
@@ -575,8 +575,8 @@ function openPropertyModal(property: Property | null = null): void {
       const preview = document.getElementById('propImagesPreview')!;
       property.imagenes.sort((a: any, b: any) => a.orden - b.orden).forEach((img: any, i: number) => {
         const div = document.createElement('div');
-        div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:var(--radius);overflow:hidden;border:2px solid var(--gray-200);' + (i===0?'border-color:var(--accent);':'');
-        div.innerHTML = `<img src="${img.url}" style="width:100%;height:100%;object-fit:cover;"><span style="position:absolute;top:2px;right:2px;background:var(--gray-900);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span>`;
+        div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:var(--admin-radius-md);overflow:hidden;border:2px solid var(--admin-color-border);' + (i===0?'border-color:var(--admin-color-primary);':'');
+        div.innerHTML = `<img src="${img.url}" style="width:100%;height:100%;object-fit:cover;"><span style="position:absolute;top:2px;right:2px;background:var(--admin-color-text-muted);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span>`;
         preview.appendChild(div);
       });
     }
@@ -668,8 +668,8 @@ function renderPropertyImagePreviews(): void {
     const div = document.createElement('div');
     div.draggable = true;
     div.dataset.index = String(i);
-    div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:var(--radius);overflow:hidden;border:2px solid var(--gray-200);cursor:grab;' + (i===0?'border-color:var(--accent);':'');
-    div.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" data-index="${i}"><span style="position:absolute;top:2px;right:2px;background:var(--gray-900);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span><button type="button" class="remove-img" data-index="${i}" style="position:absolute;bottom:2px;right:2px;background:rgba(220,38,38,0.9);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;">×</button><button type="button" class="edit-img" data-index="${i}" style="position:absolute;bottom:2px;left:2px;background:rgba(31,110,212,0.9);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;" title="Editar"><i class="fas fa-crop"></i></button>`;
+    div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:var(--admin-radius-md);overflow:hidden;border:2px solid var(--admin-color-border);cursor:grab;' + (i===0?'border-color:var(--admin-color-primary);':'');
+    div.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" data-index="${i}"><span style="position:absolute;top:2px;right:2px;background:var(--admin-color-text-muted);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span><button type="button" class="remove-img" data-index="${i}" style="position:absolute;bottom:2px;right:2px;background:var(--admin-color-danger);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;">×</button><button type="button" class="edit-img" data-index="${i}" style="position:absolute;bottom:2px;left:2px;background:var(--admin-color-primary);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;" title="Editar"><i class="fas fa-crop"></i></button>`;
     preview.appendChild(div);
   });
 

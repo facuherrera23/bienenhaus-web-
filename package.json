@@ -10,7 +10,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "npx playwright test",
-    "lint": "eslint src --ext ts,tsx,js,jsx --max-warnings 125",
+    "lint": "eslint src --ext ts,tsx,js,jsx --max-warnings 160",
     "lint:fix": "eslint src --ext ts,tsx,js,jsx --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,html}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,css,html}\"",

@@ -68,7 +68,7 @@ function renderAgentsTable(filter = ''): void {
   if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay agentes registrados</td></tr>'; return; }
   tbody.innerHTML = filtered.map(a => `
     <tr>
-      <td><div style="width:44px;height:44px;border-radius:50%;background:${a.avatar_url ? 'url(' + a.avatar_url + ')' : 'linear-gradient(135deg, var(--primary), var(--accent))'};background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:1.1rem;">${a.avatar_url ? '' : getInitials(a.nombre + ' ' + a.apellido)}</div></td>
+      <td><div style="width:44px;height:44px;border-radius:50%;background:${a.avatar_url ? 'url(' + a.avatar_url + ')' : 'linear-gradient(135deg, var(--admin-color-primary), var(--admin-color-primary-dark))'};background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:1.1rem;">${a.avatar_url ? '' : getInitials(a.nombre + ' ' + a.apellido)}</div></td>
       <td><strong>${a.nombre} ${a.apellido}</strong></td>
       <td>${a.especialidad}</td>
       <td>${a.email || '-'}</td>
@@ -107,8 +107,8 @@ function openAgentModal(agent: Agent | null = null): void {
   const preview = document.getElementById('agentAvatarPreview')!;
   form.reset();
   preview.innerHTML = '<span>👤</span>';
-  preview.style.background = 'var(--gray-200)';
-  preview.style.color = 'var(--gray-500)';
+  preview.style.background = 'var(--admin-color-surface-hover)';
+  preview.style.color = 'var(--admin-color-text-muted)';
   document.getElementById('agentAvatar')!.value = '';
 
   if (agent) {
