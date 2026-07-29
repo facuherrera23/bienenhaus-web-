@@ -137,6 +137,11 @@ jobs:
         with:
           version: latest
 
+      - name: Install Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.45.0
+
       - name: Vendor Edge Function dependencies
         run: |
           cd supabase/functions
