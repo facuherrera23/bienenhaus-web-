@@ -8,7 +8,8 @@
       ],
       "settings": {
         "preset": "desktop",
-        "staticDistDir": "./dist"
+        "staticDistDir": "./dist",
+        "chromeFlags": "--no-sandbox --disable-dev-shm-usage --disable-gpu --headless=new"
       }
     },
     "assert": {
