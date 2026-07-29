@@ -1,0 +1,143 @@
+/* ================================================================
+   ADMIN TOKENS - Nocturne
+   ================================================================ */
+
+:root {
+  /* ===== COLOR PALETTE (Dark Signal Theme) ===== */
+  --admin-color-bg: #08090a;
+  --admin-color-bg-secondary: #0c0e0f;
+  --admin-color-surface: #131516;
+  --admin-color-surface-hover: #191c1d;
+  --admin-color-surface-elevated: #1e2122;
+
+  --admin-color-primary: #2ee6c5;
+  --admin-color-primary-hover: #4ff0d3;
+  --admin-color-primary-dark: #1fb89e;
+  --admin-color-primary-dim: #134a42;
+  --admin-color-primary-glow: rgba(46, 230, 197, 0.16);
+  --admin-color-primary-border: rgba(46, 230, 197, 0.25);
+  --admin-color-primary-focus: 0 0 0 2px rgba(46, 230, 197, 0.18);
+
+  --admin-color-text: #e8ecee;
+  --admin-color-text-secondary: #b7bcbe;
+  --admin-color-text-muted: #7a7f81;
+  --admin-color-text-disabled: #3a3d3e;
+
+  --admin-color-border: rgba(232, 236, 238, 0.06);
+  --admin-color-border-medium: rgba(232, 236, 238, 0.10);
+  --admin-color-border-strong: rgba(232, 236, 238, 0.16);
+
+  /* Semantic */
+  --admin-color-success: #39d98a;
+  --admin-color-success-bg: rgba(57, 217, 138, 0.10);
+  --admin-color-success-border: rgba(57, 217, 138, 0.25);
+  --admin-color-warning: #ffb432;
+  --admin-color-warning-bg: rgba(255, 180, 50, 0.10);
+  --admin-color-warning-border: rgba(255, 180, 50, 0.25);
+  --admin-color-danger: #cc3535;
+  --admin-color-danger-bg: rgba(204, 53, 53, 0.10);
+  --admin-color-danger-border: rgba(204, 53, 53, 0.25);
+  --admin-color-info: #2ee6c5;
+  --admin-color-info-bg: rgba(46, 230, 197, 0.10);
+  --admin-color-info-border: rgba(46, 230, 197, 0.25);
+  --admin-color-purple: #8c64dc;
+  --admin-color-purple-bg: rgba(140, 100, 220, 0.10);
+  --admin-color-purple-border: rgba(140, 100, 220, 0.25);
+  --admin-color-blue: #3b82f6;
+
+  /* ===== TYPOGRAPHY SYSTEM (ADMIN) ===== */
+  --admin-font-display: 'General Sans', 'Söhne', sans-serif;
+  --admin-font-body: 'Inter', sans-serif;
+  --admin-font-num: 'JetBrains Mono', monospace;
+  --admin-font-elegant: 'Inter', sans-serif;
+  --admin-font-description: 'Inter', sans-serif;
+  --admin-font-mono: 'JetBrains Mono', monospace;
+
+  --admin-text-2xs: 10px;
+  --admin-text-xs: 11px;
+  --admin-text-sm: 12px;
+  --admin-text-base: 13px;
+  --admin-text-md: 14px;
+  --admin-text-lg: 18px;
+  --admin-text-xl: 22px;
+  --admin-text-2xl: 28px;
+  --admin-text-3xl: 36px;
+
+  --admin-ls-none: 0;
+  --admin-ls-tight: -0.02em;
+  --admin-ls-wide: 0.04em;
+  --admin-ls-label: 0.08em;
+  --admin-ls-badge: 0.1em;
+  --admin-ls-eyebrow: 0.14em;
+
+  /* ===== SPACING & RADII ===== */
+  --admin-space-1: 4px;
+  --admin-space-2: 8px;
+  --admin-space-3: 12px;
+  --admin-space-4: 16px;
+  --admin-space-5: 24px;
+  --admin-space-6: 32px;
+  --admin-space-7: 48px;
+  --admin-space-8: 64px;
+
+  --admin-radius-sm: 4px;
+  --admin-radius-md: 8px;
+  --admin-radius-lg: 12px;
+  --admin-radius-xl: 16px;
+  --admin-radius-full: 9999px;
+
+  /* Shadows */
+  --admin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --admin-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --admin-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --admin-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.65);
+  --admin-shadow-glow: 0 0 20px rgba(46, 230, 197, 0.14);
+  --admin-shadow-glow-lg: 0 0 40px rgba(46, 230, 197, 0.22);
+
+  --admin-transition-base: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  --admin-transition-slow: all 350ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ===== LEGACY ALIASES ===== */
+  --color-primary: var(--admin-color-primary);
+  --color-primary-dark: var(--admin-color-primary-dark);
+  --color-primary-glow: var(--admin-color-primary-glow);
+  --color-primary-border: var(--admin-color-primary-border);
+  --color-surface-1: var(--admin-color-surface);
+  --color-surface-2: var(--admin-color-surface-hover);
+  --color-surface-3: var(--admin-color-surface-elevated);
+  --color-text: var(--admin-color-text);
+  --color-text-secondary: var(--admin-color-text-secondary);
+  --color-text-muted: var(--admin-color-text-muted);
+  --color-border: var(--admin-color-border);
+  --color-border-medium: var(--admin-color-border-medium);
+  --color-border-strong: var(--admin-color-border-strong);
+  --color-border-focus: var(--admin-color-primary);
+  --font-display: var(--admin-font-display);
+  --font-body: var(--admin-font-body);
+  --font-num: var(--admin-font-num);
+  --font-mono: var(--admin-font-mono);
+  --space-1: var(--admin-space-1);
+  --space-2: var(--admin-space-2);
+  --space-3: var(--admin-space-3);
+  --space-4: var(--admin-space-4);
+  --space-5: var(--admin-space-5);
+  --space-6: var(--admin-space-6);
+  --space-7: var(--admin-space-7);
+  --space-8: var(--admin-space-8);
+  --radius-sm: var(--admin-radius-sm);
+  --radius-md: var(--admin-radius-md);
+  --radius-lg: var(--admin-radius-lg);
+  --radius-xl: var(--admin-radius-xl);
+  --radius-full: var(--admin-radius-full);
+  --shadow-sm: var(--admin-shadow-sm);
+  --shadow-md: var(--admin-shadow-md);
+  --shadow-lg: var(--admin-shadow-lg);
+  --shadow-xl: var(--admin-shadow-xl);
+  --shadow-glow: var(--admin-shadow-glow);
+  --shadow-glow-lg: var(--admin-shadow-glow-lg);
+  --transition-fast: var(--admin-transition-base);
+  --transition-base: var(--admin-transition-base);
+  --transition-slow: var(--admin-transition-slow);
+  --header-height: 64px;
+  --sidebar-width: 230px;
+}
