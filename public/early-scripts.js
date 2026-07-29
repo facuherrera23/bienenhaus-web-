@@ -35,6 +35,3 @@
     .then(function(d) { if (d?.[0]?.valor?.enabled === true) location.replace('/maintenance.html'); })
     .catch(function() {}); // fail-open
 })();
-
-// Export empty for module side-effect
-export {};
