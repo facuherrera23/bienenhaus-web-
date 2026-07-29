@@ -34,6 +34,16 @@ export class Router {
   #guards: Array<(_to: any, _from: any, _next: () => void) => any> = [];
   #scrollPositions = new Map<string, number>();
   #listening = false;
+  #basePath = '';
+
+  setBasePath(basePath: string): this {
+    this.#basePath = basePath.replace(/\/$/, '');
+    return this;
+  }
+
+  getBasePath(): string {
+    return this.#basePath;
+  }
 
   add(path: string, config: RouteConfig): this {
     const keys: string[] = [];
@@ -66,7 +76,9 @@ export class Router {
 
   async navigate(path: string, options: { replace?: boolean; state?: any } = {}): Promise<boolean> {
     const { replace = false, state = null } = options;
-    const url = path.startsWith('/') ? path : `/${path}`;
+    // Prepend base path to the URL if base path is set
+    const basePath = this.#basePath;
+    const url = basePath ? `${basePath}${path.startsWith('/') ? path : `/${path}`}` : (path.startsWith('/') ? path : `/${path}`);
     
     // Save scroll position for current route
     if (this.#currentRoute) {
@@ -122,7 +134,13 @@ export class Router {
   start(): this {
     if (this.#listening) return this;
 
-    const initialHash = window.location.hash.slice(1) || '/';
+    // Extract path from URL (excluding base path) for hash-based routing
+    const fullPath = window.location.pathname + window.location.search + window.location.hash;
+    const basePath = this.#basePath;
+    const initialHash = basePath && fullPath.startsWith(basePath) 
+      ? fullPath.slice(basePath.length) || '/' 
+      : window.location.hash.slice(1) || '/';
+    
     this.navigate(initialHash, { replace: true });
 
     window.addEventListener('hashchange', () => {
@@ -139,13 +157,21 @@ export class Router {
   }
 
   generate(path: string, params: Record<string, string> = {}): string {
-    return path.replace(/:(\w+)/g, (_, key: string) => params[key] || '');
+    const basePath = this.#basePath;
+    const generatedPath = path.replace(/:(\w+)/g, (_, key: string) => params[key] || '');
+    return basePath ? `${basePath}${generatedPath}` : generatedPath;
   }
-
+  
   #match(url: string): { route: RouteMatch; params: Record<string, string> } | null {
     const [pathname] = url.split('?');
+    // Strip base path from URL for matching
+    const basePath = this.#basePath;
+    const pathToMatch = basePath && pathname.startsWith(basePath) 
+      ? pathname.slice(basePath.length) || '/' 
+      : pathname;
+    
     for (const route of this.#routes.values()) {
-      const match = pathname.match(route.regex);
+      const match = pathToMatch.match(route.regex);
       if (match) {
         const params: Record<string, string> = {};
         route.keys.forEach((key: string, i: number) => {
