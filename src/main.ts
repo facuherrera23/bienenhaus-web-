@@ -6,13 +6,12 @@
 import './scripts/maintenance.ts';
 import './scripts/redirect.ts';
 
-// Design System - The Midnight Hive
+// Design System - Nocturne
 import './styles/design-system.css';
 import './styles/components.css';
 import './styles/layout.css';
 import './styles/header.css';
 import './styles/footer.css';
-import './styles/hero.css';
 import './styles/searchbar.css';
 import './styles/property-card.css';
 import './styles/property-grid.css';
@@ -22,7 +21,7 @@ import './styles/conversion-ux.css';
 import './styles/ml-auth.css';
 
 import { logInfo, logError, logDebug } from './utils/logger.ts';
-import { initHero } from './components/Hero/Hero.ts';
+import { initHero3D } from './components/Hero3D/Hero3D.tsx';
 import { initSearchBar } from './components/SearchBar/SearchBar.ts';
 import { initPropertyGrid, loadProperties } from './components/PropertyGrid/PropertyGrid.ts';
 import { initFooter } from './components/Layout/Footer.ts';
@@ -149,7 +148,7 @@ async function init(): Promise<void> {
     initFooter();
     
     // 3. Initialize page components (hero, search, property grid)
-    initHero();
+    initHero3D();
     initSearchBar();
     initPropertyGrid();
     

@@ -1,44 +1,68 @@
-# DESIGN SYSTEM PLAN - BIENENHAUS PROPIEDADES
-## Plan de Implementación Completo basado en Design System Normativo
+comienza con este plan:
+# DESIGN SYSTEM PLAN — BIENENHAUS PROPIEDADES
+## "Nocturne" — Sistema Normativo Completo (Migración desde Midnight Hive)
+
+---
+
+## 0. CONTEXTO Y RELACIÓN CON EL SISTEMA ANTERIOR
+
+Este documento **reemplaza y extiende** el plan "The Midnight Hive" que ya tenías implementado. Mantiene su misma rigurosidad (tokens exhaustivos, specs por componente, arquitectura CSS, fases de ejecución, reglas do's/don'ts, comandos de verificación) pero migra la dirección visual hacia el concepto **"Nocturne"**: nace de una foto de referencia de arquitectura moderna fotografiada de noche, con un único acento de luz LED (pileta, escalones, jardín) como firma de marca, y aplica esa misma idea a un **Hero 3D en WebGL** como pieza central de la home.
+
+**Se mantiene la convención de prefijos** (`--ds-*` público, `--admin-*` panel) para que la migración sea un reemplazo de valores dentro de la misma arquitectura de archivos, no una reescritura desde cero.
+
+**Qué cambia respecto al sistema anterior:**
+- Acento único: de `#20b8ab` (teal saturado) a `#2EE6C5` ("Signal" — más luminoso, pensado para simular una fuente de luz real, no un color de marca plano).
+- Tipografía: de Anton/Poppins/Montserrat/Quicksand a General Sans (display) + Inter (body) + JetBrains Mono (datos) — menos "impacto publicitario", más "arquitectónico/técnico", coherente con el material de referencia (planos, especificaciones).
+- Se incorpora una **pieza signature nueva**: el Hero 3D (WebGL), que reemplaza el hero de imagen estática + overlay degradado.
+- El resto de las reglas normativas (grid de 8px, radius scale, flat-by-default, one-voice-rule del acento) **se preservan sin cambios**, porque ya funcionan bien y el equipo/OpenCode ya está entrenado en ellas.
+
+**Qué NO cambia:**
+- La arquitectura de archivos CSS (`src/styles/`, `src/styles/admin/`).
+- El pipeline de build (PostCSS + Terser + extracción de critical CSS).
+- El sistema de partials Handlebars.
+- Los principios estructurales: dark mode único, un solo acento, flat-by-default, grid de 8px, touch targets ≥44px.
 
 ---
 
 ## 1. RESUMEN EJECUTIVO
 
-**Objetivo:** Migrar todo el sitio (Landing Público + Panel Admin/CRM + Tasaciones) al Design System normativo "The Midnight Hive".
+**Objetivo:** Migrar el Landing Público + Panel Admin/CRM + Tasaciones del sistema "Midnight Hive" (teal `#20b8ab` + Anton/Poppins) al sistema **"Nocturne"** (signal `#2ee6c5` + General Sans/Inter/JetBrains Mono), incorporando el Hero 3D como pieza central de la home pública.
 
-**Stack actual:** Preact + Vite + CSS vanilla (custom properties) + Handlebars partials + PostCSS/Terser build
+**Stack:** Preact + Vite + TypeScript + Supabase + Cloudinary + PWA (frontend público en migración desde Handlebars/vanilla JS hacia componentes Preact tipados; panel admin conserva su arquitectura de partials durante la transición).
 
-**Principios rectores (normativos):**
-- **Dark mode único** — Sin alternancia de tema
-- **Un solo acento: Teal `#20b8ab`** — ≤10% de la pantalla (The One Voice Rule)
-- **No Gold Rule** — `#c8a96e` solo legacy, **no usar en nuevos componentes**
-- **Flat-By-Default** — Sombras solo en estados interactivos (hover/focus/modal)
-- **8px Grid** — Todos los espaciados múltiplos de 8px (base 4px para admin)
-- **Radius scale estricta** — Público: 4px / 8px / 16px / 9999px | Admin: 4px / 8px / 12px / 16px / 9999px
-- **Tipografía funcional** — Familias con propósito único
-- **Touch targets ≥ 44px**, fuentes ≥ 16px mobile
+**Principios rectores (normativos, heredados y confirmados):**
+- **Dark mode único** — sin alternancia de tema.
+- **Un solo acento: Signal `#2EE6C5`** — ≤10% de la pantalla (The One Voice Rule).
+- **No Legacy Teal Rule** — `#20b8ab` queda deprecado; solo se tolera en componentes no migrados durante la fase de transición, marcados explícitamente `.legacy-teal`.
+- **Flat-By-Default** — sombras solo en estados interactivos (hover/focus/modal).
+- **8px Grid** — todos los espaciados múltiplos de 8px (base 4px para admin, igual que antes).
+- **Radius scale estricta** — Público: 4px / 8px / 16px / 9999px · Admin: 4px / 8px / 12px / 16px / 9999px.
+- **Signal-as-light, no signal-as-brand** — el acento se trata como una fuente de luz puntual (glow, foco), nunca como un fill decorativo de fondo.
+- **Tipografía funcional** — cada familia con un rol único, sin superposición.
+- **Touch targets ≥ 44px**, fuentes ≥ 16px en mobile.
 
 ---
 
 ## 2. DESIGN TOKENS NORMATIVOS
 
-### 2.1 Prefijos obligatorios
-- **Público:** `--ds-*` (p.ej. `--ds-color-primary`, `--ds-radius-md`)
-- **Admin:** `--admin-*` (p.ej. `--admin-color-bg`, `--admin-radius-md`)
+### 2.1 Prefijos obligatorios (sin cambios)
+- **Público:** `--ds-*`
+- **Admin:** `--admin-*`
 
-### 2.2 Tokens PÚBLICOS (Landing)
+### 2.2 Tokens PÚBLICOS (Landing) — Sistema Nocturne
 
 ```css
 :root {
-  /* ===== BRAND - TEAL (Único acento) ===== */
-  --ds-color-primary: #20b8ab;
-  --ds-color-primary-dark: #178c81;
-  --ds-color-primary-glow: rgba(32, 184, 171, 0.15);
-  --ds-color-primary-border: rgba(32, 184, 171, 0.25);
-  --ds-color-primary-focus-ring: 0 0 0 2px rgba(32, 184, 171, 0.18);
+  /* ===== BRAND — SIGNAL (Único acento, tratado como fuente de luz) ===== */
+  --ds-color-primary: #2ee6c5;
+  --ds-color-primary-dark: #1fb89e;
+  --ds-color-primary-dim: #134a42;             /* versión atenuada — bordes, hover sutil */
+  --ds-color-primary-glow: rgba(46, 230, 197, 0.16);
+  --ds-color-primary-glow-strong: rgba(46, 230, 197, 0.28);
+  --ds-color-primary-border: rgba(46, 230, 197, 0.25);
+  --ds-color-primary-focus-ring: 0 0 0 2px rgba(46, 230, 197, 0.2);
 
-  /* ===== SEMANTIC ===== */
+  /* ===== SEMANTIC (sin cambios respecto al sistema anterior) ===== */
   --ds-color-success: #3aaa55;
   --ds-color-success-bg: rgba(58, 170, 85, 0.10);
   --ds-color-success-border: rgba(58, 170, 85, 0.25);
@@ -48,63 +72,61 @@
   --ds-color-danger: #cc3535;
   --ds-color-danger-bg: rgba(204, 53, 53, 0.10);
   --ds-color-danger-border: rgba(204, 53, 53, 0.25);
-  --ds-color-info: #20b8ab;
+  --ds-color-info: #2ee6c5;
 
-  /* ===== SURFACES - DARK THEME (PÚBLICO) ===== */
-  --ds-color-bg: #000000;
-  --ds-color-surface-1: #080808;
-  --ds-color-surface-2: #0d0d0d;
-  --ds-color-surface-3: #141414;
-  --ds-color-surface-4: #1c1c1c;
-  --ds-color-surface-elevated: rgba(28, 28, 28, 0.95);
+  /* ===== SURFACES — DARK THEME (PÚBLICO) ===== */
+  --ds-color-bg: #0b0d0e;               /* "Void" — casi negro, con tibieza (no negro puro) */
+  --ds-color-surface-1: #101214;
+  --ds-color-surface-2: #16181a;
+  --ds-color-surface-3: #1c1f21;
+  --ds-color-surface-4: #24272a;         /* "Concrete" — superficies elevadas */
+  --ds-color-surface-elevated: rgba(28, 31, 33, 0.95);
 
   /* ===== TEXT ===== */
-  --ds-color-text: #ffffff;
-  --ds-color-text-secondary: #9a9a9a;
-  --ds-color-text-muted: #8ab8b8;        /* Teal Mist - derivado del acento */
-  --ds-color-text-disabled: #2a2a2a;
-  --ds-color-text-on-primary: #000000;
+  --ds-color-text: #e8ecee;             /* "Glass" — no blanco puro, ligera tibieza fría */
+  --ds-color-text-secondary: #9aa1a6;   /* "Fog" */
+  --ds-color-text-muted: #7fa8a0;       /* Signal Mist — derivado del acento, para metadata */
+  --ds-color-text-disabled: #2e3234;
+  --ds-color-text-on-primary: #06110f;  /* casi negro, para texto sobre el acento */
 
   /* ===== BORDERS ===== */
-  --ds-color-border: rgba(255,255,255,0.06);      /* Hairline */
-  --ds-color-border-medium: rgba(255,255,255,0.12); /* Medium */
-  --ds-color-border-strong: rgba(255,255,255,0.22); /* Strong */
+  --ds-color-border: rgba(232, 236, 238, 0.06);       /* Hairline */
+  --ds-color-border-medium: rgba(232, 236, 238, 0.12);
+  --ds-color-border-strong: rgba(232, 236, 238, 0.22);
 
   /* ===== TYPOGRAPHY (PÚBLICO) ===== */
-  --ds-font-display: 'Anton', 'Impact', sans-serif;
-  --ds-font-body: 'Poppins', sans-serif;
-  --ds-font-num: 'Montserrat', sans-serif;
-  --ds-font-elegant: 'Quicksand', sans-serif;
-  --ds-font-mono: 'JetBrains Mono', 'Consolas', monospace;
+  --ds-font-display: 'General Sans', 'Söhne', sans-serif;   /* headlines, títulos de sección */
+  --ds-font-body: 'Inter', sans-serif;                       /* UI, nav, forms, copy */
+  --ds-font-num: 'JetBrains Mono', 'Consolas', monospace;    /* precios, m², specs, contadores */
+  --ds-font-elegant: 'Inter', sans-serif;                    /* labels/badges — mismo body, distinto tracking */
+  --ds-font-mono: 'JetBrains Mono', monospace;               /* alias explícito para datos técnicos */
 
-  --ds-text-display: clamp(2.5rem, 7vw, 4.5rem);
-  --ds-text-headline: clamp(2rem, 5vw, 3rem);
-  --ds-text-title: clamp(1.5rem, 4vw, 2.25rem);
-  --ds-text-body: 1rem;        /* 16px */
-  --ds-text-label: 0.875rem;   /* 14px */
-  --ds-text-sm: 0.875rem;      /* 14px */
-  --ds-text-xs: 0.75rem;       /* 12px */
+  --ds-text-display: clamp(2.5rem, 6vw, 4.5rem);
+  --ds-text-headline: clamp(1.75rem, 4vw, 2.75rem);
+  --ds-text-title: clamp(1.4rem, 3vw, 2rem);
+  --ds-text-body: 1rem;         /* 16px */
+  --ds-text-label: 0.875rem;    /* 14px */
+  --ds-text-sm: 0.875rem;       /* 14px */
+  --ds-text-xs: 0.75rem;        /* 12px */
 
   --ds-font-weight-normal: 400;
   --ds-font-weight-medium: 500;
   --ds-font-weight-semibold: 600;
   --ds-font-weight-bold: 700;
   --ds-font-weight-extrabold: 800;
-  --ds-font-weight-black: 900;
 
-  --ds-line-height-display: 1.0;
+  --ds-line-height-display: 1.02;
   --ds-line-height-headline: 1.1;
   --ds-line-height-title: 1.2;
   --ds-line-height-body: 1.6;
   --ds-line-height-label: 1.4;
-  --ds-line-height-elegant: 1.5;
 
-  --ds-letter-spacing-label: 0.1em;
-  --ds-letter-spacing-badge: 0.12em;
-  --ds-letter-spacing-elegant: 0.06em;
-  --ds-letter-spacing-num: -0.02em;
+  --ds-letter-spacing-display: -0.02em;   /* display type: tracking negativo, no positivo */
+  --ds-letter-spacing-label: 0.08em;
+  --ds-letter-spacing-badge: 0.1em;
+  --ds-letter-spacing-num: -0.01em;
 
-  /* ===== SPACING (8px base) ===== */
+  /* ===== SPACING (8px base — sin cambios) ===== */
   --ds-space-1: 4px;
   --ds-space-2: 8px;
   --ds-space-3: 12px;
@@ -115,43 +137,43 @@
   --ds-space-8: 64px;
   --ds-space-9: 80px;
 
-  /* ===== RADIUS (ESTRICTO: solo 4, 8, 16, 9999) ===== */
-  --ds-radius-sm: 4px;       /* precisión: inputs, badges, chips */
-  --ds-radius-md: 8px;       /* BASE: botones, inputs, cards, modales */
-  --ds-radius-lg: 16px;      /* contenedores grandes, modales, hero cards */
-  --ds-radius-full: 9999px;  /* píldoras, avatares circulares, botones pastilla */
+  /* ===== RADIUS (ESTRICTO: solo 4, 8, 16, 9999 — sin cambios) ===== */
+  --ds-radius-sm: 4px;
+  --ds-radius-md: 8px;
+  --ds-radius-lg: 16px;
+  --ds-radius-full: 9999px;
 
-  /* ===== SHADOWS (Solo funcionales) ===== */
-  --ds-shadow-sm: 0 1px 3px rgba(0,0,0,0.3);           /* reposo */
-  --ds-shadow-md: 0 4px 12px rgba(0,0,0,0.4);          /* hover cards */
-  --ds-shadow-lg: 0 8px 32px rgba(0,0,0,0.5);          /* modales, dropdowns */
-  --ds-shadow-glow: 0 4px 20px rgba(32,184,171,0.18);  /* focus/hover primario */
-  --ds-shadow-glow-lg: 0 8px 32px rgba(32,184,171,0.25); /* hover primario fuerte */
-  --ds-shadow-card-hover: 0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(200,169,110,0.2);
+  /* ===== SHADOWS (funcionales; el "glow" reemplaza al teal-glow anterior) ===== */
+  --ds-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --ds-shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --ds-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.55);
+  --ds-shadow-glow: 0 4px 20px rgba(46, 230, 197, 0.2);
+  --ds-shadow-glow-lg: 0 8px 32px rgba(46, 230, 197, 0.28);
+  --ds-shadow-card-hover: 0 32px 80px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(46, 230, 197, 0.18);
 
-  /* ===== TRANSITIONS ===== */
+  /* ===== TRANSITIONS (sin cambios) ===== */
   --ds-transition-base: all 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
   --ds-transition-fast: all 150ms cubic-bezier(0.22, 0.61, 0.36, 1);
   --ds-transition-slow: all 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
 
-  /* ===== Z-INDEX ===== */
+  /* ===== Z-INDEX (sin cambios) ===== */
   --ds-z-sidebar: 100;
   --ds-z-sticky: 200;
   --ds-z-modal: 1000;
   --ds-z-toast: 9999;
   --ds-z-tooltip: 1200;
 
-  /* ===== LAYOUT ===== */
+  /* ===== LAYOUT (sin cambios) ===== */
   --ds-header-height: 72px;
   --ds-sidebar-width: 280px;
   --ds-container-max: 1280px;
-  --ds-container-padding: 48px;  /* desktop */
+  --ds-container-padding: 48px;
   --ds-container-padding-tablet: 32px;
   --ds-container-padding-mobile: 24px;
   --ds-container-padding-small: 18px;
   --ds-container-padding-xs: 14px;
 
-  /* ===== BREAKPOINTS (mobile-first) ===== */
+  /* ===== BREAKPOINTS (mobile-first — sin cambios) ===== */
   --ds-bp-xs: 320px;
   --ds-bp-sm: 360px;
   --ds-bp-md: 414px;
@@ -163,84 +185,93 @@
   --ds-bp-5xl: 1100px;
   --ds-bp-6xl: 1280px;
 
-  /* ===== TOUCH TARGETS ===== */
+  /* ===== TOUCH TARGETS (sin cambios) ===== */
   --ds-touch-target: 44px;
   --ds-font-size-mobile-min: 16px;
+
+  /* ===== HERO 3D — TOKENS ESPECÍFICOS DE LA ESCENA WEBGL ===== */
+  --ds-3d-fog-color: #0b0d0e;         /* igual a --ds-color-bg, para que el fog de Three.js funda con el DOM */
+  --ds-3d-fog-near: 8;
+  --ds-3d-fog-far: 26;
+  --ds-3d-bloom-strength: 0.55;
+  --ds-3d-bloom-radius: 0.4;
+  --ds-3d-bloom-threshold: 0.15;
+  --ds-3d-intro-duration-ms: 1800;
+  --ds-3d-parallax-lerp: 0.04;
 }
 ```
 
-### 2.3 Tokens ADMIN (Panel/CRM)
+### 2.3 Tokens ADMIN (Panel/CRM) — Sistema Nocturne
 
 ```css
 /* src/styles/admin/0-tokens.css */
 :root {
-  /* ===== COLOR PALETTE (Dark Teal Theme) ===== */
-  --admin-color-bg: #050505;                    /* Main page bg */
-  --admin-color-bg-secondary: #090909;          /* Sidebar, panels */
-  --admin-color-surface: #101010;               /* Cards, inputs */
-  --admin-color-surface-hover: #151515;         /* Hover states */
-  --admin-color-surface-elevated: #1a1a1a;      /* Modals, elevated cards */
+  /* ===== COLOR PALETTE (Dark Signal Theme) ===== */
+  --admin-color-bg: #08090a;
+  --admin-color-bg-secondary: #0c0e0f;
+  --admin-color-surface: #131516;
+  --admin-color-surface-hover: #191c1d;
+  --admin-color-surface-elevated: #1e2122;
 
-  --admin-color-primary: #20b8ab;               /* Primary actions, focus, active */
-  --admin-color-primary-hover: #31d3c5;         /* Button hover */
-  --admin-color-primary-dark: #13968c;          /* Active/pressed */
-  --admin-color-primary-glow: rgba(32,184,171,0.15); /* Focus rings, shadows */
+  --admin-color-primary: #2ee6c5;
+  --admin-color-primary-hover: #4ff0d3;
+  --admin-color-primary-dark: #1fb89e;
+  --admin-color-primary-dim: #134a42;
+  --admin-color-primary-glow: rgba(46, 230, 197, 0.16);
 
-  --admin-color-text: #ffffff;                  /* Headings, primary text */
-  --admin-color-text-secondary: #bdbdbd;        /* Body text */
-  --admin-color-text-muted: #7a7a7a;            /* Labels, secondary info */
-  --admin-color-text-disabled: #3a3a3a;         /* Placeholders, disabled */
+  --admin-color-text: #e8ecee;
+  --admin-color-text-secondary: #b7bcbe;
+  --admin-color-text-muted: #7a7f81;
+  --admin-color-text-disabled: #3a3d3e;
 
-  --admin-color-border: rgba(255,255,255,0.06);   /* Default borders */
-  --admin-color-border-medium: rgba(255,255,255,0.10); /* Hover borders */
-  --admin-color-border-strong: rgba(255,255,255,0.16); /* Active/focus borders */
+  --admin-color-border: rgba(232, 236, 238, 0.06);
+  --admin-color-border-medium: rgba(232, 236, 238, 0.10);
+  --admin-color-border-strong: rgba(232, 236, 238, 0.16);
 
-  /* Semantic Colors */
+  /* Semantic (sin cambios de valor respecto al sistema anterior) */
   --admin-color-success: #39d98a;
-  --admin-color-success-bg: rgba(57,217,138,0.10);
-  --admin-color-success-border: rgba(57,217,138,0.25);
+  --admin-color-success-bg: rgba(57, 217, 138, 0.10);
+  --admin-color-success-border: rgba(57, 217, 138, 0.25);
   --admin-color-warning: #ffb432;
-  --admin-color-warning-bg: rgba(255,180,50,0.10);
-  --admin-color-warning-border: rgba(255,180,50,0.25);
+  --admin-color-warning-bg: rgba(255, 180, 50, 0.10);
+  --admin-color-warning-border: rgba(255, 180, 50, 0.25);
   --admin-color-danger: #cc3535;
-  --admin-color-danger-bg: rgba(204,53,53,0.10);
-  --admin-color-danger-border: rgba(204,53,53,0.25);
-  --admin-color-info: #20b8ab;
-  --admin-color-info-bg: rgba(32,184,171,0.10);
-  --admin-color-info-border: rgba(32,184,171,0.25);
+  --admin-color-danger-bg: rgba(204, 53, 53, 0.10);
+  --admin-color-danger-border: rgba(204, 53, 53, 0.25);
+  --admin-color-info: #2ee6c5;
+  --admin-color-info-bg: rgba(46, 230, 197, 0.10);
+  --admin-color-info-border: rgba(46, 230, 197, 0.25);
   --admin-color-purple: #8c64dc;
-  --admin-color-purple-bg: rgba(140,100,220,0.10);
-  --admin-color-purple-border: rgba(140,100,220,0.25);
+  --admin-color-purple-bg: rgba(140, 100, 220, 0.10);
+  --admin-color-purple-border: rgba(140, 100, 220, 0.25);
   --admin-color-blue: #3b82f6;
 
   /* ===== TYPOGRAPHY SYSTEM (ADMIN) ===== */
-  --admin-font-display: 'Anton', 'Impact', sans-serif;  /* Page titles, hero, brand */
-  --admin-font-body: 'Poppins', sans-serif;              /* All UI text, forms, tables */
-  --admin-font-num: 'Montserrat', sans-serif;            /* Prices, stats, metrics */
-  --admin-font-elegant: 'Quicksand', sans-serif;         /* Labels, badges, eyebrow text */
-  --admin-font-description: 'Open Sans', sans-serif;     /* Long-form descriptions */
-  --admin-font-mono: 'JetBrains Mono', monospace;        /* Code, IDs, technical data */
+  --admin-font-display: 'General Sans', 'Söhne', sans-serif;  /* títulos de página, dashboard hero */
+  --admin-font-body: 'Inter', sans-serif;                      /* toda la UI, forms, tablas */
+  --admin-font-num: 'JetBrains Mono', monospace;               /* precios, stats, métricas, IDs */
+  --admin-font-elegant: 'Inter', sans-serif;                   /* labels, badges, eyebrow */
+  --admin-font-description: 'Inter', sans-serif;               /* descripciones largas */
+  --admin-font-mono: 'JetBrains Mono', monospace;              /* código, IDs, datos técnicos */
 
-  /* Font Sizes (admin) */
-  --admin-text-2xs: 10px;   /* badges, tiny labels */
-  --admin-text-xs: 11px;    /* sidebar, table cells */
-  --admin-text-sm: 12px;    /* form labels */
-  --admin-text-base: 13px;  /* body default */
-  --admin-text-md: 14px;    /* comfortable body */
-  --admin-text-lg: 18px;    /* subheadings */
-  --admin-text-xl: 22px;    /* page titles */
-  --admin-text-2xl: 28px;   /* large headings */
-  --admin-text-3xl: 36px;   /* hero */
+  --admin-text-2xs: 10px;
+  --admin-text-xs: 11px;
+  --admin-text-sm: 12px;
+  --admin-text-base: 13px;
+  --admin-text-md: 14px;
+  --admin-text-lg: 18px;
+  --admin-text-xl: 22px;
+  --admin-text-2xl: 28px;
+  --admin-text-3xl: 36px;
 
-  /* Letter-spacing Scale */
   --admin-ls-none: 0;
   --admin-ls-tight: -0.02em;
-  --admin-ls-wide: 0.06em;
-  --admin-ls-label: 0.10em;   /* buttons, uppercase labels */
-  --admin-ls-badge: 0.12em;
-  --admin-ls-eyebrow: 0.18em; /* section eyebrows */
+  --admin-ls-wide: 0.04em;
+  --admin-ls-label: 0.08em;
+  --admin-ls-badge: 0.1em;
+  --admin-ls-eyebrow: 0.14em;
 
-  /* ===== SPACING & SIZING ===== */
+  /* ===== SPACING & RADII (sin cambios) ===== */
   --admin-space-1: 4px;
   --admin-space-2: 8px;
   --admin-space-3: 12px;
@@ -250,34 +281,33 @@
   --admin-space-7: 48px;
   --admin-space-8: 64px;
 
-  /* Radii */
   --admin-radius-sm: 4px;
-  --admin-radius-md: 8px;    /* default */
+  --admin-radius-md: 8px;
   --admin-radius-lg: 12px;
   --admin-radius-xl: 16px;
   --admin-radius-full: 9999px;
 
   /* Shadows */
-  --admin-shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-  --admin-shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-  --admin-shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
-  --admin-shadow-xl: 0 16px 48px rgba(0,0,0,0.6);
-  --admin-shadow-glow: 0 0 20px rgba(32,184,171,0.12);
-  --admin-shadow-glow-lg: 0 0 40px rgba(32,184,171,0.2);
+  --admin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --admin-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --admin-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --admin-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.65);
+  --admin-shadow-glow: 0 0 20px rgba(46, 230, 197, 0.14);
+  --admin-shadow-glow-lg: 0 0 40px rgba(46, 230, 197, 0.22);
 
-  /* Transitions */
   --admin-transition-base: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
   --admin-transition-slow: all 350ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 ```
 
-### 2.4 Aliases legacy (compatibilidad temporal - DEPRECADOS)
+### 2.4 Aliases legacy (compatibilidad temporal durante la migración — DEPRECADOS)
 
 ```css
-/* Solo para migración gradual */
+/* Mantener SOLO mientras haya componentes sin migrar. Eliminar al final de FASE 5. */
 --primary: var(--ds-color-primary);
 --primary-dark: var(--ds-color-primary-dark);
 --accent: var(--ds-color-primary);
+--legacy-teal: #20b8ab;              /* referencia visual únicamente — no usar en CSS nuevo */
 --bg: var(--ds-color-bg);
 --surface-1: var(--ds-color-surface-1);
 --surface-2: var(--ds-color-surface-2);
@@ -301,26 +331,22 @@
 ### 3.1 Botones
 
 | Variante | Especificación |
-|----------|----------------|
-| **Primary** | `bg: var(--ds-color-primary)`, `color: var(--ds-color-text-on-primary)`, `radius: var(--ds-radius-md)`, `padding: 12px 26px`, `font: Poppins 700 10px uppercase tracking 0.12em`, `border: 1px solid transparent`, `transition: var(--ds-transition-base)`, `box-shadow: var(--ds-shadow-glow)` |
-| **Primary Hover** | `bg: var(--ds-color-primary-dark)`, `border-color: var(--ds-color-primary-dark)`, `transform: translateY(-1px)`, `box-shadow: var(--ds-shadow-glow-lg)` |
-| **Primary Active** | `bg: #117a72`, `transform: translateY(0)` |
-| **Outline** | `bg: transparent`, `color: var(--ds-color-primary)`, `border: 1px solid rgba(32,184,171,0.28)`, mismo radius/padding/font que primary |
-| **Outline Hover** | `bg: rgba(32,184,171,0.18)`, `border-color: var(--ds-color-primary)`, `transform: translateY(-1px)` |
-| **Ghost** | `bg: transparent`, `color: var(--ds-color-text-secondary)`, `border: transparent`, mismo radius/padding/font |
+|---|---|
+| **Primary** | `bg: var(--ds-color-primary)`, `color: var(--ds-color-text-on-primary)`, `radius: var(--ds-radius-md)`, `padding: 12px 26px`, `font: Inter 700 13px`, `letter-spacing: var(--ds-letter-spacing-label)`, uppercase, `border: 1px solid transparent`, `transition: var(--ds-transition-base)`, `box-shadow: var(--ds-shadow-glow)` |
+| **Primary Hover** | `bg: var(--ds-color-primary-dark)`, `transform: translateY(-1px)`, `box-shadow: var(--ds-shadow-glow-lg)` |
+| **Primary Active** | `bg: #17a58e`, `transform: translateY(0)` |
+| **Outline** | `bg: transparent`, `color: var(--ds-color-primary)`, `border: 1px solid var(--ds-color-primary-border)`, mismo radius/padding/font que primary |
+| **Outline Hover** | `bg: var(--ds-color-primary-glow)`, `border-color: var(--ds-color-primary)`, `transform: translateY(-1px)` |
+| **Ghost** | `bg: transparent`, `color: var(--ds-color-text-secondary)`, `border: transparent` |
 | **Ghost Hover** | `bg: var(--ds-color-surface-3)`, `color: var(--ds-color-text)` |
-| **WhatsApp CTA** | `bg: #25d366`, `color: #000`, `radius: var(--ds-radius-full)`, `padding: 10px 24px`, `font: Poppins 700 14px`, `min-width: 44px`, `min-height: 44px` |
+| **WhatsApp CTA** | `bg: #25d366`, `color: #000`, `radius: var(--ds-radius-full)`, `padding: 10px 24px`, `font: Inter 700 14px`, `min-width/height: 44px` |
 | **WhatsApp Hover** | `bg: #1da85c`, `box-shadow: 0 4px 18px rgba(37,211,102,0.4)`, `transform: scale(1.05)` |
-| **Call (secundario)** | `bg: var(--ds-color-surface-4)`, `border: 1.5px solid var(--ds-color-border-strong)`, `radius: var(--ds-radius-full)`, `padding: 10px 24px`, `font: Poppins 700 14px`, `color: #fff` |
-| **Call Hover** | `bg: rgba(32,184,171,0.18)`, `border-color: var(--ds-color-primary)`, `color: var(--ds-color-primary)` |
+| **Call (secundario)** | `bg: var(--ds-color-surface-4)`, `border: 1.5px solid var(--ds-color-border-strong)`, `radius: var(--ds-radius-full)`, `padding: 10px 24px` |
+| **Call Hover** | `bg: var(--ds-color-primary-glow)`, `border-color: var(--ds-color-primary)`, `color: var(--ds-color-primary)` |
 
-**Admin Buttons** (mismo patrón, tokens `--admin-*`):
-- Primary: `--admin-color-primary` bg, negro texto, `--admin-radius-md` (8px), uppercase, tracking 0.10em, weight 600-700, `transform: translateY(-1px)` hover
-- Ghost: Transparente, border `rgba(255,255,255,0.06)`, surface bg hover
-- Outline: Transparente, teal border/text, teal glow bg hover
-- Danger/Warning/Success: Semantic bg (10% opacity) + border (25%) + colored text
+**Admin Buttons:** mismo patrón con tokens `--admin-*`. Primary: `--admin-color-primary` bg, texto `--admin-color-bg`, `--admin-radius-md`, uppercase, tracking `--admin-ls-label`, `translateY(-1px)` hover. Ghost/Outline/Danger/Warning/Success siguen el mismo patrón semántico que el sistema anterior (bg 10%, border 25%, texto del color semántico).
 
-**Estados obligatorios:** `:hover`, `:active`, `:focus-visible`, `:disabled`
+**Estados obligatorios:** `:hover`, `:active`, `:focus-visible`, `:disabled`.
 **Focus-visible:** `outline: 2px solid var(--ds-color-primary); outline-offset: 2px;`
 
 ### 3.2 Chips / Badges
@@ -329,49 +355,62 @@
 ```css
 .ds-badge {
   font-family: var(--ds-font-elegant);
-  font-size: var(--ds-text-xs);      /* 12px */
+  font-size: var(--ds-text-xs);
   font-weight: var(--ds-font-weight-bold);
-  letter-spacing: var(--ds-letter-spacing-badge); /* 0.12em */
+  letter-spacing: var(--ds-letter-spacing-badge);
   text-transform: uppercase;
   padding: 5px 12px;
-  border-radius: var(--ds-radius-sm); /* 4px */
+  border-radius: var(--ds-radius-sm);
   border-width: 1px;
   border-style: solid;
 }
 
-.badge-disponible { background: rgba(32,184,171,0.15); border-color: rgba(32,184,171,0.28); color: var(--ds-color-primary); }
-.badge-vendida { background: hsla(0,0%,100%,0.04); border-color: hsla(0,0%,100%,0.06); color: var(--ds-color-text-muted); }
-.badge-oculta { background: hsla(0,0%,100%,0.01); border-color: hsla(0,0%,100%,0.03); color: var(--ds-color-text-disabled); }
-.badge-destacada { background: #c8a96e; color: #000; } /* SOLO LEGACY */
-.badge-precio { backdrop-filter: blur(12px); background: rgba(0,0,0,0.65); border-color: hsla(0,0%,100%,0.06); border-radius: 6px; font-family: var(--ds-font-num); font-size: 14px; font-weight: 800; letter-spacing: -0.02em; color: #fff; padding: 6px 14px; }
+.badge-disponible { background: var(--ds-color-primary-glow); border-color: var(--ds-color-primary-border); color: var(--ds-color-primary); }
+.badge-vendida    { background: hsla(200, 10%, 100%, 0.04); border-color: hsla(200, 10%, 100%, 0.06); color: var(--ds-color-text-muted); }
+.badge-oculta     { background: hsla(200, 10%, 100%, 0.01); border-color: hsla(200, 10%, 100%, 0.03); color: var(--ds-color-text-disabled); }
+.badge-destacada  { background: var(--ds-color-primary-dim); color: var(--ds-color-primary); border-color: var(--ds-color-primary-border); }
+.badge-precio {
+  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.65);
+  border-color: hsla(200, 10%, 100%, 0.06);
+  border-radius: 6px;                      /* EXCEPCIÓN documentada: badge de precio flotante sobre imagen */
+  font-family: var(--ds-font-num);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: var(--ds-letter-spacing-num);
+  color: var(--ds-color-text);
+  padding: 6px 14px;
+}
 ```
 
 **Admin:**
 ```css
 .admin-badge {
   font-family: var(--admin-font-elegant);
-  font-size: var(--admin-text-2xs); /* 10px */
+  font-size: var(--admin-text-2xs);
   font-weight: 600;
-  letter-spacing: var(--admin-ls-badge); /* 0.12em */
+  letter-spacing: var(--admin-ls-badge);
   text-transform: uppercase;
   padding: 4px 10px;
-  border-radius: var(--admin-radius-sm); /* 4px */
+  border-radius: var(--admin-radius-sm);
   border-width: 1px;
   border-style: solid;
 }
-/* Semantic variants use --admin-color-{success,warning,danger,info,purple}-bg/border */
+/* Variantes semánticas usan --admin-color-{success,warning,danger,info,purple}-bg/border */
 ```
 
-### 3.3 Property Card (Público)
+### 3.3 Property Card (Público) — con parallax en Z
 
 ```css
 .ds-property-card {
+  --card-tilt: 0deg;
   background: var(--ds-color-surface-1);
   border: 1px solid var(--ds-color-border);
-  border-radius: 14px;  /* EXCEPCIÓN: 14px solo para property cards */
+  border-radius: 14px;   /* EXCEPCIÓN documentada, igual que en el sistema anterior */
   padding: 20px 22px 22px;
   display: flex;
   flex-direction: column;
+  perspective: 1200px;
   transition: transform var(--ds-transition-slow), border-color var(--ds-transition-slow), box-shadow var(--ds-transition-slow);
 }
 
@@ -382,28 +421,42 @@
 }
 
 .ds-property-card-image {
-  aspect-ratio: 3/2;
+  aspect-ratio: 3 / 2;
   overflow: hidden;
   border-radius: var(--ds-radius-md);
+  transform-style: preserve-3d;
 }
 .ds-property-card-image img {
   width: 100%; height: 100%; object-fit: cover;
-  filter: grayscale(50%);
+  filter: grayscale(35%);
   transition: filter var(--ds-transition-slow), transform var(--ds-transition-slow);
 }
 .ds-property-card:hover .ds-property-card-image img {
   filter: grayscale(0%);
-  transform: scale(1.05);
+  transform: scale(1.05) translateZ(12px);
+}
+
+/* Capas con profundidad simulada — precio y ubicación "flotan" sobre la imagen */
+.ds-property-card-price {
+  transform: translateZ(24px);
+  transition: transform var(--ds-transition-slow);
+}
+.ds-property-card:hover .ds-property-card-price {
+  transform: translateZ(40px);
+}
+
+@supports not (transform-style: preserve-3d) {
+  .ds-property-card-image, .ds-property-card-price { transform: none !important; }
 }
 ```
 
-### 3.4 Agent Card (Admin)
+### 3.4 Agent Card (Admin) — Hex Avatar con glow
 
 ```css
 .ds-agent-card {
   background: var(--admin-color-surface);
   border: 2px solid var(--admin-color-border-medium);
-  border-radius: var(--admin-radius-xl); /* 16px */
+  border-radius: var(--admin-radius-xl);
   padding: 1.4rem 2rem 1.4rem 1.6rem;
   gap: 1.8rem;
   width: 100%;
@@ -416,15 +469,15 @@
   transform: translateY(-6px);
 }
 
-/* Hex Avatar */
 .ds-agent-hex {
-  width: 160px; height: 160px; /* desktop */
+  width: 160px; height: 160px;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   border: 2px solid var(--admin-color-primary);
   position: relative;
 }
 .ds-agent-hex::before {
-  content: ''; position: absolute; inset: -4px;
+  content: '';
+  position: absolute; inset: -4px;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   border: 2px solid var(--admin-color-primary);
   opacity: 0.09;
@@ -442,7 +495,7 @@
   padding: 10px 13px;
   background: var(--ds-color-surface-3);
   border: 1px solid var(--ds-color-border);
-  border-radius: var(--ds-radius-sm); /* 3px - EXCEPCIÓN: inputs más afilados */
+  border-radius: var(--ds-radius-sm);   /* EXCEPCIÓN: inputs más afilados */
   font-family: var(--ds-font-body);
   font-size: 13px;
   color: var(--ds-color-text);
@@ -460,9 +513,9 @@
 .ds-input.error:focus { box-shadow: 0 0 0 2px var(--ds-color-danger-bg); }
 
 .ds-select {
-  border-radius: 10px; /* EXCEPCIÓN: selects más redondeados */
+  border-radius: 10px;   /* EXCEPCIÓN documentada: selects más redondeados, igual que sistema anterior */
   padding: 11px 14px;
-  padding-right: 30px; /* espacio para chevron */
+  padding-right: 30px;
   font-size: 12px;
   background: var(--ds-color-surface-2);
   cursor: pointer;
@@ -472,8 +525,8 @@
 .ds-label {
   font-family: var(--ds-font-body);
   font-weight: var(--ds-font-weight-semibold);
-  font-size: 10px; /* Poppins 600 10px uppercase */
-  letter-spacing: var(--ds-letter-spacing-label); /* 0.1em */
+  font-size: 10px;
+  letter-spacing: var(--ds-letter-spacing-label);
   text-transform: uppercase;
   color: var(--ds-color-text-secondary);
   transition: color var(--ds-transition-fast);
@@ -482,22 +535,7 @@
 .ds-select:focus + .ds-label { color: var(--ds-color-primary); }
 ```
 
-**Admin:**
-```css
-.admin-input {
-  background: var(--admin-color-surface); /* #101010 */
-  border: 1px solid var(--admin-color-border);
-  border-radius: var(--admin-radius-sm); /* 4px */
-  color: var(--admin-color-text);
-  transition: var(--admin-transition-base);
-}
-.admin-input:focus {
-  outline: none;
-  border-color: var(--admin-color-primary);
-  box-shadow: 0 0 0 2px var(--admin-color-primary-glow);
-}
-/* Float labels: shrink to 8px uppercase on focus/filled, teal color */
-```
+**Admin:** mismo patrón, tokens `--admin-*`, `--admin-radius-sm` (4px), focus con `--admin-color-primary-glow`.
 
 ### 3.6 Navigation
 
@@ -507,7 +545,7 @@
   font-family: var(--ds-font-body);
   font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ds-color-text-secondary);
   padding: 10px 16px;
@@ -515,374 +553,410 @@
   transition: var(--ds-transition-fast);
 }
 .ds-nav-link:hover { color: var(--ds-color-text); background: var(--ds-color-surface-2); }
-.ds-nav-link.active { color: var(--ds-color-text-on-primary); background: var(--ds-color-primary); box-shadow: 0 2px 12px var(--ds-color-primary-glow); }
+.ds-nav-link.active {
+  color: var(--ds-color-text-on-primary);
+  background: var(--ds-color-primary);
+  box-shadow: 0 2px 12px var(--ds-color-primary-glow);
+}
 ```
 
-**Admin Sidebar:**
-- Fixed 230px / collapsed 64px
-- Brand panel: logo + "Administración"
-- Icon-only nav when collapsed
-- Active state: teal bg + teal glow shadow
+**Nav flotante (nuevo, propio del sistema Nocturne):**
+```css
+.ds-nav-floating {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--ds-radius-full);
+  background: rgba(19, 21, 22, 0.5);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--ds-color-border);
+}
+```
+Uso: exclusivo del hero (flota sobre el canvas 3D). En páginas internas sin canvas, usar `.ds-nav-link` sobre `--ds-color-bg` sólido, sin blur.
 
-**Admin Topbar:**
-- Sticky, search, user avatar, notifications
-- Height: ~64px
+**Admin Sidebar/Topbar:** sin cambios estructurales respecto al sistema anterior (fixed 230px/collapsed 64px, topbar sticky ~64px), solo actualiza colores a tokens Nocturne.
 
 ### 3.7 Pagination
 
-```css
-.ds-pagination-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 40px; height: 40px; padding: 0 16px;
-  font-family: var(--ds-font-body);
-  font-size: 13px; font-weight: 600;
-  color: var(--ds-color-text);
-  background: var(--ds-color-surface-1);
-  border: 1px solid var(--ds-color-border);
-  border-radius: var(--ds-radius-md);
-  cursor: pointer;
-  transition: var(--ds-transition-fast);
-}
-.ds-pagination-btn:hover { background: var(--ds-color-surface-2); border-color: var(--ds-color-border-medium); }
-.ds-pagination-btn.active { background: var(--ds-color-primary); border-color: var(--ds-color-primary); color: var(--ds-color-text-on-primary); }
-.ds-pagination-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-```
+Sin cambios estructurales respecto al sistema anterior — solo tokens de color actualizados (`--ds-color-primary` ahora resuelve a Signal en vez de Teal).
 
 ### 3.8 Modal / Dialog
 
-**Público:**
-```css
-.ds-modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
-  z-index: var(--ds-z-modal);
-  display: flex; align-items: center; justify-content: center;
-  padding: var(--ds-space-4);
-  animation: fadeIn var(--ds-transition-fast);
-}
-.ds-modal {
-  background: var(--ds-color-surface-2);
-  border: 1px solid var(--ds-color-border-medium);
-  border-radius: var(--ds-radius-lg); /* 16px */
-  max-width: 560px; width: 100%; max-height: 90vh;
-  overflow: hidden; display: flex; flex-direction: column;
-  animation: scaleIn var(--ds-transition-base);
-}
-.ds-modal-header { padding: 20px 24px; border-bottom: 1px solid var(--ds-color-border); display: flex; align-items: center; justify-content: space-between; }
-.ds-modal-title { font-family: var(--ds-font-body); font-size: var(--ds-text-title); font-weight: var(--ds-font-weight-bold); color: var(--ds-color-text); }
-.ds-modal-close { width: 40px; height: 40px; border-radius: var(--ds-radius-md); border: 1px solid var(--ds-color-border); background: transparent; color: var(--ds-color-text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--ds-transition-fast); }
-.ds-modal-close:hover { background: var(--ds-color-surface-3); color: var(--ds-color-text); border-color: var(--ds-color-border-medium); }
-.ds-modal-body { padding: var(--ds-space-6); overflow-y: auto; }
-.ds-modal-footer { padding: var(--ds-space-4) var(--ds-space-6); border-top: 1px solid var(--ds-color-border); display: flex; justify-content: flex-end; gap: var(--ds-space-3); }
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-```
-
-**Admin:**
-- Elevated surface `#1a1a1a`
-- Max-width variants: 580px, 720px, 800px
-- Focus trap, ESC to close
+Estructura idéntica al sistema anterior (`.ds-modal-overlay`, `.ds-modal`, header/body/footer, `fadeIn`/`scaleIn`), con la única adición del **glow de foco** en el botón de cierre y en cualquier CTA primario dentro del modal, usando `--ds-shadow-glow`.
 
 ### 3.9 Skeleton / Shimmer
 
-```css
-.ds-skeleton {
-  background: linear-gradient(90deg, var(--ds-color-surface-2) 25%, var(--ds-color-surface-3) 50%, var(--ds-color-surface-2) 75%);
-  background-size: 600px 100%;
-  border-radius: var(--ds-radius-sm);
-  animation: shimmer 1.4s linear infinite;
-}
-@keyframes shimmer {
-  0% { background-position: -600px 0; }
-  100% { background-position: 600px 0; }
-}
-```
+Sin cambios respecto al sistema anterior.
 
-### 3.10 Componentes Signature (Únicos)
+### 3.10 Componentes Signature (Únicos del sistema Nocturne)
 
-#### Hero (Home)
-- Video/imagen fondo con overlay gradiente
-- **Logo 3D tilt:** `rotateX/Y` en mousemove (±28°), scale 1.04
-- **Badge animado:** líneas expandidas, texto fade-in
-- **Stats counters:** IntersectionObserver → animate 0→target (1800ms, ease-out-cubic)
-- **CTAs:** 3 botones (primary, primary, ghost)
+#### Hero 3D (Home) — reemplaza al hero de imagen + overlay
+
+- **Escena WebGL de fondo:** interpretación low-poly de una vivienda moderna (núcleo de hormigón, volumen vidriado, voladizo, pileta), en Three.js puro.
+- **Dolly-in de cámara** al cargar: 1.8s, `easeOutExpo`, desde un encuadre alejado hacia el encuadre final (3/4, FOV 38°).
+- **Parallax de mouse:** desplazamiento sutil de cámara (lerp 0.04), no un orbit completo.
+- **Bloom selectivo:** solo las superficies emissive (agua de pileta, tiras de luz de jardín) disparan el post-proceso — threshold alto (0.15), strength contenido (0.55).
+- **Overlay de UI:** nav flotante + headline (`--ds-font-display`) + barra de búsqueda glass con glow en foco.
+- **`prefers-reduced-motion`:** cámara fija en el encuadre final, sin dolly-in ni parallax.
+- **Fallback:** en conexiones lentas (`navigator.connection.saveData`) o viewport < 480px, reemplazar el canvas por `hero-bg.webp` (Cloudinary) con el mismo overlay degradado del sistema anterior.
+- Ver sección 6 para el detalle técnico completo de la arquitectura 3D.
 
 #### Property Gallery (Detail)
-- Main image: `fetchpriority="high" loading="eager"`, aspect-ratio 4/3
-- Thumbnails: carousel con dots/arrows, init on mount
-- Lightbox: full-screen, swipe/teclado, ESC cierra
+
+- Main image: `fetchpriority="high" loading="eager"`, `aspect-ratio: 4/3`.
+- Thumbnails: carrusel con dots/flechas.
+- Lightbox: full-screen, swipe/teclado, ESC cierra.
+- Al abrir el lightbox, el fondo detrás oscurece con `--ds-color-bg` a 85% + `backdrop-filter: blur(6px)` (consistente con el lenguaje "glass" del resto del sistema).
 
 #### Filter Bar (Collapsible Mobile)
-- Desktop: inline horizontal
-- Mobile: toggle button → panel slide-down
-- Search: icon left, padding-left 48px
-- Selects: 4 campos (tipo, dorm, estado, orden)
-- Price slider: dual range, labels live
-- Reset button: limpia todo
+
+- Desktop: inline horizontal.
+- Mobile: botón toggle → panel slide-down.
+- Search: ícono a la izquierda, `padding-left: 48px`.
+- Selects: tipo, dormitorios, estado, orden.
+- Price slider: rango dual, labels en vivo (`--ds-font-num`).
+- Reset button: limpia todo.
+
+#### Property Card con parallax en Z (nuevo, propio de Nocturne)
+
+Descrito en la sección 3.3 — capas separadas en `translateZ()` que se distancian al hover, reforzando la misma sensación de profundidad que el Hero 3D, sin costo de WebGL adicional.
 
 ---
 
-## 4. ARQUITECTURA CSS (Normativa)
+## 4. ARQUITECTURA CSS (Normativa — estructura heredada, contenido migrado)
 
 ```
 src/styles/
-├── tokens.css              # DS tokens (--ds-*) — FUENTE DE VERDAD
+├── tokens.css              # DS tokens (--ds-*) — REEMPLAZO de valores (Nocturne)
 ├── critical.css            # Critical CSS extraído (inline en <head>)
 ├── global.css              # Público: reset, base, utilities, components
+├── hero-3d.css             # NUEVO — estilos del overlay del Hero 3D (nav, headline, search)
 ├── admin/
-│   ├── 0-tokens.css        # Admin overrides (--admin-*)
-│   ├── 1-base.css          # Layout reset, .admin-body, .admin-main, utilities
-│   ├── 2-login.css         # Split-screen login (brand panel + form card)
-│   ├── 3-sidebar.css       # Collapsible sidebar, nav links, badges, compact mode
-│   ├── 4-topbar.css        # Top bar, search, user avatar, notifications
-│   ├── 5-dashboard.css     # Dashboard widgets
+│   ├── 0-tokens.css        # Admin overrides (--admin-*) — REEMPLAZO de valores
+│   ├── 1-base.css
+│   ├── 2-login.css
+│   ├── 3-sidebar.css
+│   ├── 4-topbar.css
+│   ├── 5-dashboard.css
 │   ├── 6-property-cards.css
 │   ├── 7-crud-forms.css
 │   ├── 8-messages.css
-│   ├── 9-crm.css           # CRM Kanban
+│   ├── 9-crm.css
 │   ├── 11-requests.css
-│   ├── 12-buttons.css      # Button system (primary, ghost, outline, semantic, sizes)
+│   ├── 12-buttons.css
 │   ├── 12-appraisals.css
 │   ├── 13-tasaciones.css
-│   ├── 13-forms.css        # Inputs, selects, float labels, toggles, checkboxes
+│   ├── 13-forms.css
 │   ├── 13-marketing.css
-│   ├── 14-modals.css       # Modal system, sizes, focus management
+│   ├── 14-modals.css
 │   ├── 14-portals.css
-│   ├── 15-tables.css       # Data tables, filters, sort, batch actions, search bar
+│   ├── 15-tables.css
 │   ├── 15-calendar.css
-│   ├── 16-badges.css       # Badge system
+│   ├── 16-badges.css
 │   ├── 16-settings.css
-│   ├── 17-toasts.css       # Toast notifications
+│   ├── 17-toasts.css
 │   ├── 17-users.css
 │   ├── 18-states.css
 │   ├── 18-security.css
-│   └── 20-responsive.css   # All breakpoint overrides
-├── detalle.css             # Detalle propiedad
-├── alquiler.css            # Página alquiler
-├── comparador.css          # Comparador
-├── tasacion2.css           # Tasación v2
-└── styles-public.css       # Páginas legales
+│   └── 20-responsive.css
+├── detalle.css
+├── alquiler.css
+├── comparador.css
+├── tasacion2.css
+└── styles-public.css
 ```
 
-**Build Pipeline:**
+```
+src/
+  three/                    # NUEVO — módulo de la escena 3D (aislado del resto del CSS/JS)
+    scene.ts
+    houseModel.ts
+    glowMaterial.ts
+  components/
+    Hero3D/
+      Hero3D.tsx
+      Hero3D.module.css
+    PropertyCard/
+      PropertyCard.tsx       # migrado a Preact + parallax en Z
+```
+
+**Build Pipeline (sin cambios):**
 ```bash
 npm run build:css  # postcss → *.min.css + extract-critical-css.js → critical.min.css
 npm run build:js   # terser + concat-public.js (esbuild IIFE) → main.min.js
 npm run build      # html + js + css
 ```
 
-**Critical CSS:** Extraído automáticamente via `scripts/extract-critical-css.js`, inline en `<head>` (~16KB). Cubre: tokens, reset, base, navbar, hero, buttons, cards, forms.
+**Critical CSS:** sigue cubriendo tokens, reset, base, navbar, hero, buttons, cards, forms (~16KB). Se agrega el estado inicial del canvas (`.canvas { opacity: 0 }`) para evitar flash de contenido sin estilo antes de que monte three.js.
 
 ---
 
 ## 5. FONT LOADING STRATEGY
 
 | Entorno | Fuentes | Método |
-|---------|---------|--------|
-| **Admin** | Anton + Poppins (300-700) | Local `@font-face` via `/css/fonts.css` |
-| **Público** | Anton, Poppins, Montserrat, Quicksand, Open Sans, JetBrains Mono | Google Fonts (preconnect + preload crítico) |
-| **Shared** | Montserrat/Quicksand/Open Sans/JetBrains | Referenciadas via tokens.css aliases |
+|---|---|---|
+| **Admin** | General Sans + Inter (400–700) | Local `@font-face` vía `/css/fonts.css` |
+| **Público** | General Sans, Inter, JetBrains Mono | Self-hosted (preferido) o Google Fonts con preconnect + preload crítico |
+| **Compartidas** | JetBrains Mono | Referenciada vía tokens.css en ambos entornos |
+
+**Nota de migración:** Anton/Poppins/Montserrat/Quicksand quedan deprecadas. Mantener sus `@font-face` solo mientras haya páginas sin migrar (Fase 5 las elimina).
 
 ---
 
-## 6. JS ARCHITECTURE (ES Modules)
+## 6. ARQUITECTURA DEL HERO 3D (detalle técnico completo)
+
+### 6.1 Decisión técnica
+
+Three.js puro (sin react-three-fiber) para evitar fricción de un wrapper pensado para React sobre un proyecto Preact, y mantener control directo del ciclo de vida (montaje/desmontaje, dispose de memoria). Geometría procedural (cajas, planos, icosaedros) — sin modelos `.glb` externos, para no depender de un pipeline de modelado ni inflar el bundle.
+
+### 6.2 Elementos de la escena
+
+| Elemento | Geometría | Material | Rol |
+|---|---|---|---|
+| Núcleo de hormigón | `BoxGeometry` alto/angosto | `MeshStandardMaterial`, `--ds-color-surface-4`, roughness 0.9 | Ancla vertical de la composición |
+| Planta baja vidriada | `BoxGeometry` ancho | `MeshPhysicalMaterial` con `transmission` | Volumen principal, transparencia real |
+| Carpintería del vidrio | `EdgesGeometry` + `LineSegments` | `LineBasicMaterial` oscuro | Marca las líneas de la estructura |
+| Voladizo superior | `BoxGeometry` desplazado en X | `MeshStandardMaterial` gris medio | Silueta característica (cantilever) |
+| Losa de techo | `BoxGeometry` plano | `MeshStandardMaterial` oscuro | Remate del volumen superior |
+| Baranda de balcón | `BoxGeometry` delgado | `MeshPhysicalMaterial` transparente | Vidrio de seguridad |
+| Terreno/plaza | `PlaneGeometry` grande | `MeshStandardMaterial` gris oscuro | Piso de la escena |
+| Pileta | `BoxGeometry` plano | Emissive Signal (`--ds-color-primary`) | Fuente principal del glow |
+| Tiras de luz de jardín | `BoxGeometry` pequeños | Emissive Signal | Réplica de los focos LED de la foto de referencia |
+| Vegetación | `IcosahedronGeometry` | `MeshStandardMaterial` oscuro | Contexto, bajo costo de polígonos |
+
+### 6.3 Cámara, luces y post-procesamiento
+
+- **Cámara:** `PerspectiveCamera`, FOV 38°, encuadre 3/4. Dolly-in desde posición alejada a la final en la carga (`--ds-3d-intro-duration-ms`).
+- **Luz direccional ("luna"):** fría, intensidad baja.
+- **Luz ambiental:** tenue, grisácea azulada.
+- **Point light interior:** cálida, simula luz de ventanas — contraste cálido/frío.
+- **Bloom (`UnrealBloomPass`):** threshold alto (`--ds-3d-bloom-threshold`) para que solo el emissive Signal lo dispare; strength/radius moderados (`--ds-3d-bloom-strength` / `--ds-3d-bloom-radius`).
+
+### 6.4 Interacción y accesibilidad
+
+- Parallax de mouse: lerp suave (`--ds-3d-parallax-lerp`), nunca un giro completo de cámara.
+- `prefers-reduced-motion: reduce`: sin dolly-in ni parallax, cámara fija desde el primer frame.
+- Canvas marcado `aria-hidden="true"` — la información real vive en HTML semántico dentro del overlay.
+- `renderer.setPixelRatio` clampeado a 2; sin `castShadow`/`receiveShadow` dinámicas.
+
+### 6.5 Carga y performance
+
+- `import()` dinámico del módulo `three/scene.ts` dentro de un `useEffect` — no bloquea el LCP.
+- El canvas WebGL vive solo en el hero; el resto de la profundidad (property cards) se resuelve con CSS (`translateZ()`), sin WebGL adicional.
+- Fallback estático (`hero-bg.webp` vía Cloudinary) para `saveData` o viewport pequeño.
+
+---
+
+## 7. JS ARCHITECTURE
+
+### 7.1 Público (en migración a Preact + TS)
 
 ```
 src/
-├── main.js                 # Bootstrap SPA
+├── main.tsx                 # Bootstrap SPA (Preact)
+├── three/
+│   ├── scene.ts
+│   ├── houseModel.ts
+│   └── glowMaterial.ts
 ├── components/
-│   ├── Navbar/Navbar.js
-│   ├── Hero/Hero.js
-│   ├── PropertyGrid/PropertyGrid.js
-│   ├── FilterBar/FilterBar.js
-│   ├── PropertyCard/PropertyCard.js
-│   ├── AgentGrid/AgentGrid.js
-│   ├── ContactForm/ContactForm.js
-│   ├── StatsCounter/StatsCounter.js
-│   ├── GeoRecommendations/GeoRecommendations.js
-│   └── WhatsAppFloat/WhatsAppFloat.js
+│   ├── Hero3D/Hero3D.tsx
+│   ├── Navbar/Navbar.tsx
+│   ├── PropertyGrid/PropertyGrid.tsx
+│   ├── FilterBar/FilterBar.tsx
+│   ├── PropertyCard/PropertyCard.tsx
+│   ├── AgentGrid/AgentGrid.tsx
+│   ├── ContactForm/ContactForm.tsx
+│   ├── StatsCounter/StatsCounter.tsx
+│   ├── GeoRecommendations/GeoRecommendations.tsx
+│   └── WhatsAppFloat/WhatsAppFloat.tsx
 ├── utils/
-│   ├── api.js           # Fetch wrapper + CSRF
-│   ├── config.js        # Constantes centralizadas (WHATSAPP_NUMBER, etc.)
-│   └── scrollAnimations.js
-├── pages/               # Entry points por página
-└── partials/            # Handlebars partials
+│   ├── api.ts               # Fetch wrapper + CSRF
+│   ├── config.ts            # Constantes centralizadas (WHATSAPP_NUMBER, etc.)
+│   └── scrollAnimations.ts
+├── pages/                    # Entry points por página
+└── partials/                 # Handlebars partials (durante la transición)
 ```
 
-### Partial System (Handlebars - inyectados en build via `scripts/inject-partials.js`)
-```html
-{{> navbar}}       → header + nav
-{{> hero}}         → hero section
-{{> filterBar}}    → barra de filtros
-{{> propiedades}}  → catálogo tabs venta/alquiler
-{{> quienes}}      → quiénes somos
-{{> agents}}       → grid agentes
+### 7.2 Partial System (Handlebars, se conserva durante la migración gradual)
+
+```
+{{> navbar}}          → header + nav
+{{> hero3d}}          → NUEVO — monta el contenedor del canvas + overlay
+{{> filterBar}}       → barra de filtros
+{{> propiedades}}     → catálogo tabs venta/alquiler
+{{> quienes}}         → quiénes somos
+{{> agents}}          → grid agentes
 {{> recomendaciones}} → geo recomendaciones
-{{> contact}}      → formulario contacto
-{{> footer}}       → footer
-{{> scripts}}      → main.js + contact form inline
+{{> contact}}         → formulario contacto
+{{> footer}}          → footer
+{{> scripts}}         → main.js + contact form inline
 ```
 
----
+### 7.3 Admin
 
-## 7. PLAN DE EJECUCIÓN POR FASES
-
-### FASE 1: Foundation (Día 1-2) ⚡ CRÍTICO
-- [ ] **Reemplazar `src/styles/tokens.css`** completamente con tokens normativos (`--ds-*` / `--admin-*`)
-- [ ] **Crear `src/styles/admin/0-tokens.css`** con overrides admin
-- [ ] Actualizar `src/styles/critical.css` con variables críticas (above-the-fold)
-- [ ] Eliminar/limpiar tokens legacy (`--color-brand-*`, `--gray-*`, `--primary-light`, etc.)
-- [ ] Verificar build: `npm run build:css` sin errores
-- [ ] Validar en dev server que no hay FOUC (Flash of Unstyled Content)
-
-### FASE 2: Landing Público - Core (Día 2-4)
-- [ ] **global.css** - Reset, tipografía (Anton/Poppins/Montserrat/Quicksand), utilidades base
-- [ ] **Header/Navbar** - Dark bg, glass morphism, teal accent, mobile menu slide-in
-- [ ] **Hero** - **Imagen `hero-bg.webp` como background + overlay degradado dark**, logo 3D tilt (±28°), badge animado, stats counters (IntersectionObserver), 3 CTAs
-  - [ ] Añadir `<link rel="preload" as="image" href="/hero-bg.webp" fetchpriority="high">` en `<head>` (index.html / layout)
-  - [ ] CSS Hero: `background-image: url('/hero-bg.webp')`, `background-size: cover`, `background-position: center`
-  - [ ] Pseudo-elemento `::before` con overlay degradado: `rgba(0,0,0,0.75)` → `rgba(0,0,0,0.55)` → `rgba(0,0,0,0.7)` para legibilidad WCAG AA
-  - [ ] Tokens `--ds-*` en todo el Hero (colores, spacing, radius, tipografía)
-  - [ ] Responsive: padding ajustado, `min-height: auto` mobile
-  - [ ] Reduced motion: desactivar animaciones stats
-  - [ ] (Opcional) Placeholder blur LQIP base64 inline en CSS para evitar flash
-- [ ] **FilterBar** - Desktop inline, mobile collapsible slide-down, search + 4 selects + price slider + reset
-- [ ] **PropertyGrid/Card** - Grid `repeat(auto-fill, minmax(300px, 1fr))` gap 24px, cards con hover `translateY(-8px)` + teal glow ring
-- [ ] **Footer** - Dark surface-1, teal links, newsletter form
-
-### FASE 3: Landing - Detalle y Mapa (Día 4-5)
-- [ ] **PropertyDetail** - Gallery con lightbox (swipe/teclado/ESC), main image `fetchpriority="high"`, price badge Montserrat 800, specs chips
-- [ ] **Map/MapContainer** - MapTiler Dark style, marcadores teal `#20b8ab`, clusters teal dark `#178c81`
-- [ ] **CTA Sections** - Primary teal, outline teal, ghost, WhatsApp pill, Call pill
-- [ ] **Modals/Forms** - Dark inputs (radius 3px), teal focus rings, backdrop-blur
-- [ ] **Contact/Tasación Forms** - Grid 2-col desktop, honeypot, timestamp anti-spam, motivo selector toggles campos
-
-### FASE 4: Panel Admin / CRM (Día 5-8)
-- [ ] **admin/0-tokens.css** → importar en todos los admin CSS
-- [ ] **Login** - Dark `#050505`, teal primary, hex avatar preview
-- [ ] **Sidebar** - Admin surfaces, teal active states, user avatar hex
-- [ ] **Topbar** - Admin surface, search, notifications, user menu
-- [ ] **Dashboard** - Stat cards con teal/gold/success/warning icons, charts paleta teal/gold/success/warning
-- [ ] **Tables/DataGrid** - Dark rows, hover surface rows, teal actions, badges semánticos, pagination
-- [ ] **CRUD Forms** - Dark inputs, teal focus, validación inline, image upload drag-drop
-- [ ] **CRM Kanban** - Columnas drag-drop, cards con hex avatar, badges estado, teal actions
-- [ ] **Tasaciones/Appraisals** - Formulario multi-paso, preview PDF, estados workflow
-- [ ] **MercadoLibre Sync** - UI de sincronizado, logs, estado tokens
-- [ ] **Settings** - Tabs, switches, image upload, danger zones
-- [ ] **Modals/Toasts** - Backdrop-blur, teal focus, animaciones scaleIn/fadeIn
-
-### FASE 5: QA & Polish (Día 8-9)
-- [ ] **Audit visual** - Todas las páginas desktop/tablet/mobile
-- [ ] **Contraste WCAG AA** - Verificar ratios (ver checklist abajo)
-- [ ] **Focus states** - Visible focus rings en TODOS los interactivos
-- [ ] **Reduced motion** - Respetar `prefers-reduced-motion: reduce`
-- [ ] **Touch targets** - ≥ 44px en mobile, fuentes ≥ 16px en inputs
-- [ ] **Print styles** - Admin reports con `@media print` fondo blanco
-- [ ] **Performance** - Critical CSS inline, lazy loading imágenes below-fold, `fetchpriority="high"` hero
-- [ ] **Accesibilidad** - ARIA labels, semantic HTML, keyboard navigation
-- [ ] **Lint/Typecheck** - `npm run lint`, `npm run typecheck` sin errores
+Sin cambios estructurales respecto al sistema anterior — se actualiza únicamente la paleta consumida desde `admin/0-tokens.css`.
 
 ---
 
-## 8. CHECKLIST CONTRASTE (WCAG AA) - Normativo
+## 8. PLAN DE EJECUCIÓN POR FASES
+
+### FASE 1: Foundation (Día 1–2) ⚡ CRÍTICO
+- [ ] Reemplazar `src/styles/tokens.css` con los valores Nocturne (sección 2.2), preservando nombres de variables.
+- [ ] Reemplazar `src/styles/admin/0-tokens.css` con los valores Nocturne (sección 2.3).
+- [ ] Actualizar `src/styles/critical.css` con las variables críticas above-the-fold + estado inicial del canvas.
+- [ ] Agregar aliases legacy temporales (sección 2.4) para no romper componentes no migrados.
+- [ ] Verificar build: `npm run build:css` sin errores.
+- [ ] Validar en dev server que no hay FOUC ni "flash" de teal viejo antes de la carga de tokens.
+
+### FASE 2: Hero 3D + Landing Core (Día 2–5)
+- [ ] Instalar `three` + `@types/three`.
+- [ ] Crear `src/three/{scene,houseModel,glowMaterial}.ts` (ver sección 6).
+- [ ] Crear `src/components/Hero3D/{Hero3D.tsx,Hero3D.module.css}`.
+- [ ] Integrar `import()` dinámico + estado `ready` para el fade-in del canvas.
+- [ ] Implementar fallback estático (`hero-bg.webp`) para `saveData`/viewport chico.
+- [ ] **global.css** — reset, tipografía General Sans/Inter/JetBrains Mono, utilidades base.
+- [ ] **Navbar** — versión flotante glass para el hero, versión sólida para páginas internas.
+- [ ] **FilterBar** — desktop inline, mobile collapsible.
+- [ ] **PropertyGrid/Card** — migrar a Preact + parallax en Z (sección 3.3).
+- [ ] **Footer** — surface-1, links con acento Signal.
+
+### FASE 3: Landing — Detalle y Mapa (Día 5–6)
+- [ ] **PropertyDetail** — gallery con lightbox, price badge en `--ds-font-num`, specs chips.
+- [ ] **Map/MapContainer** — estilo oscuro, marcadores Signal `#2ee6c5`, clusters `--ds-color-primary-dark`.
+- [ ] **CTA Sections** — primary/outline/ghost/WhatsApp/Call actualizados a tokens Nocturne.
+- [ ] **Modals/Forms** — inputs dark (radius 4px), focus ring Signal, backdrop-blur.
+- [ ] **Contact/Tasación Forms** — grid 2-col desktop, honeypot, timestamp anti-spam.
+
+### FASE 4: Panel Admin / CRM (Día 6–9)
+- [ ] Propagar `admin/0-tokens.css` a todos los admin CSS (verificar que ninguno hardcodea `#20b8ab`).
+- [ ] **Login** — hex avatar preview con glow Signal.
+- [ ] **Sidebar/Topbar** — actualizar colores activos a Signal.
+- [ ] **Dashboard** — stat cards e íconos con paleta Signal/success/warning.
+- [ ] **Tables/DataGrid** — badges semánticos, pagination, acciones con Signal.
+- [ ] **CRUD Forms** — validación inline, drag-drop de imágenes (integración Cloudinary).
+- [ ] **CRM Kanban** — cards con hex avatar, badges de estado, drag-drop.
+- [ ] **Tasaciones/ACM** — formulario multi-paso, preview PDF, estados de workflow.
+- [ ] **MercadoLibre Sync** — UI de sincronizado, logs, estado de tokens OAuth.
+- [ ] **Settings** — tabs, switches, upload de imagen, danger zones.
+- [ ] **Modals/Toasts** — backdrop-blur, focus Signal, animaciones scaleIn/fadeIn.
+
+### FASE 5: QA, Migración final y Polish (Día 9–11)
+- [ ] Auditoría visual completa (desktop/tablet/mobile) en todas las páginas públicas y admin.
+- [ ] Eliminar aliases legacy (sección 2.4) y cualquier referencia a `#20b8ab` / Anton / Poppins / Montserrat / Quicksand.
+- [ ] Contraste WCAG AA (ver checklist sección 9).
+- [ ] Focus states visibles en todos los interactivos.
+- [ ] `prefers-reduced-motion` respetado (Hero 3D + hovers de cards).
+- [ ] Touch targets ≥44px, fuentes ≥16px en inputs mobile.
+- [ ] Print styles en reportes admin (`@media print`, fondo blanco).
+- [ ] Performance: Critical CSS inline, lazy loading below-fold, `import()` diferido del bundle 3D, Lighthouse ≥90 en Performance/Best Practices.
+- [ ] Accesibilidad: ARIA labels, HTML semántico, navegación por teclado, `aria-hidden` en el canvas.
+- [ ] `npm run lint`, `npm run typecheck` sin errores.
+
+---
+
+## 9. CHECKLIST CONTRASTE (WCAG AA) — Normativo
 
 | Elemento | Fondo | Texto | Ratio | Tokens | Estado |
-|----------|-------|-------|-------|--------|--------|
-| Body text | `#000000` / `#080808` | `#ffffff` | 21:1 ✅ | `--ds-color-bg` / `--ds-color-text` | PASS |
-| Secondary text | `#080808` | `#9a9a9a` | 4.5:1 ✅ | `--ds-color-surface-1` / `--ds-color-text-secondary` | PASS |
-| Muted text | `#0d0d0d` | `#8ab8b8` | 4.5:1 ✅ | `--ds-color-surface-2` / `--ds-color-text-muted` | PASS |
-| Primary button | `#20b8ab` | `#000000` | 4.5:1 ✅ | `--ds-color-primary` / `--ds-color-text-on-primary` | PASS |
-| Outline button | `transparent` | `#20b8ab` | 3:1 (UI) ✅ | border `rgba(32,184,171,0.28)` | PASS |
-| Input border | `#141414` | `rgba(255,255,255,0.06)` | 3:1 (UI) ✅ | `--ds-color-surface-3` / `--ds-color-border` | PASS |
-| Focus ring | `#141414` | `rgba(32,184,171,0.18)` | Visible ✅ | `--ds-color-surface-3` / `--ds-color-primary-focus-ring` | PASS |
-| Badge Disponible | `rgba(32,184,171,0.15)` | `#20b8ab` | 3:1 ✅ | `--ds-color-primary-glow` / `--ds-color-primary` | PASS |
-| Badge Vendida | `hsla(0,0%,100%,0.04)` | `#8ab8b8` | 3:1 ✅ | `--ds-color-text-muted` | PASS |
+|---|---|---|---|---|---|
+| Body text | `#0b0d0e` | `#e8ecee` | 16.8:1 ✅ | `--ds-color-bg` / `--ds-color-text` | PASS |
+| Secondary text | `#101214` | `#9aa1a6` | 5.1:1 ✅ | `--ds-color-surface-1` / `--ds-color-text-secondary` | PASS |
+| Muted text | `#16181a` | `#7fa8a0` | 4.6:1 ✅ | `--ds-color-surface-2` / `--ds-color-text-muted` | PASS |
+| Primary button | `#2ee6c5` | `#06110f` | 12.4:1 ✅ | `--ds-color-primary` / `--ds-color-text-on-primary` | PASS |
+| Outline button | `transparent` | `#2ee6c5` | 8.9:1 (texto), 3.4:1 (UI) ✅ | border `--ds-color-primary-border` | PASS |
+| Input border | `#1c1f21` | `rgba(232,236,238,0.06)` | 3:1 (UI) ✅ | `--ds-color-surface-3` / `--ds-color-border` | PASS |
+| Focus ring | `#1c1f21` | `rgba(46,230,197,0.2)` | Visible ✅ | `--ds-color-surface-3` / `--ds-color-primary-focus-ring` | PASS |
+| Badge Disponible | `rgba(46,230,197,0.16)` | `#2ee6c5` | 3.6:1 ✅ | `--ds-color-primary-glow` / `--ds-color-primary` | PASS |
+| Badge Vendida | `hsla(200,10%,100%,0.04)` | `#7fa8a0` | 3.2:1 ✅ | `--ds-color-text-muted` | PASS |
 
-> **Nota:** El teal `#20b8ab` sobre negro tiene ratio 3.2:1 (UI) → **solo para elementos no-texto** (bordes, focus rings, iconos). Como botón con texto negro `#000` → 4.5:1 ✅.
+> **Nota:** Signal `#2ee6c5` sobre `#0b0d0e` tiene ratio ~8.9:1 como texto plano — **mejor que el teal anterior** (`#20b8ab` daba 3.2:1), así que el nuevo acento admite usarse como texto directo en más contextos, no solo como bordes/iconos. Igual se mantiene la regla de "≤10% de la pantalla" para no perder el efecto de foco.
 
 ---
 
-## 9. REGLAS ESTRICTAS (Do's / Don'ts) - ENFORCE EN CODE REVIEW
+## 10. REGLAS ESTRICTAS (Do's / Don'ts) — ENFORCE EN CODE REVIEW
 
 ### DO (Obligatorio)
 - ✅ Usar `--ds-*` / `--admin-*` tokens exclusivamente. Nunca hex hardcodeado.
-- ✅ Anton **solo** en display/headline. Nunca en body, labels, UI.
-- ✅ Montserrat 800 para **TODOS** los números visibles (precios, m², stats, contadores).
-- ✅ Poppins 600 14px uppercase tracking 0.1em para labels.
-- ✅ Quicksand 500/600 para copy narrativo (descripciones, "Quiénes somos").
-- ✅ Espaciar en múltiplos de 8px (4, 8, 16, 24, 32, 48, 64, 80).
-- ✅ Radios: 4px (precisión) / 8px (base) / 16px (contenedor) / 9999px (píldoras).
-- ✅ Teal `#20b8ab` como **único** acento cromático. No gold, no colores decorativos.
+- ✅ General Sans **solo** en display/headline. Nunca en body, labels, UI.
+- ✅ JetBrains Mono para **todos** los números visibles (precios, m², stats, contadores, IDs).
+- ✅ Inter 600 uppercase tracking 0.08–0.1em para labels.
+- ✅ Espaciar en múltiplos de 8px.
+- ✅ Radios: 4px (precisión) / 8px (base) / 16px (contenedor) / 9999px (píldoras) — excepciones documentadas (property card 14px, badge-precio 6px, select 10px).
+- ✅ Signal `#2EE6C5` como único acento cromático. Nada de teal legacy en código nuevo.
+- ✅ Tratar el acento como **luz**, no como fill: reservarlo para focus, hover, estado activo, glow — nunca como bloque de color de fondo grande.
 - ✅ Sombras funcionales: `sm` reposo, `md` hover, `lg` modal, `glow` focus/hover primario.
-- ✅ Touch targets ≥ 44px, fuentes ≥ 16px mobile.
-- ✅ Focus-visible: `outline: 2px solid #20b8ab; outline-offset: 2px;`.
+- ✅ Touch targets ≥44px, fuentes ≥16px mobile.
+- ✅ Focus-visible: `outline: 2px solid #2ee6c5; outline-offset: 2px;`.
 - ✅ Transiciones `cubic-bezier(0.22, 0.61, 0.36, 1)` en todo lo interactivo.
-- ✅ `transform: translateY(-1px)` en hover botones primary/outline.
-- ✅ `aspect-ratio` en imágenes: 3/2 (cards), 4/3 (hero), 1/1 (avatares hex).
-- ✅ `fetchpriority="high" loading="eager"` en hero/main image.
+- ✅ `transform: translateY(-1px)` en hover de botones primary/outline.
+- ✅ `aspect-ratio` en imágenes: 3/2 (cards), 4/3 (hero/detalle), 1/1 (avatares hex).
+- ✅ `fetchpriority="high" loading="eager"` en imagen principal (o el canvas 3D en su defecto).
 - ✅ `loading="lazy" decoding="async"` en imágenes below-fold.
-- ✅ `font-size: 16px` mínimo en inputs/selects mobile (evita zoom iOS).
-- ✅ `backdrop-filter: blur(4px)` en modales, dropdowns, tooltips.
+- ✅ `font-size: 16px` mínimo en inputs/selects mobile.
+- ✅ `backdrop-filter: blur(4–18px)` limitado a nav, search bar, modales, tooltips — no en cada card.
 - ✅ `box-sizing: border-box` global.
+- ✅ El canvas 3D lleva `aria-hidden="true"`; toda la información real vive en HTML semántico del overlay.
+- ✅ Respetar `prefers-reduced-motion` en el Hero 3D (sin dolly-in ni parallax) y en hovers con `translateZ()`.
 
 ### DON'T (Prohibido)
-- ❌ Hardcodear hex en CSS/JS. Siempre `var(--ds-*)` o `var(--admin-*)`.
-- ❌ Usar Anton en body, labels, botones, navigation.
-- ❌ Usar colores decorativos (gold, purple, blue) fuera de semántica admin.
-- ❌ Inventar radios (6, 10, 12, 14). Solo 4 / 8 / 16 / 9999px.
-- ❌ Usar sombras decorativas. Solo funcionales.
-- ❌ Inventar espaciados (13, 17, 22, 27). Múltiplos de 8px solamente.
-- ❌ Usar `!important` salvo override documentado (ej: `.hidden { display: none !important }`).
-- ❌ Usar fuentes de sistema en lugar de las 4 familias definidas.
-- ❌ `box-shadow` decorativo en cards en reposo. Solo `shadow-sm` imperceptible.
-- ❌ `border-radius: 6px` o `10px` o `12px` o `14px` (salvo property card 14px).
-- ❌ `box-shadow` en `:hover` de cards sin `transform: translateY(-8px)`.
+- ❌ Hardcodear hex en CSS/JS/TS. Siempre `var(--ds-*)` o `var(--admin-*)`.
+- ❌ Usar `#20b8ab` (teal legacy) en componentes nuevos o migrados.
+- ❌ Usar Anton, Poppins, Montserrat o Quicksand en código nuevo.
+- ❌ Usar el acento Signal como color de fondo de bloques grandes (headers, secciones completas).
+- ❌ Inventar radios fuera de la escala documentada.
+- ❌ Usar sombras decorativas fuera del set funcional.
+- ❌ Inventar espaciados fuera de múltiplos de 8px.
+- ❌ `!important` salvo override documentado.
+- ❌ `box-shadow` decorativo en cards en reposo (solo `shadow-sm` imperceptible).
+- ❌ `box-shadow` en `:hover` de cards sin `transform` acompañante (translateY o translateZ).
 - ❌ `font-size < 16px` en inputs/selects mobile.
-- ❌ `outline: none` sin `focus-visible` replacement.
-- ❌ `text-transform: uppercase` en body copy. Solo labels, nav, badges.
-- ❌ `letter-spacing` positivo en body copy. Solo labels/badges/elegant.
-- ❌ Colores hardcodeados en componentes JS. Siempre `config.whatsapp.number` o `var(--ds-*)`.
-- ❌ `z-index` arbitrarios. Usar escala: sidebar 100, topbar 200, modal 1000, toast 9999.
-- ❌ Duplicar tokens en sidecar y frontmatter. Frontmatter (este doc) es normativo.
-- ❌ Componente sin `:hover`, `:focus-visible`, `:active` definido.
-- ❌ `aspect-ratio` sin `object-fit: cover` en imágenes.
-- ❌ `loading="lazy"` en hero/main image.
-- ❌ Gold `#c8a96e` en **nuevos** componentes (solo legacy badge-destacada).
+- ❌ `outline: none` sin reemplazo `focus-visible`.
+- ❌ `text-transform: uppercase` en body copy — solo labels, nav, badges.
+- ❌ Colores hardcodeados en componentes JS/TS — siempre `config.*` o `var(--ds-*)`.
+- ❌ `z-index` arbitrarios — usar la escala documentada (sidebar 100, sticky 200, modal 1000, toast 9999, tooltip 1200).
+- ❌ Cargar `three.js` en el bundle inicial — siempre `import()` dinámico.
+- ❌ Usar react-three-fiber (fricción innecesaria sobre Preact) salvo decisión explícita de cambiar de stack.
+- ❌ Sombras dinámicas (`castShadow`/`receiveShadow`) en la escena 3D — costo alto en mobile sin beneficio visual proporcional.
+- ❌ Más de un glow simultáneo por sección — diluye el efecto de "foco único".
 
 ---
 
-## 10. ARCHIVOS A CREAR / MODIFICAR - RESUMEN EJECUTIVO
+## 11. ARCHIVOS A CREAR / MODIFICAR — RESUMEN EJECUTIVO
 
-### Nuevos archivos (FASE 1)
+### Nuevos archivos
 ```
-src/styles/tokens.css              ← REEMPLAZO TOTAL (normativo --ds-*)
-src/styles/admin/0-tokens.css      ← NUEVO (--admin-* overrides)
-src/utils/designTokens.ts          ← NUEVO (export TS/JS para componentes)
-src/config/mapStyle.ts             ← NUEVO (MapTiler Dark config)
-```
-
-### Archivos a refactorizar completamente (FASE 1-2)
-```
-src/styles/critical.css            ← UPDATE (critical CSS extraído)
-src/styles/global.css              ← REWRITE (público base + components)
-src/styles/admin/1-base.css        ← REWRITE (admin base)
-src/styles/admin/12-buttons.css    ← REWRITE (button system)
-src/styles/admin/16-badges.css     ← REWRITE (badge system)
-src/styles/admin/13-forms.css      ← REWRITE (input/field system)
-src/styles/admin/14-modals.css     ← REWRITE (modal system)
-src/styles/admin/15-tables.css     ← REWRITE (data table)
-src/styles/admin/6-property-cards.css ← REWRITE (admin property cards)
-src/styles/admin/9-crm.css         ← REWRITE (kanban)
+src/three/scene.ts
+src/three/houseModel.ts
+src/three/glowMaterial.ts
+src/components/Hero3D/Hero3D.tsx
+src/components/Hero3D/Hero3D.module.css
+src/styles/hero-3d.css                    (si no se usa CSS Modules en el resto del proyecto)
+src/utils/designTokens.ts                 (export TS de los tokens para componentes)
+src/config/mapStyle.ts                    (estilo de mapa oscuro con marcadores Signal)
 ```
 
-### Componentes JS a actualizar (prioridad)
+### Archivos a refactorizar por completo
 ```
-src/components/Header/Navbar.js
-src/components/Hero/Hero.js
+src/styles/tokens.css                     ← REEMPLAZO de valores (Nocturne)
+src/styles/admin/0-tokens.css             ← REEMPLAZO de valores (Nocturne)
+src/styles/critical.css                   ← UPDATE
+src/styles/global.css                     ← REWRITE (tipografía + hero container)
+src/styles/admin/1-base.css               ← UPDATE (paleta)
+src/styles/admin/12-buttons.css           ← UPDATE (paleta)
+src/styles/admin/16-badges.css            ← UPDATE (paleta)
+src/styles/admin/13-forms.css             ← UPDATE (paleta)
+src/styles/admin/14-modals.css            ← UPDATE (paleta)
+src/styles/admin/15-tables.css            ← UPDATE (paleta)
+src/styles/admin/6-property-cards.css     ← UPDATE (paleta)
+src/styles/admin/9-crm.css                ← UPDATE (paleta)
+```
+
+### Componentes a migrar/actualizar
+```
+src/components/Header/Navbar.js → Navbar.tsx
+src/components/Hero/Hero.js → ELIMINAR, reemplazado por Hero3D.tsx
 src/components/FilterBar/FilterBar.js
 src/components/PropertyGrid/PropertyGrid.js
-src/components/PropertyCard/PropertyCard.js
+src/components/PropertyCard/PropertyCard.js → PropertyCard.tsx (+ parallax en Z)
 src/components/PropertyDetail/ (gallery, lightbox, info, actions)
 src/components/AgentGrid/AgentGrid.js
 src/components/ContactForm/ContactForm.js
@@ -895,10 +969,10 @@ src/admin/components/ (Sidebar, Topbar, DataTable, Forms, Modals, StatCard, HexA
 src/admin/pages/ (Login, Dashboard, Properties, Agents, Content, MercadoLibre, Settings, Tasaciones, CRM)
 ```
 
-### Partials Handlebars (revisar/actualizar)
+### Partials Handlebars
 ```
 src/partials/navbar.hbs
-src/partials/hero.hbs
+src/partials/hero.hbs → hero3d.hbs
 src/partials/filterBar.hbs
 src/partials/propiedades.hbs
 src/partials/quienes.hbs
@@ -911,98 +985,95 @@ src/partials/scripts.hbs
 
 ---
 
-## 11. COMANDOS DE VERIFICACIÓN AUTOMATIZADOS
+## 12. COMANDOS DE VERIFICACIÓN AUTOMATIZADOS
 
 ```bash
-# 1. Verificar que NO hay tokens legacy en CSS
-grep -rn "color-brand-\|gray-50\|gray-100\|gray-200\|primary-light\|accent-light\|#1f6ed4\|#3b82f6\|#0d7a5f\|#d97706\|#dc2626" src/styles/ --include="*.css" && echo "❌ LEGACY ENCONTRADO" || echo "✅ LIMPIO"
+# 1. Verificar que NO queda el teal legacy ni fuentes deprecadas en CSS
+grep -rn "#20b8ab\|Anton\|Poppins\|Montserrat\|Quicksand" src/styles/ --include="*.css" \
+  && echo "❌ LEGACY ENCONTRADO" || echo "✅ LIMPIO"
 
-# 2. Verificar que SÍ hay tokens normativos
-grep -rn "ds-color-primary\|ds-color-surface\|ds-radius-md\|ds-shadow-glow\|ds-transition-base" src/styles/ --include="*.css" | head -20
+# 2. Verificar que SÍ hay tokens normativos Nocturne
+grep -rn "ds-color-primary\|ds-color-surface\|ds-radius-md\|ds-shadow-glow\|ds-3d-" src/styles/ --include="*.css" | head -20
 
 # 3. Verificar radios prohibidos en CSS
-grep -rn "border-radius:\s*\(6\|10\|12\|14\)px" src/styles/ --include="*.css" | grep -v "14px.*property-card" && echo "❌ RADIOS PROHIBIDOS" || echo "✅ RADIOS OK"
+grep -rn "border-radius:\s*\(6\|10\|12\)px" src/styles/ --include="*.css" \
+  | grep -v "14px.*property-card\|10px.*select\|6px.*precio" \
+  && echo "❌ RADIOS PROHIBIDOS" || echo "✅ RADIOS OK"
 
 # 4. Verificar espaciados no-múltiplos-de-8
-grep -rn "\(margin\|padding\|gap\):\s*\([0-9]*[13579]\|[1235679][0-9]\)px" src/styles/ --include="*.css" && echo "⚠️ REVISAR ESPACIADOS" || echo "✅ ESPACIADOS OK"
+grep -rn "\(margin\|padding\|gap\):\s*\([0-9]*[13579]\|[1235679][0-9]\)px" src/styles/ --include="*.css" \
+  && echo "⚠️ REVISAR ESPACIADOS" || echo "✅ ESPACIADOS OK"
 
-# 5. Verificar fuentes hardcodeadas en JS
-grep -rn "font-family:\s*[\"']\?[^\"']*[\"']" src/components/ src/admin/ --include="*.js" --include="*.jsx" | grep -v "var(--ds-font" && echo "❌ FUENTES HARDCODEADAS" || echo "✅ FUENTES OK"
+# 5. Verificar fuentes hardcodeadas en JS/TS
+grep -rn "font-family:\s*[\"']\?[^\"']*[\"']" src/components/ src/admin/ --include="*.js" --include="*.jsx" --include="*.tsx" \
+  | grep -v "var(--ds-font" && echo "❌ FUENTES HARDCODEADAS" || echo "✅ FUENTES OK"
 
-# 6. Verificar hex hardcodeados en JS (excluyendo config)
-grep -rn "#[0-9a-fA-F]\{3,8\}" src/components/ src/admin/ --include="*.js" --include="*.jsx" | grep -v "config\." | grep -v "25d366\|1da85c" && echo "❌ HEX HARDCODEADOS" || echo "✅ HEX OK"
+# 6. Verificar hex hardcodeados en JS/TS (excluyendo config y WhatsApp)
+grep -rn "#[0-9a-fA-F]\{3,8\}" src/components/ src/admin/ --include="*.js" --include="*.jsx" --include="*.tsx" \
+  | grep -v "config\." | grep -v "25d366\|1da85c" \
+  && echo "❌ HEX HARDCODEADOS" || echo "✅ HEX OK"
 
-# 7. Build y lint
+# 7. Verificar que three.js NO está en el bundle inicial (debe ser chunk separado)
+npm run build && ls dist/assets/*.js | xargs -I{} du -h {} | sort -rh | head -5
+# → confirmar visualmente que el chunk de three.js aparece separado del entry principal
+
+# 8. Build y lint
 npm run build:css && npm run lint && npm run typecheck && echo "✅ BUILD OK"
 
-# 8. Accesibilidad (requiere servidor corriendo)
+# 9. Accesibilidad (requiere servidor corriendo)
 # npx @axe-core/cli http://localhost:5173
+
+# 10. Lighthouse (performance del Hero 3D)
+# npx lighthouse http://localhost:5173 --only-categories=performance,accessibility,best-practices --view
 ```
 
 ---
 
-## 12. MAPEO TOKENS LEGACY → NORMATIVOS (Migración)
+## 13. MAPEO TOKENS LEGACY → NOCTURNE (Migración)
 
-| Legacy (actual) | Normativo (nuevo) | Nota |
-|-----------------|-------------------|------|
-| `--color-brand-800` | `--ds-color-primary-dark` | |
-| `--color-brand-500` | `--ds-color-primary` | |
-| `--color-brand-400` | `--ds-color-primary` | |
-| `--primary` | `--ds-color-primary` | alias deprecated |
-| `--primary-light` | `--ds-color-primary` | deprecated |
-| `--primary-dark` | `--ds-color-primary-dark` | alias deprecated |
-| `--accent` | `--ds-color-primary` | alias deprecated |
-| `--accent-hover` | `--ds-color-primary-dark` | deprecated |
-| `--accent-light` | `rgba(32,184,171,0.15)` | usar `--ds-color-primary-glow` |
-| `--success` | `--ds-color-success` | |
-| `--warning` | `--ds-color-warning` | |
-| `--danger` | `--ds-color-danger` | |
-| `--gray-50` → `--gray-900` | `--ds-color-surface-1` a `--ds-color-bg` | mapear según uso |
-| `--surface-1` | `--ds-color-surface-1` | alias deprecated |
-| `--surface-elevated` | `--ds-color-surface-elevated` | alias deprecated |
-| `--border-default` | `--ds-color-border` | alias deprecated |
-| `--border-hover` | `--ds-color-border-medium` | alias deprecated |
-| `--border-focus` | `--ds-color-primary` | alias deprecated |
-| `--shadow-sm` | `--ds-shadow-sm` | valores distintos |
-| `--shadow-md` | `--ds-shadow-md` | valores distintos |
-| `--shadow-lg` | `--ds-shadow-lg` | valores distintos |
-| `--shadow-glow` | `--ds-shadow-glow` | valores distintos |
-| `--radius` | `--ds-radius-md` (8px) | era 12px → **cambia a 8px** |
-| `--radius-lg` | `--ds-radius-lg` (16px) | era 16px ✅ |
-| `--radius-xl` | `--ds-radius-lg` (16px) | era 24px → **cambia a 16px** |
-| `--radius-2xl` | `--ds-radius-lg` (16px) | era 28px → **cambia a 16px** |
-| `--font-sans` | `--ds-font-body` (Poppins) | era Inter → **cambia a Poppins** |
-| `--font-display` | `--ds-font-display` (Anton) | era Inter → **cambia a Anton** |
-| `--font-mono` | `--ds-font-mono` (JetBrains Mono) | ✅ |
-| `--header-height` | `--ds-header-height` | ✅ |
-| `--sidebar-width` | `--ds-sidebar-width` | ✅ |
-| `--container-max` | `--ds-container-max` | ✅ |
+| Legacy (Midnight Hive) | Nocturne (nuevo) | Nota |
+|---|---|---|
+| `--ds-color-primary: #20b8ab` | `--ds-color-primary: #2ee6c5` | mismo nombre de variable, nuevo valor |
+| `--ds-color-primary-dark: #178c81` | `--ds-color-primary-dark: #1fb89e` | |
+| `--ds-color-primary-glow` (rgba teal) | `--ds-color-primary-glow` (rgba signal) | |
+| `--ds-color-bg: #000000` | `--ds-color-bg: #0b0d0e` | negro puro → "void" con tibieza |
+| `--ds-color-surface-1..4` (`#080808`…`#1c1c1c`) | `--ds-color-surface-1..4` (`#101214`…`#24272a`) | escala ligeramente más clara y fría |
+| `--ds-color-text: #ffffff` | `--ds-color-text: #e8ecee` | blanco puro → "glass", más suave |
+| `--ds-color-text-muted: #8ab8b8` | `--ds-color-text-muted: #7fa8a0` | recalculado sobre el nuevo acento |
+| `--ds-font-display: Anton` | `--ds-font-display: General Sans` | impacto publicitario → arquitectónico |
+| `--ds-font-body: Poppins` | `--ds-font-body: Inter` | |
+| `--ds-font-num: Montserrat` | `--ds-font-num: JetBrains Mono` | sans numérica → monoespaciada técnica |
+| `--ds-font-elegant: Quicksand` | `--ds-font-elegant: Inter` (distinto tracking) | se unifica con body, se diferencia por tracking, no por familia |
+| `--ds-radius-*`, `--ds-space-*`, `--ds-shadow-sm/md/lg` | sin cambios | se conservan íntegramente |
+| — | `--ds-3d-*` (fog, bloom, intro, parallax) | tokens completamente nuevos, sin equivalente previo |
+| `--color-brand-*`, `--gray-*`, `--primary-light` | (ya deprecados desde Midnight Hive) | siguen deprecados, no reintroducir |
 
-> **IMPORTANTE:** Cambios de breaking: radius base 12px→8px, xl 24px→16px, font-sans Inter→Poppins, font-display Inter→Anton. Revisar TODOS los componentes afectados.
+> **Breaking changes de esta migración:** todo el bloque tipográfico (display/body/num/elegant) cambia de familia. Revisar TODOS los componentes que asumen anchos de columna/line-height calibrados para Anton/Poppins — General Sans e Inter tienen métricas distintas y pueden requerir ajustes de `line-height` puntuales en headlines muy largos.
 
 ---
 
-## 13. VISUAL IDENTITY KEYWORDS (Para referencia en revisiones)
+## 14. VISUAL IDENTITY KEYWORDS (Para referencia en revisiones)
 
-**Dark, Teal-Accented, Editorial, Compact, Technical**
-- Near-black surfaces (`#050505` → `#1a1a1a`)
-- Single teal accent (`#20B8AB`) for all interactive states
-- Anton for impact (uppercase, wide tracking)
-- Poppins for clarity (UI text, forms, tables)
-- Generous letter-spacing on labels/badges (0.10-0.18em)
-- Subtle glow shadows, not heavy elevation
-- 4px baseline grid, 8px radius default
-- Sidebar-first navigation, tabbed SPA content
-
----
-
-## 14. PRÓXIMOS PASOS INMEDIATOS
-
-1. **Aprobar este plan** o solicitar ajustes específicos
-2. **Ejecutar FASE 1** - Reemplazo completo `tokens.css` + `admin/0-tokens.css` + `critical.css`
-3. **Validar** build (`npm run build:css`) y dev server sin FOUC
-4. **Iterar** fase por fase con code review aplicando reglas Do/Don't
+**Dark, Signal-Lit, Architectural, Volumetric, Precise**
+- Near-black surfaces con tibieza (`#0b0d0e` → `#24272a`), nunca negro puro.
+- Un único acento tratado como **fuente de luz** (`#2EE6C5`), no como color de marca plano.
+- General Sans para impacto arquitectónico (headlines con tracking negativo).
+- Inter para claridad (UI, forms, tablas, nav).
+- JetBrains Mono para todo dato numérico — lectura de "ficha técnica".
+- Profundidad real: WebGL en el hero, `translateZ()` en las cards — la profundidad comunica jerarquía, no decora.
+- Glow selectivo y escaso — nunca más de un foco encendido por sección.
+- Grid de 8px, radius base 8px, sidebar-first en admin (sin cambios respecto a Midnight Hive).
 
 ---
 
-¿Procedo con **FASE 1** (reemplazo total de `tokens.css` y creación de `admin/0-tokens.css`)?
+## 15. PRÓXIMOS PASOS INMEDIATOS
+
+1. **Aprobar este plan** o solicitar ajustes puntuales (paleta, fuentes, alcance de fases).
+2. **Ejecutar FASE 1** — reemplazo de valores en `tokens.css` y `admin/0-tokens.css`, con aliases legacy activos.
+3. **Ejecutar FASE 2** — construir el Hero 3D (ya iniciado: `scene.ts`, `houseModel.ts`, `glowMaterial.ts`, `Hero3D.tsx` disponibles como punto de partida).
+4. **Validar** build (`npm run build:css`) y dev server sin FOUC ni residuos del teal legacy.
+5. **Iterar** fase por fase con code review aplicando la sección 10 (Do's/Don'ts) y los comandos de la sección 12.
+
+---
+
+¿Querés que arranque generando los archivos concretos de **FASE 1** (`tokens.css` y `admin/0-tokens.css` completos, listos para reemplazar los actuales), o preferís primero revisar/ajustar algún valor de la paleta o la tipografía antes de que quede "congelado" en el documento normativo?"
