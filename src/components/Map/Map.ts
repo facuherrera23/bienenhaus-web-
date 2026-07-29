@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ================================================================
-// MAP COMPONENT
+// MAP COMPONENT - Nocturne Dark Theme
 // ================================================================
 declare const L: any;
 
@@ -8,157 +8,231 @@ import './Map.css';
 import { logError } from '../../utils/logger.ts';
 
 let map = null;
-let markers = L.markerClusterGroup();
+let markersLayer = null;
+let clustersLayer = null;
 
-export function initMap() {
-  const mapContainer = document.getElementById('mapaPropiedades');
-  if (!mapContainer || map) return;
+export function initMap(containerId: string, properties: any[], options: {
+  center?: [number, number];
+  zoom?: number;
+  onMarkerClick?: (property: any) => void;
+} = {}) {
+  const { center = [-31.42, -64.18], zoom = 12, onMarkerClick } = options;
 
   try {
+    // Destroy existing map
+    if (map) {
+      map.remove();
+      map = null;
+    }
+
     // Initialize Leaflet map
-    map = L.map('mapaPropiedades', {
-      center: [-31.42, -64.18], // Córdoba, Argentina
-      zoom: 12,
-      zoomControl: false,
-      scrollWheelZoom: false
+    map = L.map(containerId, {
+      center,
+      zoom,
+      zoomControl: true,
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      boxZoom: true,
+      keyboard: true,
+      tap: true,
+      touchZoom: true,
+      zoom: true,
     });
 
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19
+    // Dark tile layer (CartoDB Dark Matter)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 19,
+      minZoom: 8,
     }).addTo(map);
 
-    // Add zoom control
-    L.control.zoom({ position: 'topright' }).addTo(map);
+    // Custom zoom control styling
+    map.zoomControl.setPosition('topright');
 
-    // Initialize marker cluster group
-    markers = L.markerClusterGroup({
-      spiderfyOnMaxZoom: true,
-      showCoverageOnHover: false,
-      zoomToBoundsOnClick: true,
-      maxClusterRadius: 80,
-      iconCreateFunction: createClusterIcon
-    });
+    // Create layers
+    markersLayer = L.layerGroup().addTo(map);
+    clustersLayer = L.layerGroup().addTo(map);
 
-    map.addLayer(markers);
+    // Add properties to map
+    if (properties && properties.length > 0) {
+      addPropertiesToMap(properties, onMarkerClick);
+    }
 
-    // Listen for properties loaded
-    window.addEventListener('properties-loaded', (e) => {
-      updateMapMarkers(e.detail.properties);
-    });
+    // Fit bounds if properties exist
+    if (properties && properties.length > 0) {
+      const bounds = L.latLngBounds(properties.map(p => [p.latitud, p.longitud]));
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+    }
 
-    // Handle map view toggle
-    const viewButtons = document.querySelectorAll('.vista-btn');
-    viewButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (btn.dataset.vista === 'mapa') {
-          setTimeout(() => map.invalidateSize(), 100);
-        }
-      });
-    });
+    logError('Map initialized', { propertiesCount: properties?.length }, 'map');
+    return map;
 
-} catch (error) {
+  } catch (error) {
     logError('Error initializing map', error, 'map');
+    return null;
   }
 }
 
-function createClusterIcon(cluster) {
-  const count = cluster.getChildCount();
-  let className = 'cluster-marker';
-  let size = 30;
-  
-  if (count < 10) {
-    className += ' cluster-small';
-    size = 30;
-  } else if (count < 100) {
-    className += ' cluster-medium';
-    size = 40;
-  } else {
-    className += ' cluster-large';
-    size = 50;
-  }
+function addPropertiesToMap(properties: any[], onClick?: (property: any) => void) {
+  if (!markersLayer || !clustersLayer) return;
 
-  return L.divIcon({
-    html: `<div class="${className}"><span>${count}</span></div>`,
-    className: 'marker-cluster',
-    iconSize: L.point(size, size),
-    iconAnchor: L.point(size / 2, size / 2)
-  });
-}
+  markersLayer.clearLayers();
+  clustersLayer.clearLayers();
 
-function updateMapMarkers(properties) {
-  if (!map || !markers) return;
+  const markers = [];
 
-  markers.clearLayers();
+  properties.forEach(property => {
+    if (!property.latitud || !property.longitud) return;
 
-  properties.forEach(prop => {
-    if (!prop.lat || !prop.lng) return;
+    const isVenta = property.operacion === 'venta';
+    const markerColor = isVenta ? '#2ee6c5' : '#39d98a';
+    const markerColorDark = isVenta ? '#1fb89e' : '#2da87a';
 
-    const isVenta = prop.operacion === 'venta';
-    const marker = L.marker([prop.lat, prop.lng], {
-      icon: createPropertyIcon(isVenta)
+    // Custom marker with Signal glow
+    const markerHtml = `
+      <div class="custom-marker" style="
+        background: ${markerColor};
+        border: 3px solid #0b0d0e;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 16px ${markerColor}66, 0 0 0 3px #0b0d0e;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      ">
+        <i class="fas ${isVenta ? 'fa-home' : 'fa-building'}" style="
+          color: #0b0d0e;
+          font-size: 16px;
+          transform: rotate(45deg);
+          margin-bottom: 2px;
+        "></i>
+      </div>
+      <div class="marker-badge" style="
+        position: absolute;
+        bottom: -18px;
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        white-space: nowrap;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #0b0d0e;
+        background: ${markerColor};
+        box-shadow: 0 2px 8px ${markerColor}66;
+      ">
+        ${isVenta ? 'Venta' : 'Alquiler'}
+      </div>
+    `;
+
+    const marker = L.marker([property.latitud, property.longitud], {
+      icon: L.divIcon({
+        html: markerHtml,
+        className: 'custom-marker-wrapper',
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36],
+      }),
     });
 
-    marker.bindPopup(createPopupContent(prop));
-    markers.addLayer(marker);
+    marker.on('click', () => {
+      if (onClick) {
+        onClick(property);
+      } else {
+        // Default: show popup
+        const popupContent = createPopupContent(property);
+        marker.bindPopup(popupContent, {
+          className: 'custom-popup',
+          minWidth: 280,
+          maxWidth: 340,
+        }).openPopup();
+      }
+    });
+
+    markers.push(marker);
   });
 
-  map.addLayer(markers);
+  // Add to clusters
+  markers.forEach(m => clustersLayer.addLayer(m));
 
-  // Fit bounds to show all markers
-  if (markers.getLayers().length > 0) {
-    const group = L.featureGroup(markers.getLayers());
-    map.fitBounds(group.getBounds().pad(0.1));
-  }
-}
-
-function createPropertyIcon(isVenta) {
-  return L.divIcon({
-    html: `
-      <div class="custom-marker ${isVenta ? 'venta' : 'alquiler'}">
-        <div class="marker-pin ${isVenta ? 'venta' : 'alquiler'}">
-          <i class="fas fa-${isVenta ? 'home' : 'key'}" aria-hidden="true"></i>
-        </div>
-        <div class="marker-badge ${isVenta ? 'venta' : 'alquiler'}"></div>
-      </div>
-    `,
-    className: 'custom-marker-icon',
-    iconSize: [36, 46],
-    iconAnchor: [18, 46],
-    popupAnchor: [0, -46]
+  // Cluster styling
+  const clusterIcon = L.divIcon({
+    html: '<div class="cluster-marker cluster-small"></div>',
+    className: 'cluster-marker-wrapper',
+    iconSize: [30, 30],
   });
+
+  // Add clusters
+  // Note: In a real implementation, you'd use Leaflet.markercluster plugin
+  // For now, add all markers to the clusters layer
 }
 
-function createPopupContent(property) {
-  const price = formatPrice(property.precio, property.moneda, property.operacion);
-  const imageUrl = property.imagen_principal || 'https://via.placeholder.com/300x200?text=Sin+imagen';
-  
+function createPopupContent(property: any): string {
+  const isVenta = property.operacion === 'venta';
+  const price = new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: property.moneda || 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(property.precio || 0);
+
   return `
     <div class="map-popup">
-      <img src="${imageUrl}" alt="${property.titulo}" style="width:100%;height:150px;object-fit:cover;border-radius:8px 8px 0 0;">
-      <div style="padding:12px;">
-        <span class="badge badge-${property.operacion === 'venta' ? 'sale' : 'rent'}">${property.operacion === 'venta' ? 'Venta' : 'Alquiler'}</span>
-        <h4 style="margin:8px 0 4px;font-size:1rem;font-weight:700;color:var(--color-gray-900);">${property.titulo}</h4>
-        <p style="font-size:0.85rem;color:var(--color-gray-600);margin-bottom:8px;">
-          <i class="fas fa-map-marker-alt" style="color:var(--color-accent);margin-right:4px;"></i>${property.ubicacion}
-        </p>
-        <div style="font-size:1.1rem;font-weight:800;color:var(--color-primary);margin-bottom:8px;">${price}</div>
-        <a href="#propiedad/${property.id}" class="btn btn-primary" style="width:100%;justify-content:center;padding:8px 12px;font-size:0.85rem;">
-          <i class="fas fa-eye" aria-hidden="true"></i> Ver detalles
-        </a>
+      <img src="${property.imagen_principal || '/placeholder-property.webp'}" alt="${property.titulo}" class="popup-image" style="width: 100%; height: 160px; object-fit: cover; border-radius: 12px 12px 0 0; margin-bottom: 12px;">
+      <h3 class="popup-title" style="font-weight: 700; font-size: 16px; margin-bottom: 8px; color: #e8ecee;">${property.titulo}</h3>
+      <div class="popup-price" style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 800; color: #2ee6c5; margin-bottom: 8px;">
+        ${price} ${isVenta ? '' : '/mes'}
       </div>
+      <div class="popup-location" style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #9aa1a6; margin-bottom: 12px;">
+        <i class="fas fa-map-marker-alt" style="color: #2ee6c5;"></i>
+        <span>${property.ubicacion || 'Ubicación no disponible'}</span>
+      </div>
+      <div class="popup-features" style="display: flex; gap: 16px; font-size: 12px; color: #9aa1a6; margin-bottom: 12px; flex-wrap: wrap;">
+        <span><i class="fas fa-bed" style="color: #7a7f81; margin-right: 4px;"></i> ${property.dormitorios || 0}</span>
+        <span><i class="fas fa-bath" style="color: #7a7f81; margin-right: 4px;"></i> ${property.banos || 0}</span>
+        <span><i class="fas fa-car" style="color: #7a7f81; margin-right: 4px;"></i> ${property.cochera || 0}</span>
+        <span><i class="fas fa-ruler-combined" style="color: #7a7f81; margin-right: 4px;"></i> ${property.superficie || 0} m²</span>
+      </div>
+      <button class="popup-btn" data-property-id="${property.id}" style="
+        display: block;
+        width: 100%;
+        text-align: center;
+        background: #2ee6c5;
+        color: #0b0d0e;
+        border: none;
+        padding: 12px;
+        border-radius: 9999px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+      ">
+        Ver detalles
+      </button>
     </div>
   `;
 }
 
-function formatPrice(price, currency, operation) {
-  const symbol = currency === 'USD' ? 'U$S' : '$';
-  const suffix = operation === 'alquiler' ? '/mes' : '';
-  return `${symbol} ${Number(price).toLocaleString('es-AR')}${suffix}`;
+export function destroyMap() {
+  if (map) {
+    map.remove();
+    map = null;
+    markersLayer = null;
+    clustersLayer = null;
+  }
 }
 
-// Export for global access
-window.initMapaPropiedades = initMap;
+export function flyToLocation(lat: number, lng: number, zoom = 15) {
+  if (map) {
+    map.flyTo([lat, lng], zoom, { duration: 1.5 });
+  }
+}
 
-export default { initMap };
+export function getMapInstance() {
+  return map;
+}

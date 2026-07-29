@@ -1,1 +1,1 @@
-export { default as PropertyMap } from './Map.ts';
+export { initMap, destroyMap, flyToLocation, getMapInstance } from './Map.ts';
