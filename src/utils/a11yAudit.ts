@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 // ================================================================
 // ACCESSIBILITY AUDIT - Automated a11y checks
 // ================================================================
@@ -250,3 +250,5 @@ export default {
   auditAndLog,
   autoFixAccessibility
 };
+
+

@@ -1,7 +1,7 @@
-// @ts-nocheck
 // ================================================================
 // CONTENT LOADER - Carga contenido dinámico desde Supabase
 // ================================================================
+import { supabase } from './supabase.ts';
 import { logError, logWarn, logDebug } from './utils/logger.ts';
 
 let siteContent = {};

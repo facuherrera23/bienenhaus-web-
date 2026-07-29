@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 // ================================================================
 // SHARED SUPABASE LOADER - Module-level promise for Vercel best practices
 // bundle-dynamic-imports, async-parallel, async-defer-await

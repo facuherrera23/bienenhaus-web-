@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * Autocomplete Search Component - Photon-powered location autocomplete
  * Features: debounced search, cache, keyboard nav, "cerca de mí", recent searches
@@ -428,3 +428,4 @@ export function Autocomplete({
 }
 // Default export
 export default Autocomplete;
+

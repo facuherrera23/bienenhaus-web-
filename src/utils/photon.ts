@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * Photon API Client - Lightweight wrapper for OpenStreetMap Photon geocoder
  * Free, no API key required, good for Argentina

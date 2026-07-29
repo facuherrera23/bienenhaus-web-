@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 // ================================================================
 // ANALYTICS - Unified tracking for GA4, Meta Pixel, custom events
 // ================================================================
@@ -337,3 +337,5 @@ export default {
   updateConsent,
   isAnalyticsEnabled
 };
+
+
