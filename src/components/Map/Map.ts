@@ -5,6 +5,7 @@
 declare const L: any;
 
 import './Map.css';
+import { logError } from '../../utils/logger.ts';
 
 let map = null;
 let markers = L.markerClusterGroup();
@@ -57,8 +58,8 @@ export function initMap() {
       });
     });
 
-  } catch (error) {
-    console.error('Error initializing map:', error);
+} catch (error) {
+    logError('Error initializing map', error, 'map');
   }
 }
 

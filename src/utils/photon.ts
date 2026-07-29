@@ -3,6 +3,7 @@
  * Photon API Client - Lightweight wrapper for OpenStreetMap Photon geocoder
  * Free, no API key required, good for Argentina
  */
+import { logError, logWarn } from './logger.ts';
 
 const PHOTON_BASE = 'https://photon.komoot.io/api/';
 const PHOTON_REVERSE = 'https://photon.komoot.io/reverse/';
@@ -79,8 +80,8 @@ export async function searchPhoton(query, options = {}) {
         shortName: formatShortName(props)
       };
     });
-  } catch (error) {
-    console.error('Photon search error:', error);
+} catch (error) {
+    logError('Photon search error', error, 'photon');
     return [];
   }
 }
@@ -120,8 +121,8 @@ export async function reversePhoton(lat, lng, options = {}) {
       type: props.type,
       displayName: formatDisplayName(props)
     };
-  } catch (error) {
-    console.error('Photon reverse error:', error);
+} catch (error) {
+    logError('Photon reverse error', error, 'photon');
     return null;
   }
 }
@@ -259,8 +260,8 @@ export function createAutocomplete(options = {}) {
               cache.delete(firstKey);
             }
             cache.set(q, results);
-          } catch (e) {
-            console.warn('Warmup failed for', q, e);
+} catch (e) {
+            logWarn('Warmup failed for', { query: q, error: e }, 'photon');
           }
         }
       }
@@ -319,7 +320,7 @@ export function watchUserLocation(callback, options = {}) {
       lng: pos.coords.longitude,
       accuracy: pos.coords.accuracy
     }),
-    err => console.warn('Geolocation watch error:', err),
+    err => logWarn('Geolocation watch error', { error: err }, 'photon'),
     { enableHighAccuracy, timeout, maximumAge }
   );
 }

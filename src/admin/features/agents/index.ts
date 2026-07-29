@@ -7,6 +7,7 @@ import { uploadToCloudinary, validateImageFile } from '../../../cloudinary.ts';
 import { showToast, getInitials } from '../../shared/utils.ts';
 import { CONFIG } from '../../../config.ts';
 import { propertiesCache } from '../properties/index.ts';
+import { logError, logWarn } from '../../../utils/logger.ts';
 
 interface Agent {
   id: number;
@@ -40,7 +41,7 @@ async function loadAgents(): Promise<void> {
     updateAgentStats();
     renderAgentsTable();
     updateNavBadges();
-  } catch (e) { console.error('Error loading agents:', e); showToast('Error cargando agentes', 'error'); }
+  } catch (e) { logError('Error loading agents', e, 'admin-agents'); showToast('Error cargando agentes', 'error'); }
 }
 
 function updateAgentStats(): void {
@@ -160,7 +161,7 @@ async function saveAgent(e: Event): Promise<void> {
     if (result.error) throw result.error;
     showToast(`Agente ${editingAgentId ? 'actualizado' : 'creado'} correctamente`, 'success');
     closeAgentModal(); await loadAgents();
-  } catch (e: unknown) { console.error('saveAgent error:', e); showToast(`Error: ${e instanceof Error ? e.message : 'Error al guardar agente'}`, 'error'); }
+  } catch (e: unknown) { logError('saveAgent error', e, 'admin-agents'); showToast(`Error: ${e instanceof Error ? e.message : 'Error al guardar agente'}`, 'error'); }
   finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar'; }
 }
 

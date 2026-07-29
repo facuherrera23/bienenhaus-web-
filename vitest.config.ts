@@ -24,11 +24,11 @@ export default defineConfig({
         'src/router.ts',
         'src/sw.ts'
       ],
-      thresholds: {
-        lines: 50,
-        functions: 50,
-        branches: 30,
-        statements: 50
+thresholds: {
+        lines: 58,
+        functions: 60,
+        branches: 50,
+        statements: 58
       }
     },
     testTimeout: 10000,

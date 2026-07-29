@@ -1,4 +1,4 @@
-// Configuración centralizada - Variables de entorno
+import { logWarn } from './utils/logger.ts';
 // NO commitear valores reales. Copia a .env.local
 
 export const CONFIG = {
@@ -26,7 +26,7 @@ if (import.meta.env.DEV) {
   const required = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'CLOUDINARY_CLOUD_NAME'];
   required.forEach(key => {
     if (!CONFIG[key] || CONFIG[key].includes('TU_')) {
-      console.warn(`⚠️ Config faltante: ${key} - Define en .env.local`);
+      logWarn(`Config faltante: ${key} - Define en .env.local`, undefined, 'config');
     }
   });
 }

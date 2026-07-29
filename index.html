@@ -3,16 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' https://rnldqiwwzhjnurkguihu.supabase.co https://api.cloudinary.com; frame-src 'none';">
-  <script>
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      var path = window.location.pathname;
-      if (path !== '/' && path !== '/bienenhaus-web-/') {
-        sessionStorage.redirect = location.href;
-        window.location.replace('/');
-      }
-    }
-  </script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' https://rnldqiwwzhjnurkguihu.supabase.co https://api.cloudinary.com; frame-src 'none';">
   <meta name="robots" content="index, follow">
   <meta name="description" content="Bienenhaus Propiedades - Agencia inmobiliaria en Córdoba, Argentina. Encuentra tu hogar ideal.">
   <meta name="author" content="Bienenhaus Propiedades">
@@ -54,42 +45,78 @@
   <title>Bienenhaus · Propiedades en Córdoba</title>
 
   <!-- Font Awesome -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <!-- Google Fonts: Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+  <!-- Google Fonts: Bienenhaus (Subject-anchored) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.webmanifest">
 
-  <!-- MAINTENANCE MODE CHECK (blocking script - runs before any React/Vite code) -->
-  <script>
-    (function() {
-      const SUPABASE_URL = 'https://rnldqiwwzhjnurkguihu.supabase.co';
-      const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubGRxaXd3emhqbnVya2d1aWh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NDA4MzMsImV4cCI6MjEwMDUxNjgzM30.tzqe0Z1vS9R5GiCTxIe3m6uY4kkggF3kewPrRUY8BwE';
-      
-      fetch(`${SUPABASE_URL}/rest/v1/contenido_sitio?clave=eq.maintenance_mode&select=valor`, {
-        headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
-        signal: AbortSignal.timeout(2500)
-      })
-        .then(r => r.json())
-        .then(d => { if (d?.[0]?.valor?.enabled === true) location.replace('/maintenance.html'); })
-        .catch(() => {}); // fail-open: si falla, muestra sitio normal
-    })();
+  <!-- Early scripts - must run before module -->
+  <script src="/early-scripts.js"></script>
+
+  <meta name="robots" content="index, follow">
+  <meta name="description" content="Bienenhaus Propiedades - Agencia inmobiliaria en Córdoba, Argentina. Encuentra tu hogar ideal.">
+  <meta name="author" content="Bienenhaus Propiedades">
+  <link rel="canonical" href="https://bienenhaus.com.ar/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bienenhaus.com.ar/">
+  <meta property="og:title" content="Bienenhaus · Propiedades en Córdoba">
+  <meta property="og:description" content="Encuentra tu próximo hogar con Bienenhaus Propiedades. Expertos en el mercado inmobiliario de Córdoba.">
+  <meta property="og:image" content="https://bienenhaus.com.ar/og-image.svg">
+  <meta property="og:locale" content="es_AR">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@bienenhaus">
+  <meta name="twitter:title" content="Bienenhaus · Propiedades en Córdoba">
+  <meta name="twitter:description" content="Encuentra tu próximo hogar con Bienenhaus Propiedades. Expertos en el mercado inmobiliario de Córdoba.">
+  <meta name="twitter:image" content="https://bienenhaus.com.ar/og-image.svg">
+
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    "name": "Bienenhaus Propiedades",
+    "description": "Agencia inmobiliaria en Córdoba, Argentina",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Córdoba",
+      "addressCountry": "AR"
+    },
+    "telephone": "+54 351 123-4567",
+    "email": "bienenhaus.propiedades@gmail.com",
+    "url": "https://bienenhaus.com.ar"
+  }
   </script>
+
+  <title>Bienenhaus · Propiedades en Córdoba</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <!-- Google Fonts: Bienenhaus (Subject-anchored) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.webmanifest">
+
 </head>
 <body>
-  <script>
-    if (sessionStorage.redirect) {
-      window.location.replace(sessionStorage.redirect);
-      sessionStorage.removeItem('redirect');
-    }
-  </script>
   <!-- Skip Link (Accesibilidad) -->
   <a class="skip-link" href="#catalogo">Saltar al contenido principal</a>
 
@@ -127,7 +154,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Vista Lista -->
       <div class="vista-contenedor" id="vistaLista">
         <div class="property-grid" id="gridPropiedades" role="list"></div>
@@ -139,7 +166,7 @@
           </button>
         </div>
       </div>
-      
+
       <!-- Vista Mapa -->
       <div class="vista-contenedor" id="vistaMapa" hidden>
         <div id="mapaPropiedades" style="height:600px;border-radius:var(--radius-xl);overflow:hidden;"></div>
@@ -178,7 +205,7 @@
       <h3 id="whatsappModalTitle"><i class="fab fa-whatsapp" aria-hidden="true"></i> Contacta por WhatsApp</h3>
       <button class="modal-close" id="whatsappClose" aria-label="Cerrar">&times;</button>
     </div>
-    <p>Déjanos tus datos y te contactaremos en menos de 5 minutos.</p>
+    <p>Déjanos tus datos y te contactaremos en menos de 5 minutos.</    </p>
     <form id="whatsappForm" novalidate>
       <div class="form-group">
         <label for="waNombre">Nombre completo <span class="req" style="color:var(--color-danger);">*</span></label>
@@ -195,14 +222,14 @@
       <button type="submit" class="btn-whatsapp-enviar">
         <i class="fab fa-whatsapp" aria-hidden="true"></i> Enviar y contactar
       </button>
-      <p class="mensaje-info" style="font-size:0.75rem;color:var(--color-gray-500);margin-top:10px;text-align:center;">Tu información será tratada con confidencialidad.</p>
+      <p class="mensaje-info" style="font-size:0.75rem;color:var(--color-gray-500);margin-top:10px;text-align:center;">Tu información será tratada con confidencialidad.</      </p>
     </form>
   </div>
 
   <div class="whatsapp-overlay" id="whatsappOverlay"></div>
 
   <!-- ADMIN BUTTON (Ctrl+Shift+A) -->
-  <button id="btnAdmin" onclick="abrirAdmin()" style="display:none; position:fixed; bottom:100px; left:30px; z-index:999; background:var(--color-primary); color:white; border:none; padding:12px 20px; border-radius:60px; font-weight:600; cursor:pointer; box-shadow:var(--shadow-lg);"><i class="fas fa-user-cog"></i> Admin</button>
+  <button id="btnAdmin" style="display:none; position:fixed; bottom:100px; left:30px; z-index:999; background:var(--color-primary); color:white; border:none; padding:12px 20px; border-radius:60px; font-weight:600; cursor:pointer; box-shadow:var(--shadow-lg);"><i class="fas fa-user-cog"></i> Admin</button>
 
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />

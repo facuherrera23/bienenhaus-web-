@@ -4,6 +4,8 @@
 // ================================================================
 
 import './PropertyGrid.css';
+import { supabasePromise } from '../../lib/supabase-loader.ts';
+import { logWarn, logError } from '../../utils/logger.ts';
 
 let gridElement = null;
 let currentProperties = [];
@@ -17,7 +19,7 @@ let observer = null;
 export function initPropertyGrid() {
   gridElement = document.getElementById('gridPropiedades');
   if (!gridElement) {
-    console.warn('Property grid element not found');
+    logWarn('Property grid element not found', undefined, 'PropertyGrid');
     return;
   }
   
@@ -34,7 +36,7 @@ export function initPropertyGrid() {
     loadProperties();
   });
   
-  // Initial load
+  // Initial load - don't await (Vercel: async-defer-await)
   loadProperties();
 }
 
@@ -99,7 +101,8 @@ async function loadProperties() {
   showLoading(true);
   
   try {
-    const { supabase } = await import('../../supabase.ts');
+    // Use cached module promise (Vercel: bundle-dynamic-imports, async-parallel)
+    const supabase = await supabasePromise;
     const filters = window.getCurrentFilters ? window.getCurrentFilters() : {};
     
     let query = supabase
@@ -181,7 +184,7 @@ async function loadProperties() {
     updatePagination(count || data?.length || 0);
     
   } catch (error) {
-    console.error('Error loading properties:', error);
+    logError('Error loading properties', error, 'PropertyGrid');
     showError(error.message);
   } finally {
     isLoading = false;
@@ -361,28 +364,28 @@ function updatePagination(total) {
   let html = '';
   
   // Previous
-  html += `<button class="nav-btn" ${currentPage === 1 ? 'disabled' : ''} data-page="${currentPage - 1}"><i class="fas fa-chevron-left"></i></button>`;
+  html += `<button class="nav-btn" ${currentPage === 1 ? 'disabled' : ''} data-page="${currentPage - 1}" aria-label="Página anterior"><i class="fas fa-chevron-left"></i></button>`;
   
   // Pages
   const startPage = Math.max(1, currentPage - 2);
   const endPage = Math.min(totalPages, currentPage + 2);
   
   if (startPage > 1) {
-    html += `<button data-page="1">1</button>`;
+    html += `<button data-page="1" aria-label="Página 1">1</button>`;
     if (startPage > 2) html += `<span class="pagination-ellipsis">...</span>`;
   }
   
   for (let i = startPage; i <= endPage; i++) {
-    html += `<button class="${i === currentPage ? 'activa' : ''}" data-page="${i}">${i}</button>`;
+    html += `<button class="${i === currentPage ? 'activa' : ''}" data-page="${i}" aria-label="Página ${i}">${i}</button>`;
   }
   
   if (endPage < totalPages) {
     if (endPage < totalPages - 1) html += `<span class="pagination-ellipsis">...</span>`;
-    html += `<button data-page="${totalPages}">${totalPages}</button>`;
+    html += `<button data-page="${totalPages}" aria-label="Página ${totalPages}">${totalPages}</button>`;
   }
   
   // Next
-  html += `<button class="nav-btn" ${currentPage === totalPages ? 'disabled' : ''} data-page="${currentPage + 1}"><i class="fas fa-chevron-right"></i></button>`;
+  html += `<button class="nav-btn" ${currentPage === totalPages ? 'disabled' : ''} data-page="${currentPage + 1}" aria-label="Página siguiente"><i class="fas fa-chevron-right"></i></button>`;
   
   pagination.innerHTML = html;
   

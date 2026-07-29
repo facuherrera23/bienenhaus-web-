@@ -61,16 +61,57 @@ function createHeader() {
 function bindEvents() {
   if (!headerElement) return;
   
-  // Mobile menu toggle
+  // Mobile menu toggle with focus trap
   const mobileBtn = headerElement.querySelector('.mobile-menu-btn');
   const nav = headerElement.querySelector('.header-nav');
+  let lastFocusedElement = null;
   
+  function trapFocus(e) {
+    if (!nav.classList.contains('open')) return;
+    
+    const focusableElements = nav.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    
+    if (e.key === 'Tab') {
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    }
+  }
+
   if (mobileBtn && nav) {
     mobileBtn.addEventListener('click', () => {
       const isOpen = nav.classList.toggle('open');
       mobileBtn.setAttribute('aria-expanded', isOpen);
       mobileBtn.innerHTML = isOpen ? '<i class="fas fa-times" aria-hidden="true"></i>' : '<i class="fas fa-bars" aria-hidden="true"></i>';
       document.body.style.overflow = isOpen ? 'hidden' : '';
+      
+      if (isOpen) {
+        lastFocusedElement = document.activeElement;
+        // Trap focus
+        document.addEventListener('keydown', trapFocus);
+        // Focus first link
+        setTimeout(() => {
+          const firstLink = nav.querySelector('.header-nav-link');
+          if (firstLink) firstLink.focus();
+        }, 0);
+      } else {
+        document.removeEventListener('keydown', trapFocus);
+        if (lastFocusedElement && typeof (lastFocusedElement as HTMLElement).focus === 'function') {
+          (lastFocusedElement as HTMLElement).focus();
+        }
+      }
     });
   }
   

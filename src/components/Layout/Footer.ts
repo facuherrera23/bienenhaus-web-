@@ -7,6 +7,7 @@ import './Footer.css';
 import { supabase } from '../../supabase.ts';
 import { showToast } from '../../main.ts';
 import { escapeHtml, sanitizeUrl } from '../../utils/sanitize.ts';
+import { logError } from '../../utils/logger.ts';
 
 let footerElement = null;
 
@@ -127,7 +128,7 @@ async function handleNewsletterSubmit(e) {
     showToast('¡Te has suscrito correctamente!', 'success');
     form.reset();
   } catch (error) {
-    console.error('Newsletter error:', error);
+    logError('Newsletter error', error, 'footer');
     showToast('Error al suscribirse. Intenta nuevamente.', 'error');
   } finally {
     button.disabled = false;

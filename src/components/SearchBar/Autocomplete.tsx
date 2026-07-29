@@ -10,6 +10,7 @@ import {
   getUserLocation, 
   reversePhoton 
 } from '../../utils/photon.ts';
+import { logError, logWarn } from '../../utils/logger.ts';
 import './Autocomplete.css';
 
 /**
@@ -61,7 +62,7 @@ export function Autocomplete({
       setIsLoading(false);
     },
     onError: (error) => {
-      console.error('Autocomplete error:', error);
+      logError('Autocomplete error', error, 'autocomplete');
       setIsLoading(false);
     }
   }), [bias]);
@@ -74,7 +75,7 @@ export function Autocomplete({
         setRecentSearches(JSON.parse(stored));
       }
     } catch (e) {
-      console.warn('Failed to load recent searches:', e);
+      logWarn('Failed to load recent searches:', e, 'autocomplete');
     }
   }, []);
 
@@ -212,7 +213,7 @@ export function Autocomplete({
       onChange(suggestion.shortName || name);
       setIsOpen(false);
     } catch (error) {
-      console.error('Geolocation failed:', error);
+      logError('Geolocation failed', error, 'autocomplete');
       alert('No se pudo obtener tu ubicación. Verifica los permisos del navegador.');
     } finally {
       setIsLocating(false);
@@ -397,6 +398,7 @@ export function Autocomplete({
             aria-expanded={isOpen && (suggestions.length > 0 || showRecent)}
             aria-haspopup="listbox"
             aria-label={label}
+            aria-activedescendant={highlightedIndex >= 0 ? `${id}-suggestion-${highlightedIndex}` : (showRecent && recentSearches.length > 0 ? `${id}-recent-0` : undefined)}
           />
           {!disabled && (
             <button

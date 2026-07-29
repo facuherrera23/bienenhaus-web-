@@ -3,6 +3,7 @@
 // ================================================================
  
 import { supabase } from '../../../supabase.ts';
+import { logError, logWarn, logDebug } from '../../../utils/logger.ts';
 
 const contentCache: Record<string, any> = {};
 
@@ -37,14 +38,14 @@ export async function loadContent(): Promise<Record<string, any>> {
     renderAllContent();
     return contentCache;
   } catch (e) {
-    console.error('Error cargando contenido:', e);
+    logError('Error cargando contenido', e, 'admin-content');
     return {};
   }
 }
 
 function renderAllContent(): void {
   Object.entries(contentCache).forEach(([clave, valor]) => {
-    try { contentRenderers[clave]?.(valor); } catch (e) { console.warn(`Error renderizando ${clave}:`, e); }
+    try { contentRenderers[clave]?.(valor); } catch (e) { logWarn(`Error renderizando ${clave}`, { error: e }, 'admin-content'); }
   });
 }
 
@@ -154,7 +155,7 @@ function renderSeoDescripcion(value: any) {
 function renderSeoKeywords(value: any) { const meta = document.querySelector('meta[name="keywords"]'); if (meta) meta.setAttribute('content', value); }
 function renderSeoOgImage(value: any) { const ogImage = document.querySelector('meta[property="og:image"]'); if (ogImage) ogImage.setAttribute('content', value); const twitterImage = document.querySelector('meta[name="twitter:image"]'); if (twitterImage) twitterImage.setAttribute('content', value); }
 function renderSeoTwitterCard(value: any) { const twitterCard = document.querySelector('meta[name="twitter:card"]'); if (twitterCard) twitterCard.setAttribute('content', value); }
-function renderSeoSchema(value: any) { const schema = document.querySelector('script[type="application/ld+json"]'); if (schema && value) { try { schema.textContent = value; } catch (e) { console.warn('Schema JSON inválido:', e); } } }
+function renderSeoSchema(value: any) { const schema = document.querySelector('script[type="application/ld+json"]'); if (schema && value) { try { schema.textContent = value; } catch (e) { logWarn('Schema JSON inválido', { error: e }, 'admin-content'); } } }
 
 // ================================================================
 // RENDERIZADORES - SITE SETTINGS
@@ -250,7 +251,7 @@ async function cargarContenidoSitio(): Promise<Record<string, any>> {
     (data || []).forEach((item: { clave: string; valor: any }) => { contentCache[item.clave] = item.valor; });
     renderAllContent();
     return contentCache;
-  } catch (e) { console.error('Error cargando contenido:', e); return {}; }
+  } catch (e) { logError('Error cargando contenido', e, 'admin-content'); return {}; }
 }
 
 // Para uso en admin (recargar sin recargar página)

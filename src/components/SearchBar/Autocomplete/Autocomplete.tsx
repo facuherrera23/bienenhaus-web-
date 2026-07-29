@@ -9,6 +9,7 @@ import {
   getUserLocation, 
   reversePhoton 
 } from '../../../utils/photon.ts';
+import { logError, logWarn } from '../../../utils/logger.ts';
 
 // Global state for API access
 let autocompleteInstance = null;
@@ -129,7 +130,7 @@ export function createAutocompleteComponent(config) {
       renderSuggestions();
     },
     onError: (error) => {
-      console.error('Autocomplete error:', error);
+      logError('Autocomplete error', error, 'autocomplete');
       isLoading = false;
       renderSuggestions();
     }
@@ -143,7 +144,7 @@ export function createAutocompleteComponent(config) {
         recentSearches = JSON.parse(stored);
       }
     } catch (e) {
-      console.warn('Failed to load recent searches:', e);
+      logWarn('Failed to load recent searches', { error: e }, 'autocomplete');
     }
   }
 
@@ -433,7 +434,7 @@ const suggestion = {
       isOpen = false;
       renderSuggestions();
     } catch (error) {
-      console.error('Geolocation failed:', error);
+      logError('Geolocation failed', error, 'autocomplete');
       alert('No se pudo obtener tu ubicación. Verifica los permisos del navegador.');
     } finally {
       isLocating = false;

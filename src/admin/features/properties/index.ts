@@ -7,7 +7,8 @@ import { CONFIG } from '../../../config.ts';
 import { uploadToCloudinary, validateImageFile } from '../../../cloudinary.ts';
 import { showToast, formatPrice } from '../../shared/utils.ts';
 import { loadMLSyncLog } from '../mercadoLibre/index.ts';
-import Cropper from 'cropperjs';
+import { logError, logWarn, logDebug, logInfo } from '../../../utils/logger.ts';
+// Cropper.js loaded dynamically in openImageEditor() (Vercel: bundle-dynamic-imports)
 
 interface Property {
   id: number;
@@ -46,6 +47,7 @@ const selectedPropertyIds = new Set<number>();
 let editingPropertyId: number | null = null;
 let uploadedPropertyImages: File[] = [];
 let cropperInstance: any = null;
+let Cropper: any = null;
 
 async function loadProperties(): Promise<void> {
   try {
@@ -71,7 +73,7 @@ async function loadProperties(): Promise<void> {
     renderPropertiesTable();
     updateNavBadges();
   } catch (e: unknown) {
-    console.error('Error loading properties:', e);
+    logError('Error loading properties', e, 'admin-properties');
     const msg = e instanceof Error && (e.message.includes('RLS') || e.message.includes('42501'))
       ? 'Error de permisos (RLS): Configura service_role key en Edge Functions'
       : 'Error cargando propiedades';
@@ -408,7 +410,7 @@ async function bulkAction(action: string, data = {}): Promise<void> {
     clearSelection();
     await loadProperties();
   } catch (e: unknown) {
-    console.error(`Bulk ${action} error:`, e);
+    logError(`Bulk ${action} error`, e, 'admin-properties');
     showToast(`Error al ${getActionInfinitive(action)}: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error');
   }
 }
@@ -441,7 +443,7 @@ async function bulkPublish(): Promise<void> {
     try {
       await supabase.functions.invoke('ml-publish', { body: { propertyId: id, action: 'publish' } });
     } catch (_e) {
-      console.warn(`ML publish failed for property ${id}:`, _e);
+      logWarn(`ML publish failed for property ${id}`, { error: _e }, 'admin-properties');
     }
   }
 
@@ -459,7 +461,7 @@ async function bulkUnpublish(): Promise<void> {
     try {
       await supabase.functions.invoke('ml-publish', { body: { propertyId: id, action: 'unpublish' } });
     } catch (_e) {
-      console.warn(`ML unpublish failed for property ${id}:`, _e);
+      logWarn(`ML unpublish failed for property ${id}`, { error: _e }, 'admin-properties');
     }
   }
 
@@ -500,7 +502,7 @@ async function bulkDelete(): Promise<void> {
     clearSelection();
     await loadProperties();
   } catch (e: unknown) {
-    console.error('Bulk delete error:', e);
+    logError('Bulk delete error', e, 'admin-properties');
     showToast(`Error al eliminar: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error');
   }
 }
@@ -815,7 +817,7 @@ async function saveProperty(e: Event): Promise<void> {
           showToast('Propiedad publicada en MercadoLibre', 'success');
         }
       } catch (mlErr) {
-        console.warn('ML auto-publish failed:', mlErr);
+        logWarn('ML auto-publish failed', { error: mlErr }, 'admin-properties');
       }
     }
 
@@ -844,7 +846,7 @@ async function saveProperty(e: Event): Promise<void> {
     closePropertyModal();
     await loadProperties();
   } catch (e: unknown) {
-    console.error('saveProperty error:', e);
+    logError('saveProperty error', e, 'admin-properties');
     showToast(`Error: ${e instanceof Error ? e.message : 'Error al guardar propiedad'}`, 'error');
   } finally {
     btn.disabled = false;
@@ -853,8 +855,19 @@ async function saveProperty(e: Event): Promise<void> {
 }
 
 // ================================================================
-// IMAGE EDITOR (CROPPER)
+// IMAGE EDITOR (CROPPER) - Dynamic import for bundle optimization
 // ================================================================
+// Import CSS statically (Vite handles CSS as separate chunk)
+import 'cropperjs/dist/cropper.css';
+
+async function loadCropper() {
+  if (!Cropper) {
+    const mod = await import('cropperjs');
+    Cropper = mod.default || mod;
+  }
+  return Cropper;
+}
+
 function openImageEditor(index: number): void {
   const file = uploadedPropertyImages[index];
   if (!file) return;
@@ -891,69 +904,72 @@ function openImageEditor(index: number): void {
 
   document.body.appendChild(modal);
 
-  const image = modal.querySelector('#cropperImage') as HTMLImageElement;
-  cropperInstance = new Cropper(image, {
-    aspectRatio: NaN,
-    viewMode: 1,
-    dragMode: 'move',
-    autoCropArea: 1,
-    responsive: true,
-    restore: true,
-    guides: true,
-    center: true,
-    highlight: true,
-    cropBoxMovable: true,
-    cropBoxResizable: true,
-    toggleDragModeOnDblclick: true,
-  });
-
-  modal.querySelector('#cropRotateLeft')?.addEventListener('click', () => cropperInstance?.rotate(-90));
-  modal.querySelector('#cropRotateRight')?.addEventListener('click', () => cropperInstance?.rotate(90));
-  modal.querySelector('#cropFlipH')?.addEventListener('click', () => {
-    const data = cropperInstance!.getData();
-    cropperInstance!.scaleX(-data.scaleX);
-  });
-  modal.querySelector('#cropFlipV')?.addEventListener('click', () => {
-    const data = cropperInstance!.getData();
-    cropperInstance!.scaleY(-data.scaleY);
-  });
-  modal.querySelector('#cropReset')?.addEventListener('click', () => cropperInstance?.reset());
-
-  const closeModal = () => {
-    cropperInstance?.destroy();
-    cropperInstance = null;
-    modal.remove();
-  };
-
-  modal.querySelector('.modal-close')?.addEventListener('click', closeModal);
-  modal.querySelector('#cropCancel')?.addEventListener('click', closeModal);
-  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-
-  modal.querySelector('#cropApply')?.addEventListener('click', async () => {
-    if (!cropperInstance) return;
-
-    const canvas = cropperInstance.getCroppedCanvas({
-      maxWidth: 1920,
-      maxHeight: 1080,
-      imageSmoothingEnabled: true,
-      imageSmoothingQuality: 'high',
+  // Load Cropper dynamically (Vercel: bundle-dynamic-imports)
+  loadCropper().then(() => {
+    const image = modal.querySelector('#cropperImage') as HTMLImageElement;
+    cropperInstance = new Cropper(image, {
+      aspectRatio: NaN,
+      viewMode: 1,
+      dragMode: 'move',
+      autoCropArea: 1,
+      responsive: true,
+      restore: true,
+      guides: true,
+      center: true,
+      highlight: true,
+      cropBoxMovable: true,
+      cropBoxResizable: true,
+      toggleDragModeOnDblclick: true,
     });
 
-    canvas.toBlob(async (blob: Blob | null) => {
-      if (!blob) return;
+    modal.querySelector('#cropRotateLeft')?.addEventListener('click', () => cropperInstance?.rotate(-90));
+    modal.querySelector('#cropRotateRight')?.addEventListener('click', () => cropperInstance?.rotate(90));
+    modal.querySelector('#cropFlipH')?.addEventListener('click', () => {
+      const data = cropperInstance!.getData();
+      cropperInstance!.scaleX(-data.scaleX);
+    });
+    modal.querySelector('#cropFlipV')?.addEventListener('click', () => {
+      const data = cropperInstance!.getData();
+      cropperInstance!.scaleY(-data.scaleY);
+    });
+    modal.querySelector('#cropReset')?.addEventListener('click', () => cropperInstance?.reset());
 
-      let finalBlob = blob;
-      if (blob.size > 1024 * 1024) {
-        canvas.toBlob((compressed: Blob | null) => {
-          finalBlob = compressed || blob;
-          replaceImage(index, finalBlob);
-        }, 'image/jpeg', 0.85);
-      } else {
-        replaceImage(index, blob);
-      }
+    const closeModal = () => {
+      cropperInstance?.destroy();
+      cropperInstance = null;
+      modal.remove();
+    };
 
-      closeModal();
-    }, 'image/jpeg', 0.92);
+    modal.querySelector('.modal-close')?.addEventListener('click', closeModal);
+    modal.querySelector('#cropCancel')?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    modal.querySelector('#cropApply')?.addEventListener('click', async () => {
+      if (!cropperInstance) return;
+
+      const canvas = cropperInstance.getCroppedCanvas({
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+      });
+
+      canvas.toBlob(async (blob: Blob | null) => {
+        if (!blob) return;
+
+        let finalBlob = blob;
+        if (blob.size > 1024 * 1024) {
+          canvas.toBlob((compressed: Blob | null) => {
+            finalBlob = compressed || blob;
+            replaceImage(index, finalBlob);
+          }, 'image/jpeg', 0.85);
+        } else {
+          replaceImage(index, blob);
+}
+
+        closeModal();
+      }, 'image/jpeg', 0.92);
+    });
   });
 }
 

@@ -4,12 +4,13 @@
 import { supabase } from '../../../supabase.ts';
 import { showToast } from '../../shared/utils.ts';
 import { loadProperties, propertiesCache } from '../properties/index.ts';
+import { logError, logWarn } from '../../../utils/logger.ts';
 
 export async function loadSettings(): Promise<void> {
   try {
     const { data } = await supabase.from('ml_credenciales').select('*').order('updated_at', { ascending: false }).limit(1).single();
     updateMercadoLibreUI(data || null);
-  } catch (e: unknown) { console.warn('Settings load:', e); }
+  } catch (e: unknown) { logWarn('Settings load', e, 'admin-settings'); }
 }
 
 function updateMercadoLibreUI(creds: { ml_user_id: string; expires_at?: string } | null): void {
@@ -51,7 +52,7 @@ async function connectMercadoLibre(): Promise<void> {
       sessionStorage.setItem('ml_oauth_state', state);
       window.location.href = data.authUrl;
     }
-  } catch (e: unknown) { console.error('ML Connect error:', e); showToast(`Error: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-link"></i> Conectar MercadoLibre'; }
+  } catch (e: unknown) { logError('ML Connect error', e, 'admin-settings'); showToast(`Error: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-link"></i> Conectar MercadoLibre'; }
 }
 
 async function handleMLCallback(): Promise<void> {
@@ -69,7 +70,7 @@ async function handleMLCallback(): Promise<void> {
       showToast('¡Cuenta de MercadoLibre conectada!', 'success');
       updateMercadoLibreUI({ ml_user_id: data.user_id, expires_at: data.expires_at });
     } else throw new Error(data.error || 'Error desconocido');
-  } catch (e: unknown) { console.error('ML Callback error:', e); showToast(`Error: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error'); }
+  } catch (e: unknown) { logError('ML Callback error', e, 'admin-settings'); showToast(`Error: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error'); }
 }
 
 async function importFromMercadoLibre(): Promise<void> {
@@ -81,7 +82,7 @@ async function importFromMercadoLibre(): Promise<void> {
     if (error) throw error;
     showToast(`Importación completada: ${data.imported} nuevas, ${data.updated} actualizadas, ${data.errors} errores`, 'success');
     await loadProperties(); await loadMLSyncLog();
-  } catch (e: unknown) { console.error('ML Import error:', e); showToast(`Error: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error'); }
+  } catch (e: unknown) { logError('ML Import error', e, 'admin-settings'); showToast(`Error: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error'); }
   finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-download"></i> Importar de ML'; }
 }
 
@@ -93,7 +94,7 @@ async function syncPropertyToML(propertyId: number, action = 'publish'): Promise
     if (error) throw error;
     showToast(`Propiedad ${action === 'publish' ? 'publicada' : action} en MercadoLibre`, 'success');
     await loadProperties(); await loadMLSyncLog();
-  } catch (e: unknown) { console.error('ML Sync error:', e); showToast(`Error: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error'); }
+  } catch (e: unknown) { logError('ML Sync error', e, 'admin-settings'); showToast(`Error: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error'); }
 }
 
 async function loadMLSyncLog(): Promise<void> {
@@ -112,7 +113,7 @@ async function loadMLSyncLog(): Promise<void> {
         <td>${log.detalle ? JSON.stringify(log.detalle).substring(0, 100) : '—'}</td>
       </tr>
     `).join('');
-  } catch (e: unknown) { console.error('Load ML Sync Log error:', e); tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Error cargando historial</td></tr>'; }
+  } catch (e: unknown) { logError('Load ML Sync Log error', e, 'admin-settings'); tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Error cargando historial</td></tr>'; }
 }
 
 (window as any).connectMercadoLibre = connectMercadoLibre;

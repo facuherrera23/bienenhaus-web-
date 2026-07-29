@@ -1,7 +1,25 @@
 // ================================================================
-// MAIN.JS - Landing Page Entry Point (Simplified - No Router)
+// MAIN.TS - Landing Page Entry Point (Simplified - No Router)
 // ================================================================
 
+// These MUST run before app initialization (replaces inline scripts in index.html)
+import './scripts/maintenance.ts';
+import './scripts/redirect.ts';
+
+// Admin button handler (replaces inline onclick in index.html)
+function setupAdminButton(): void {
+  const btnAdmin = document.getElementById('btnAdmin');
+  if (btnAdmin) {
+    btnAdmin.addEventListener('click', () => {
+      // Admin panel logic would go here
+      logInfo('Admin button clicked', undefined, 'main');
+      // For now, just open admin page if it exists
+      window.location.href = '/admin.html';
+    });
+  }
+}
+
+import { logInfo, logError, logDebug } from './utils/logger.ts';
 import './styles/critical.css';
 import './styles/global.css';
 import { initHero } from './components/Hero/Hero.ts';
@@ -19,22 +37,25 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then(registration => {
-        console.log('SW registered:', registration.scope);
+        logDebug('SW registered', { scope: registration.scope }, 'main');
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           if (newWorker) {
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('New SW available, reload to update');
+                logDebug('New SW available, reload to update', undefined, 'main');
                 showToast('Nueva versión disponible. Recarga para actualizar.', 'info', 0, true);
               }
             });
           }
         });
       })
-      .catch(error => console.log('SW registration failed:', error));
+      .catch(error => logError('SW registration failed', error, 'main'));
   });
 }
+
+// Setup admin button handler (replaces inline onclick)
+setupAdminButton();
 
 // Global state for compatibility
 window.propiedadesData = [];
@@ -130,13 +151,13 @@ async function init(): Promise<void> {
       setTimeout(() => {
         const audit = auditAndLog();
         autoFixAccessibility();
-        console.log('[A11y Audit] Errors:', audit.errors.length, 'Warnings:', audit.warnings.length);
+        logDebug('[A11y Audit] Errors:', { errors: audit.errors.length, warnings: audit.warnings.length }, 'main');
       }, 1000);
     }
     
-    console.log('Bienenhaus Landing Page inicializada correctamente');
+    logInfo('Bienenhaus Landing Page inicializada correctamente', undefined, 'main');
   } catch (error) {
-    console.error('Error en init:', error);
+    logError('Error en init', error, 'main');
     showToast('Error al cargar la aplicación', 'error');
   }
 }

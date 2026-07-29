@@ -3,6 +3,7 @@
 // ================================================================
 import { escapeHtml } from '../../utils/sanitize.ts';
 import { trapFocus } from '../../utils/focusTrap.ts';
+import { logError } from '../../utils/logger.ts';
 
 let activeFocusTrapCleanup: (() => void) | null = null;
 
@@ -117,7 +118,7 @@ export async function executeDelete(): Promise<void> {
     showToast('Eliminado correctamente', 'success');
     closeConfirmModal();
   } catch (e) {
-    console.error(e);
+    logError('executeDelete error', e, 'admin-shared');
     showToast('Error al eliminar', 'error');
   }
 }

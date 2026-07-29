@@ -2,6 +2,7 @@
  * Router - Simple Hash-based Router for SPA
  * Supports: routes with params, nested routes, guards, scroll restoration
  */
+import { logWarn, logError } from './utils/logger.ts';
 import { escapeHtml } from './utils/sanitize.ts';
 
 interface RouteConfig {
@@ -82,7 +83,7 @@ export class Router {
     // Find matching route
     const match = this.#match(url);
     if (!match) {
-      console.warn(`No route matched: ${url}`);
+      logWarn(`No route matched: ${url}`, undefined, 'router');
       return this.navigate('/404');
     }
 
@@ -196,7 +197,7 @@ export class Router {
         outlet.innerHTML = route.component;
       }
     } catch (error) {
-      console.error('Route load error:', error);
+      logError('Route load error', error, 'router');
       const msg = error instanceof Error ? error.message : 'Error desconocido';
       outlet.innerHTML = `
         <div class="section" style="text-align:center;padding:4rem;">

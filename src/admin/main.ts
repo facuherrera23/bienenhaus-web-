@@ -1,16 +1,56 @@
 // ================================================================
-// ADMIN ENTRY POINT - Wires up all feature modules
+// ADMIN ENTRY POINT - Lazy-loaded features with dynamic imports
 // ================================================================
 import '../styles/admin.css';
 import { supabase } from '../supabase.ts';
 import { CONFIG } from '../config.ts';
 import { showToast, parsePipeArray, closeConfirmModal, executeDelete, formatDate } from './shared/utils.ts';
+import { logError, logWarn, logDebug, logInfo } from '../utils/logger.ts';
 
-// Feature modules (import eagerly so they register window functions)
-import { loadProperties as loadPropertiesModule, propertiesCache, openPropertyModal as openPropertyModalFn, filterProperties as filterPropertiesFn } from './features/properties/index.ts';
-import { loadAgents as loadAgentsModule, agentsCache, openAgentModal, filterAgents as filterAgentsFn } from './features/agents/index.ts';
-import { loadMercadoLibre, connectMercadoLibre, importFromMercadoLibre } from './features/mercadoLibre/index.ts';
-import { loadSettings } from './features/settings/index.ts';
+// Feature module cache (loaded on demand)
+const featureCache: Record<string, any> = {};
+
+// Dynamic imports for each feature (Vercel: bundle-dynamic-imports, bundle-preload)
+async function loadFeature(name: string) {
+  if (featureCache[name]) return featureCache[name];
+  
+  try {
+    let module;
+    switch (name) {
+      case 'properties':
+        module = await import('./features/properties/index.ts');
+        break;
+      case 'agents':
+        module = await import('./features/agents/index.ts');
+        break;
+      case 'mercadoLibre':
+        module = await import('./features/mercadoLibre/index.ts');
+        break;
+      case 'settings':
+        module = await import('./features/settings/index.ts');
+        break;
+      case 'content':
+        module = await import('./features/content/index.ts');
+        break;
+      default:
+        throw new Error(`Unknown feature: ${name}`);
+    }
+    featureCache[name] = module;
+    return module;
+  } catch (e) {
+    logError(`Failed to load feature ${name}`, e, 'main');
+    showToast(`Error cargando módulo: ${name}`, 'error');
+    throw e;
+  }
+}
+
+// Preload on hover/focus for perceived speed (Vercel: bundle-preload)
+function preloadFeature(name: string) {
+  if (!featureCache[name]) {
+    // Start loading but don't await
+    loadFeature(name).catch(() => {});
+  }
+}
 
 // ================================================================
 // AUTH SECURITY CONFIG
@@ -174,9 +214,9 @@ function showDashboard(): void {
 }
 
 // ================================================================
-// NAVIGATION
+// NAVIGATION (async with lazy loading)
 // ================================================================
-function navigate(section: string): void {
+async function navigate(section: string): Promise<void> {
   if (!section) section = 'dashboard';
   window.location.hash = section;
 
@@ -202,34 +242,166 @@ function navigate(section: string): void {
   if (pageTitle) pageTitle.textContent = title;
   if (breadcrumb) breadcrumb.textContent = title;
 
-  switch (section) {
-    case 'dashboard': loadDashboard(); break;
-    case 'properties': loadPropertiesModule(); break;
-    case 'agents': loadAgentsModule(); break;
-    case 'settings-content': loadContentEditor(); break;
-    case 'settings': loadSettings(); break;
-    case 'mercadoLibre': loadMercadoLibre(); break;
+  // Preload feature on hover/focus (Vercel: bundle-preload)
+  preloadFeature(section);
+
+  // Lazy-load and initialize the feature
+  try {
+    switch (section) {
+      case 'dashboard': {
+        if (!propertiesCache.length && !agentsCache.length) await loadAllData();
+        loadDashboard();
+        break;
+      }
+      case 'properties': {
+        await ensureFeatureLoaded('properties');
+        const props = await loadFeature('properties');
+        props.loadProperties();
+        break;
+      }
+      case 'agents': {
+        await ensureFeatureLoaded('agents');
+        const ags = await loadFeature('agents');
+        ags.loadAgents();
+        break;
+      }
+      case 'settings-content': {
+        await ensureFeatureLoaded('content');
+        const content = await loadFeature('content');
+        content.loadContent();
+        break;
+      }
+      case 'settings': {
+        await ensureFeatureLoaded('settings');
+        const settings = await loadFeature('settings');
+        settings.loadSettings();
+        break;
+      }
+      case 'mercadoLibre': {
+        await ensureFeatureLoaded('mercadoLibre');
+        const ml = await loadFeature('mercadoLibre');
+        ml.loadMercadoLibre();
+        break;
+      }
+    }
+  } catch (e) {
+    logError(`Error navigating to ${section}`, e, 'main');
+    showToast(`Error cargando ${section}`, 'error');
+  }
+}
+
+async function ensureFeatureLoaded(name: string) {
+  if (!featureCache[name]) {
+    await loadFeature(name);
+  }
+}
+// ================================================================
+// GLOBAL TYPE EXTENSIONS
+// ================================================================
+declare global {
+  interface Window {
+    propertiesCache: any[];
+    agentsCache: any[];
   }
 }
 
 // ================================================================
-// DATA LOADING
+// DATA LOADING (Lazy-loaded features)
 // ================================================================
-async function loadAllData(): Promise<void> {
-  await Promise.all([
-    loadPropertiesModule(),
-    loadAgentsModule(),
-    loadContent()
-  ]);
-  updateNavBadges();
-  loadDashboard();
-}
+
+let propertiesCache: any[] = [];
+let agentsCache: any[] = [];
 
 function updateNavBadges(): void {
   const propBadge = document.getElementById('propCountBadge');
   const agentBadge = document.getElementById('agentCountBadge');
   if (propBadge) propBadge.textContent = String(propertiesCache.length);
   if (agentBadge) agentBadge.textContent = String(agentsCache.filter((a: any) => a.activo).length);
+}
+
+async function loadAllData(): Promise<void> {
+  // Load core features in parallel (Vercel: async-parallel)
+  const [propertiesModule, agentsModule] = await Promise.all([
+    loadFeature('properties'),
+    loadFeature('agents')
+  ]);
+  
+  // Cache references for global access
+  propertiesCache = propertiesModule.propertiesCache;
+  agentsCache = agentsModule.agentsCache;
+  
+  // Attach to window for backward compatibility
+  window.propertiesCache = propertiesCache;
+  window.agentsCache = agentsCache;
+  
+  updateNavBadges();
+  loadDashboard();
+}
+
+// Async getters for backward compatibility
+async function getLoadPropertiesModule() {
+  const m = await loadFeature('properties');
+  return m.loadProperties;
+}
+
+async function getLoadAgentsModule() {
+  const m = await loadFeature('agents');
+  return m.loadAgents;
+}
+
+async function getFilterPropertiesFn() {
+  const m = await loadFeature('properties');
+  return m.filterProperties;
+}
+
+async function getFilterAgentsFn() {
+  const m = await loadFeature('agents');
+  return m.filterAgents;
+}
+
+async function getOpenPropertyModalFn() {
+  const m = await loadFeature('properties');
+  return m.openPropertyModal;
+}
+
+async function getOpenAgentModal() {
+  const m = await loadFeature('agents');
+  return m.openAgentModal;
+}
+
+async function getLoadMercadoLibre() {
+  const m = await loadFeature('mercadoLibre');
+  return m.loadMercadoLibre;
+}
+
+async function getLoadSettings() {
+  const m = await loadFeature('settings');
+  return m.loadSettings;
+}
+
+async function getLoadContentEditor() {
+  const m = await loadFeature('content');
+  return m.loadContent;
+}
+
+async function getConnectMercadoLibre() {
+  const m = await loadFeature('mercadoLibre');
+  return m.connectMercadoLibre;
+}
+
+async function getImportFromMercadoLibre() {
+  const m = await loadFeature('mercadoLibre');
+  return m.importFromMercadoLibre;
+}
+
+async function getSyncPropertyToML() {
+  const m = await loadFeature('mercadoLibre');
+  return m.syncPropertyToML;
+}
+
+async function getLoadMLSyncLog() {
+  const m = await loadFeature('mercadoLibre');
+  return m.loadMLSyncLog;
 }
 
 function loadDashboard(): void {
@@ -262,12 +434,12 @@ function loadDashboard(): void {
 async function loadContent(): Promise<void> {
   try {
     const { data, error } = await supabase.from('contenido_sitio').select('*');
-    if (error) { console.warn('contenido_sitio no accesible:', error.message); return; }
+    if (error) { logWarn('contenido_sitio no accesible', { message: error.message }, 'main'); return; }
     const newCache: Record<string, any> = {};
     (data || []).forEach((item: any) => { newCache[item.clave] = item.valor; });
     setContentCache(newCache);
     populateContentEditor();
-  } catch (e: unknown) { console.warn('Error loading content:', e); }
+  } catch (e: unknown) { logWarn('Error loading content', e, 'main'); }
 }
 
 async function loadContentEditor(): Promise<void> {
@@ -413,7 +585,7 @@ async function saveAllContent(): Promise<void> {
     showToast('Contenido guardado correctamente', 'success');
     await loadContent();
   } catch (e: unknown) {
-    console.error('saveAllContent error:', e);
+    logError('saveAllContent error', e, 'admin');
     showToast(`Error: ${e instanceof Error ? e.message : 'Error al guardar contenido'}`, 'error');
   } finally {
     btn.disabled = false;
@@ -442,23 +614,29 @@ function setupEventListeners(): void {
 
   // Navigation
   document.querySelectorAll('.nav-item[data-section]').forEach(item => {
-    item.addEventListener('click', (e: Event) => {
+    item.addEventListener('click', async (e: Event) => {
       e.preventDefault();
       const section = (item as HTMLElement).dataset.section;
-      if (section) navigate(section);
+      if (section) await navigate(section);
     });
   });
 
-  // New Property button
+  // New Property button - lazy load properties feature
   const btnNewProperty = document.getElementById('btnNewProperty');
   if (btnNewProperty) {
-    btnNewProperty.addEventListener('click', () => openPropertyModalFn());
+    btnNewProperty.addEventListener('click', async () => {
+      const props = await loadFeature('properties');
+      props.openPropertyModal();
+    });
   }
 
-  // New Agent button
+  // New Agent button - lazy load agents feature
   const btnNewAgent = document.getElementById('btnNewAgent');
   if (btnNewAgent) {
-    btnNewAgent.addEventListener('click', () => openAgentModal());
+    btnNewAgent.addEventListener('click', async () => {
+      const ags = await loadFeature('agents');
+      ags.openAgentModal();
+    });
   }
 
   // Save Content button
@@ -476,24 +654,30 @@ function setupEventListeners(): void {
   // Refresh stats
   const btnRefresh = document.getElementById('btnRefreshStats');
   if (btnRefresh) {
-    btnRefresh.addEventListener('click', () => { loadAllData(); showToast('Datos actualizados', 'success'); });
+    btnRefresh.addEventListener('click', async () => { await loadAllData(); showToast('Datos actualizados', 'success'); });
   }
 
-  // Search properties
+  // Search properties - lazy load
   const searchProps = document.getElementById('searchProperties');
   if (searchProps) {
-    searchProps.addEventListener('input', () => filterPropertiesFn());
+    searchProps.addEventListener('input', async () => {
+      const props = await loadFeature('properties');
+      props.filterProperties();
+    });
   }
 
-  // Search agents
+  // Search agents - lazy load
   const searchAgents = document.getElementById('searchAgents');
   if (searchAgents) {
-    searchAgents.addEventListener('input', () => filterAgentsFn());
+    searchAgents.addEventListener('input', async () => {
+      const ags = await loadFeature('agents');
+      ags.filterAgents();
+    });
   }
 
   // Confirm modal buttons
   const btnConfirmDelete = document.getElementById('confirmDeleteBtn');
-  if (btnConfirmDelete) btnConfirmDelete.addEventListener('click', async () => { await executeDelete(); loadAllData(); });
+  if (btnConfirmDelete) btnConfirmDelete.addEventListener('click', async () => { await executeDelete(); await loadAllData(); });
 
   const btnCancelDelete = document.getElementById('cancelDeleteBtn');
   if (btnCancelDelete) btnCancelDelete.addEventListener('click', closeConfirmModal);
@@ -501,12 +685,18 @@ function setupEventListeners(): void {
   const closeDeleteModal = document.getElementById('closeDeleteModal');
   if (closeDeleteModal) closeDeleteModal.addEventListener('click', closeConfirmModal);
 
-  // ML buttons
+  // ML buttons - lazy load mercadoLibre feature
   const btnConnectML = document.getElementById('btnConnectML');
-  if (btnConnectML) btnConnectML.addEventListener('click', connectMercadoLibre);
+  if (btnConnectML) btnConnectML.addEventListener('click', async () => {
+    const ml = await loadFeature('mercadoLibre');
+    ml.connectMercadoLibre();
+  });
 
   const btnImportML = document.getElementById('btnImportML');
-  if (btnImportML) btnImportML.addEventListener('click', importFromMercadoLibre);
+  if (btnImportML) btnImportML.addEventListener('click', async () => {
+    const ml = await loadFeature('mercadoLibre');
+    ml.importFromMercadoLibre();
+  });
 
   // Settings tabs
   document.querySelectorAll('#section-settings .settings-tab').forEach(tab => {
@@ -565,9 +755,9 @@ function setupEventListeners(): void {
   }
 
   // Hash-based navigation
-  window.addEventListener('hashchange', () => {
+  window.addEventListener('hashchange', async () => {
     const section = window.location.hash.slice(1) || 'dashboard';
-    navigate(section);
+    await navigate(section);
   });
 }
 
@@ -644,7 +834,7 @@ async function saveSettings(): Promise<void> {
       supabase.from('agentes').update({ activo: false }).eq('id', id).then(({ error }: any) => {
         if (error) { showToast('Error al eliminar agente', 'error'); return; }
         showToast('Agente eliminado correctamente', 'success');
-        loadAgentsModule();
+        loadFeature('agents').then(m => m.loadAgents());
       });
     }
   }

@@ -5,6 +5,8 @@
 
 import './Hero.css';
 import { escapeHtml } from '../../utils/sanitize.ts';
+import { supabasePromise } from '../../lib/supabase-loader.ts';
+import { logWarn } from '../../utils/logger.ts';
 
 let heroElement = null;
 
@@ -13,8 +15,9 @@ export function initHero() {
   if (existingHero) {
     heroElement = existingHero;
     bindEvents();
-    populateFromContent();
-    return;
+    // Preload supabase and start fetch early (Vercel: async-parallel)
+    const contentPromise = populateFromContent();
+    return contentPromise;
   }
 
   heroElement = createHero();
@@ -34,7 +37,8 @@ export function initHero() {
   }
 
   bindEvents();
-  populateFromContent();
+  // Start content fetch immediately, don't await (Vercel: async-defer-await)
+  return populateFromContent();
 }
 
 function createHero() {
@@ -148,9 +152,13 @@ function easeOutCubic(t) {
   return 1 - Math.pow(1 - t, 3);
 }
 
+// Pre-load supabase module at module level (Vercel: bundle-dynamic-imports)
+const supabasePromise = import('../../supabase.ts').then(m => m.supabase);
+
 async function populateFromContent() {
   try {
-    const { supabase } = await import('../../supabase.ts');
+    // Use shared module-level promise (Vercel: bundle-dynamic-imports, async-parallel)
+    const supabase = await supabasePromise;
     const { data, error } = await supabase
       .from('contenido_sitio')
       .select('*');
@@ -164,7 +172,7 @@ async function populateFromContent() {
 
     updateHeroContent(content);
   } catch (e) {
-    console.warn('Could not load hero content:', e);
+    logWarn('Could not load hero content', { error: e }, 'hero');
   }
 }
 

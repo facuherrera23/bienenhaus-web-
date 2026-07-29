@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback, useRef } from 'preact/hooks';
 import { supabase } from '../../supabase.ts';
 import { formatPrice } from '../../utils/format.ts';
+import { useFocusTrap } from '../../hooks/useFocusTrap.ts';
 import './ConversionUX.css';
 
 export function ConversionUX({ 
@@ -47,6 +48,14 @@ export function ConversionUX({
   
   // Back to top button
   const backToTopRef = useRef(null);
+
+  // Modal refs for focus trap (WCAG 2.4.3)
+  const whatsappModalRef = useRef<HTMLDivElement>(null);
+  const priceAlertModalRef = useRef<HTMLDivElement>(null);
+  
+  // Apply focus traps (WCAG 2.4.3)
+  useFocusTrap(showWhatsApp, whatsappModalRef);
+  useFocusTrap(showPriceAlert, priceAlertModalRef);
 
   // Scroll handler for sticky CTA
   useEffect(() => {
@@ -312,7 +321,7 @@ export function ConversionUX({
       {/* WhatsApp Modal */}
       {showWhatsApp && (
         <div className="conversion-ux__modal-overlay" onClick={closeWhatsAppModal} role="dialog" aria-modal="true" aria-labelledby="wa-modal-title">
-          <div className="conversion-ux__modal conversion-ux__modal--whatsapp">
+          <div ref={whatsappModalRef} className="conversion-ux__modal conversion-ux__modal--whatsapp">
             <header className="conversion-ux__modal-header">
               <h2 id="wa-modal-title" className="conversion-ux__modal-title">
                 <i className="fab fa-whatsapp" aria-hidden="true"></i>
@@ -343,7 +352,7 @@ export function ConversionUX({
                 </div>
 
                 {waError && (
-                  <div className="conversion-ux__error" role="alert">
+                  <div id="wa-error" className="conversion-ux__error" role="alert">
                     <i className="fas fa-exclamation-circle" aria-hidden="true"></i>
                     {waError}
                   </div>
@@ -363,6 +372,8 @@ export function ConversionUX({
                       required
                       autoComplete="name"
                       placeholder="Tu nombre"
+                      aria-invalid={!!waError}
+                      aria-describedby={waError ? 'wa-error' : undefined}
                     />
                   </div>
                   <div className="conversion-ux__form-group">
@@ -378,6 +389,8 @@ export function ConversionUX({
                       required
                       autoComplete="tel"
                       placeholder="+54 9 351 123-4567"
+                      aria-invalid={!!waError}
+                      aria-describedby={waError ? 'wa-error' : undefined}
                     />
                   </div>
                 </div>
@@ -394,6 +407,8 @@ export function ConversionUX({
                     required
                     rows="4"
                     placeholder="Tu mensaje..."
+                    aria-invalid={!!waError}
+                    aria-describedby={waError ? 'wa-error' : undefined}
                   />
                 </div>
 
@@ -429,7 +444,7 @@ export function ConversionUX({
       {/* Price Alert Modal */}
       {showPriceAlert && (
         <div className="conversion-ux__modal-overlay" onClick={closePriceAlert} role="dialog" aria-modal="true" aria-labelledby="alert-modal-title">
-          <div className="conversion-ux__modal conversion-ux__modal--alert">
+          <div ref={priceAlertModalRef} className="conversion-ux__modal conversion-ux__modal--alert">
             <header className="conversion-ux__modal-header">
               <h2 id="alert-modal-title" className="conversion-ux__modal-title">
                 <i className="fas fa-bell" aria-hidden="true"></i>
@@ -459,7 +474,7 @@ export function ConversionUX({
                 </div>
 
                 {alertError && (
-                  <div className="conversion-ux__error" role="alert">
+                  <div id="alert-error" className="conversion-ux__error" role="alert">
                     <i className="fas fa-exclamation-circle" aria-hidden="true"></i>
                     {alertError}
                   </div>
@@ -479,6 +494,8 @@ export function ConversionUX({
                       required
                       autoComplete="email"
                       placeholder="tu@email.com"
+                      aria-invalid={!!alertError}
+                      aria-describedby={alertError ? 'alert-error' : undefined}
                     />
                   </div>
                 </div>
@@ -496,6 +513,8 @@ export function ConversionUX({
                       onChange={(e) => setAlertForm(prev => ({ ...prev, minPrice: parseInt(e.target.value) || 0 }))}
                       min="0"
                       step="5000"
+                      aria-invalid={!!alertError}
+                      aria-describedby={alertError ? 'alert-error' : undefined}
                     />
                   </div>
                   <div className="conversion-ux__form-group">
@@ -510,6 +529,8 @@ export function ConversionUX({
                       onChange={(e) => setAlertForm(prev => ({ ...prev, maxPrice: parseInt(e.target.value) || 900000 }))}
                       min="0"
                       step="10000"
+                      aria-invalid={!!alertError}
+                      aria-describedby={alertError ? 'alert-error' : undefined}
                     />
                   </div>
                 </div>
@@ -526,6 +547,8 @@ export function ConversionUX({
                       value={alertForm.location}
                       onChange={(e) => setAlertForm(prev => ({ ...prev, location: e.target.value }))}
                       placeholder="Ej: Nueva Córdoba"
+                      aria-invalid={!!alertError}
+                      aria-describedby={alertError ? 'alert-error' : undefined}
                     />
                   </div>
                   <div className="conversion-ux__form-group">
@@ -537,6 +560,8 @@ export function ConversionUX({
                       name="propertyType"
                       value={alertForm.propertyType}
                       onChange={(e) => setAlertForm(prev => ({ ...prev, propertyType: e.target.value }))}
+                      aria-invalid={!!alertError}
+                      aria-describedby={alertError ? 'alert-error' : undefined}
                     >
                       <option value="todos">Todos</option>
                       <option value="piso">Piso/Apartamento</option>

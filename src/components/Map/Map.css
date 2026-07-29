@@ -1,5 +1,5 @@
 /* ================================================================
-   MAP COMPONENT STYLES
+   MAP COMPONENT STYLES - Dark Theme (MapTiler Dark) - Emil-compliant
    ================================================================ */
 
 /* Custom Marker */
@@ -23,21 +23,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-md);
-  border: 3px solid var(--color-white);
+  box-shadow: var(--ds-shadow-md);
+  border: 3px solid var(--ds-color-surface-1);
 }
 
 .marker-pin.venta {
-  background: var(--color-primary);
+  background: var(--ds-color-primary);
 }
 
 .marker-pin.alquiler {
-  background: var(--color-success);
+  background: var(--ds-color-success);
 }
 
 .marker-pin i {
-  color: var(--color-white);
-  font-size: 1rem;
+  color: var(--ds-color-text-on-primary);
+  font-size: var(--ds-text-base);
   transform: rotate(45deg);
   margin-bottom: 2px;
 }
@@ -48,19 +48,19 @@
   left: 50%;
   transform: translateX(-50%) rotate(45deg);
   white-space: nowrap;
-  font-size: 0.55rem;
-  font-weight: 700;
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-font-bold);
   padding: 1px 6px;
   border-radius: 4px;
-  color: var(--color-white);
+  color: var(--ds-color-text-on-primary);
 }
 
 .marker-badge.venta {
-  background: var(--color-primary);
+  background: var(--ds-color-primary);
 }
 
 .marker-badge.alquiler {
-  background: var(--color-success);
+  background: var(--ds-color-success);
 }
 
 /* Marker Cluster */
@@ -76,49 +76,56 @@
 .cluster-marker {
   width: 100%;
   height: 100%;
-  border-radius: var(--radius-full);
+  border-radius: var(--ds-radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  color: var(--color-white);
-  box-shadow: var(--shadow-md);
-  border: 3px solid var(--color-white);
-  transition: all var(--transition-fast);
+  font-weight: var(--ds-font-bold);
+  color: var(--ds-color-text-on-primary);
+  box-shadow: var(--ds-shadow-md);
+  border: 3px solid var(--ds-color-surface-1);
+  transition: transform var(--ds-transition-fast), box-shadow var(--ds-transition-fast);
 }
 
-.cluster-marker:hover {
-  transform: scale(1.1);
+@media (hover: hover) and (pointer: fine) {
+  .cluster-marker:hover {
+    transform: scale(1.1);
+  }
+}
+
+.cluster-marker:active {
+  transform: scale(0.97);
 }
 
 .cluster-small {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-accent)) !important;
+  background: linear-gradient(135deg, var(--ds-color-primary), var(--ds-color-primary-glow)) !important;
   width: 30px !important;
   height: 30px !important;
-  font-size: 0.75rem !important;
+  font-size: var(--ds-text-sm) !important;
 }
 
 .cluster-medium {
-  background: linear-gradient(135deg, var(--color-warning), #f59e0b) !important;
+  background: linear-gradient(135deg, var(--ds-color-warning), #f59e0b) !important;
   width: 40px !important;
   height: 40px !important;
-  font-size: 0.85rem !important;
+  font-size: var(--ds-text-base) !important;
 }
 
 .cluster-large {
-  background: linear-gradient(135deg, var(--color-danger), var(--color-danger)) !important;
+  background: linear-gradient(135deg, var(--ds-color-danger), var(--ds-color-danger)) !important;
   width: 50px !important;
   height: 50px !important;
-  font-size: 1rem !important;
+  font-size: var(--ds-text-lg) !important;
 }
 
-/* Map Container */
+/* Map Container - MapTiler Dark Style */
 #mapaPropiedades {
   width: 100%;
   height: 37.5rem;
-  border-radius: var(--radius-xl);
+  border-radius: var(--ds-radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--ds-shadow-md);
+  background: var(--ds-color-bg);
 }
 
 @media (max-width: 768px) {
@@ -127,20 +134,22 @@
   }
 }
 
-/* Leaflet Custom Popups */
+/* Leaflet Custom Popups - Dark Theme */
 .custom-popup .leaflet-popup-content-wrapper {
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-xl);
   padding: 0;
+  background: var(--ds-color-surface-2);
 }
 
 .custom-popup .leaflet-popup-content {
   margin: 0;
   width: auto !important;
+  color: var(--ds-color-text);
 }
 
 .custom-popup .leaflet-popup-tip {
-  background: var(--color-white);
+  background: var(--ds-color-surface-2);
 }
 
 .map-popup {
@@ -148,44 +157,44 @@
 }
 
 .map-popup img {
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  border-radius: 0 0 var(--ds-radius-md) var(--ds-radius-md);
 }
 
 .map-popup h4 {
   margin: 8px 0 4px;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-gray-900);
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-font-bold);
+  color: var(--ds-color-text);
 }
 
 .map-popup p {
-  font-size: 0.85rem;
-  color: var(--color-gray-600);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-color-text-secondary);
   margin-bottom: 8px;
 }
 
 .map-popup .badge {
-  font-size: 0.65rem;
+  font-size: var(--ds-text-xs);
   padding: 2px 10px;
-  border-radius: var(--radius-full);
-  font-weight: 700;
+  border-radius: var(--ds-radius-full);
+  font-weight: var(--ds-font-bold);
   text-transform: uppercase;
 }
 
 .map-popup .badge-sale {
-  background: var(--color-accent-light);
-  color: var(--color-accent);
+  background: var(--ds-color-primary-glow);
+  color: var(--ds-color-primary);
 }
 
 .map-popup .badge-rent {
-  background: var(--color-success-light);
-  color: var(--color-success);
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--ds-color-success);
 }
 
 .map-popup .price {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--color-primary);
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-font-black);
+  color: var(--ds-color-primary);
   margin-bottom: 8px;
 }
 
@@ -193,195 +202,220 @@
   width: 100%;
   justify-content: center;
   padding: 8px 12px;
-  font-size: 0.85rem;
+  font-size: var(--ds-text-sm);
 }
 
-/* Leaflet Custom Styles */
+/* Leaflet Custom Styles - Dark Theme */
 .leaflet-container {
   font-family: inherit;
+  background: var(--ds-color-bg);
 }
 
 .leaflet-control-zoom {
   border: none !important;
-  box-shadow: var(--shadow-md) !important;
+  box-shadow: var(--ds-shadow-md) !important;
 }
 
 .leaflet-control-zoom a {
-  background: var(--color-white) !important;
-  color: var(--color-gray-700) !important;
+  background: var(--ds-color-surface-1) !important;
+  color: var(--ds-color-text) !important;
   border: none !important;
   width: 36px !important;
   height: 36px !important;
   line-height: 36px !important;
-  font-size: 1.25rem !important;
-  transition: all var(--transition-fast) !important;
+  font-size: var(--ds-text-xl) !important;
+  transition: background-color var(--ds-transition-fast), color var(--ds-transition-fast) !important;
 }
 
-.leaflet-control-zoom a:hover {
-  background: var(--color-gray-100) !important;
-  color: var(--color-primary) !important;
+@media (hover: hover) and (pointer: fine) {
+  .leaflet-control-zoom a:hover {
+    background: var(--ds-color-surface-2) !important;
+    color: var(--ds-color-primary) !important;
+  }
 }
 
 .leaflet-control-zoom a:first-child {
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg) !important;
+  border-radius: var(--ds-radius-md) 0 0 var(--ds-radius-md) !important;
 }
 
 .leaflet-control-zoom a:last-child {
-  border-radius: 0 var(--radius-lg) var(--radius-lg) 0 !important;
+  border-radius: 0 var(--ds-radius-md) var(--ds-radius-md) 0 !important;
+}
+
+.leaflet-control-zoom a:active {
+  transform: scale(0.97);
 }
 
 .leaflet-control-attribution {
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: rgba(8, 8, 8, 0.9) !important;
   backdrop-filter: blur(4px);
-  border-radius: 0 0 var(--radius-md) 0 !important;
-  font-size: 0.7rem !important;
+  border-radius: 0 0 var(--ds-radius-md) 0 !important;
+  font-size: var(--ds-text-xs) !important;
+  color: var(--ds-color-text-muted) !important;
 }
 
 .leaflet-popup-content-wrapper {
-  border-radius: var(--radius-xl) !important;
-  box-shadow: var(--shadow-xl) !important;
+  border-radius: var(--ds-radius-lg) !important;
+  box-shadow: var(--ds-shadow-xl) !important;
   padding: 0 !important;
+  background: var(--ds-color-surface-2);
 }
 
 .leaflet-popup-content {
   margin: 0 !important;
   width: auto !important;
+  color: var(--ds-color-text);
 }
 
 .leaflet-popup-tip {
-  background: var(--color-white) !important;
+  background: var(--ds-color-surface-2) !important;
 }
 
-/* View Toggle */
+/* View Toggle - Dark Theme */
 .vista-toggle {
   display: inline-flex;
-  background: var(--color-gray-100);
-  border-radius: var(--radius-full);
-  padding: var(--space-1);
+  background: var(--ds-color-surface-2);
+  border-radius: var(--ds-radius-full);
+  padding: var(--ds-space-1);
 }
 
 .vista-btn {
   background: transparent;
   border: none;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full);
+  padding: var(--ds-space-2) var(--ds-space-4);
+  border-radius: var(--ds-radius-full);
   cursor: pointer;
-  transition: all var(--transition-fast);
-  color: var(--color-gray-600);
-  font-size: var(--font-size-sm);
+  transition: background-color var(--ds-transition-fast), color var(--ds-transition-fast);
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-text-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 44px;
 }
 
-.vista-btn:hover {
-  background: var(--color-gray-200);
-  color: var(--color-primary);
+@media (hover: hover) and (pointer: fine) {
+  .vista-btn:hover {
+    background: var(--ds-color-surface-3);
+    color: var(--ds-color-primary);
+  }
 }
 
 .vista-btn.active {
-  background: var(--color-primary);
-  color: var(--color-white);
+  background: var(--ds-color-primary);
+  color: var(--ds-color-text-on-primary);
 }
 
 .vista-btn:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--ds-color-primary);
   outline-offset: 2px;
 }
 
-/* Load Mode Toggle */
+.vista-btn:active {
+  transform: scale(0.97);
+}
+
+/* Load Mode Toggle - Dark Theme */
 .carga-toggle {
   display: inline-flex;
-  background: var(--color-gray-100);
-  border: 1px solid var(--color-gray-200);
-  padding: var(--space-1);
-  border-radius: var(--radius-full);
+  background: var(--ds-color-surface-2);
+  border: 1px solid var(--ds-color-border);
+  padding: var(--ds-space-1);
+  border-radius: var(--ds-radius-full);
 }
 
 .carga-btn {
   background: transparent;
   border: none;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full);
-  font-weight: var(--font-weight-medium);
+  padding: var(--ds-space-2) var(--ds-space-4);
+  border-radius: var(--ds-radius-full);
+  font-weight: var(--ds-font-medium);
   cursor: pointer;
-  transition: all var(--transition-fast);
-  color: var(--color-gray-600);
+  transition: background-color var(--ds-transition-fast), color var(--ds-transition-fast);
+  color: var(--ds-color-text-secondary);
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  font-size: var(--font-size-sm);
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-sm);
 }
 
-.carga-btn:hover {
-  background: var(--color-gray-200);
-  color: var(--color-gray-900);
+@media (hover: hover) and (pointer: fine) {
+  .carga-btn:hover {
+    background: var(--ds-color-surface-3);
+    color: var(--ds-color-text);
+  }
 }
 
 .carga-btn.active {
-  background: var(--color-primary);
-  color: var(--color-white);
-  box-shadow: var(--shadow-sm);
+  background: var(--ds-color-primary);
+  color: var(--ds-color-text-on-primary);
+  box-shadow: var(--ds-shadow-sm);
 }
 
-.carga-btn.active:hover {
-  background: var(--color-primary-light);
+@media (hover: hover) and (pointer: fine) {
+  .carga-btn.active:hover {
+    background: var(--ds-color-primary-dark);
+  }
 }
 
 .carga-btn[aria-pressed="true"] {
-  background: var(--color-primary);
-  color: var(--color-white);
+  background: var(--ds-color-primary);
+  color: var(--ds-color-text-on-primary);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  #mapaPropiedades {
-    height: 28.125rem;
-  }
+.carga-btn:focus-visible {
+  outline: 2px solid var(--ds-color-primary);
+  outline-offset: 2px;
+}
+
+.carga-btn:active {
+  transform: scale(0.97);
 }
 
 /* Results Counter */
 .resultados {
-  background: var(--color-gray-100);
-  padding: var(--space-2) var(--space-5);
-  border-radius: var(--radius-full);
-  font-weight: var(--font-weight-medium);
-  font-size: var(--font-size-sm);
-  color: var(--color-gray-700);
+  background: var(--ds-color-surface-2);
+  padding: var(--ds-space-2) var(--ds-space-5);
+  border-radius: var(--ds-radius-full);
+  font-weight: var(--ds-font-medium);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-color-text-secondary);
 }
 
-/* Pagination */
+/* Pagination - Dark Theme */
 .pagination {
   display: flex;
   justify-content: center;
-  gap: var(--space-2);
-  margin: var(--space-5) 0 var(--space-2);
+  gap: var(--ds-space-2);
+  margin: var(--ds-space-5) 0 var(--ds-space-2);
   flex-wrap: wrap;
 }
 
 .pagination button {
-  background: var(--color-white);
-  border: 1px solid var(--color-gray-200);
-  padding: var(--space-2) var(--space-5);
-  border-radius: var(--radius-full);
-  font-weight: var(--font-weight-medium);
+  background: var(--ds-color-surface-1);
+  border: 1px solid var(--ds-color-border);
+  padding: var(--ds-space-2) var(--ds-space-5);
+  border-radius: var(--ds-radius-full);
+  font-weight: var(--ds-font-medium);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background-color var(--ds-transition-fast), border-color var(--ds-transition-fast), color var(--ds-transition-fast);
   min-width: 44px;
   font-family: inherit;
-  font-size: var(--font-size-sm);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-color-text);
 }
 
 .pagination button.activa {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-white);
+  background: var(--ds-color-primary);
+  border-color: var(--ds-color-primary);
+  color: var(--ds-color-text-on-primary);
 }
 
-.pagination button:hover:not(.activa):not(:disabled) {
-  background: var(--color-gray-50);
-  border-color: var(--color-gray-300);
+@media (hover: hover) and (pointer: fine) {
+  .pagination button:hover:not(.activa):not(:disabled) {
+    background: var(--ds-color-surface-2);
+    border-color: var(--ds-color-border-medium);
+  }
 }
 
 .pagination button:disabled {
@@ -390,43 +424,54 @@
 }
 
 .pagination .nav-btn {
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--ds-font-semibold);
+}
+
+.pagination button:active {
+  transform: scale(0.97);
 }
 
 .pagination-ellipsis {
   display: inline-flex;
   align-items: center;
-  padding: 0 var(--space-2);
-  color: var(--color-gray-500);
+  padding: 0 var(--ds-space-2);
+  color: var(--ds-color-text-muted);
 }
 
-/* Load More Button */
+/* Load More Button - Dark Theme */
 .load-more {
   text-align: center;
-  margin-top: var(--space-6);
+  margin-top: var(--ds-space-6);
 }
 
 .load-more-btn {
-  background: var(--color-primary);
-  color: var(--color-white);
+  background: var(--ds-color-primary);
+  color: var(--ds-color-text-on-primary);
   border: none;
-  padding: var(--space-4) var(--space-10);
-  border-radius: var(--radius-full);
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--font-size-base);
+  padding: var(--ds-space-4) var(--ds-space-10);
+  border-radius: var(--ds-radius-full);
+  font-weight: var(--ds-font-semibold);
+  font-size: var(--ds-text-base);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background-color var(--ds-transition-fast), box-shadow var(--ds-transition-fast), transform var(--ds-transition-fast);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3);
-  box-shadow: var(--shadow-md);
+  gap: var(--ds-space-3);
+  box-shadow: var(--ds-shadow-md);
+  min-height: var(--ds-touch-target);
 }
 
-.load-more-btn:hover:not(:disabled) {
-  background: var(--color-primary-light);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+@media (hover: hover) and (pointer: fine) {
+  .load-more-btn:hover:not(:disabled) {
+    background: var(--ds-color-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--ds-shadow-lg);
+  }
+}
+
+.load-more-btn:active {
+  transform: scale(0.97);
 }
 
 .load-more-btn:disabled {
@@ -438,12 +483,40 @@
 .load-more-btn .spinner {
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: var(--color-white);
-  border-radius: var(--radius-full);
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  border-top-color: var(--ds-color-text-on-primary);
+  border-radius: var(--ds-radius-full);
   animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .cluster-marker,
+  .vista-btn,
+  .carga-btn,
+  .pagination button,
+  .load-more-btn,
+  .leaflet-control-zoom a {
+    transition: none;
+  }
+  
+  .load-more-btn .spinner {
+    animation: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .marker-pin,
+  .cluster-marker {
+    border-width: 4px;
+  }
+  
+  .pagination button.activa {
+    border-width: 3px;
+  }
 }

@@ -2,8 +2,7 @@
 // ================================================================
 // CONTENT LOADER - Carga contenido dinámico desde Supabase
 // ================================================================
-import { supabase } from './supabase.ts';
-import { sanitizeHtml, sanitizeUrl, escapeHtml } from './utils/sanitize.ts';
+import { logError, logWarn, logDebug } from './utils/logger.ts';
 
 let siteContent = {};
 
@@ -82,6 +81,7 @@ const contentRenderers = {
 // ================================================================
 export async function cargarContenidoSitio() {
   try {
+    // Use supabase directly (already imported at module level)
     const { data, error } = await supabase
       .from('contenido_sitio')
       .select('clave, valor');
@@ -98,22 +98,28 @@ export async function cargarContenidoSitio() {
     
     return siteContent;
   } catch (e) {
-    console.error('Error cargando contenido:', e);
+    logError('Error cargando contenido', e, 'content');
     // Mantener contenido por defecto del HTML
     return {};
   }
 }
 
 function renderAllContent() {
-  Object.entries(contentRenderers).forEach(([clave, renderer]) => {
+  // Parallelize independent renderers using Promise.all
+  const renderPromises = Object.entries(contentRenderers).map(([clave, renderer]) => {
     if (siteContent[clave] !== undefined) {
-      try {
-        renderer(siteContent[clave]);
-      } catch (e) {
-        console.warn(`Error renderizando ${clave}:`, e);
-      }
+      return Promise.resolve().then(() => {
+        try {
+          renderer(siteContent[clave]);
+        } catch (e) {
+          logWarn(`Error renderizando ${clave}:`, { error: e }, 'content');
+        }
+      });
     }
+    return Promise.resolve();
   });
+  
+  return Promise.all(renderPromises);
 }
 
 // ================================================================
@@ -386,7 +392,7 @@ function renderSeoSchema(value) {
       if (!parsed['@context'] || !parsed['@type']) return;
       schema.textContent = JSON.stringify(parsed);
     } catch (e) {
-      console.warn('Schema JSON inválido:', e);
+      logWarn('Schema JSON inválido:', { error: e }, 'content');
     }
   }
 }

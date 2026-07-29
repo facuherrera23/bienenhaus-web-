@@ -2,6 +2,7 @@
 // ================================================================
 // SEO UTILITIES - Dynamic meta tags, JSON-LD, sitemap
 // ================================================================
+import { logWarn } from './logger.ts';
 
 /**
  * Update meta tags dynamically
@@ -202,11 +203,11 @@ export function generateJSONLD(type, data) {
     })
   };
   
-  const generator = schemas[type];
-  if (!generator) {
-    console.warn(`Unknown JSON-LD type: ${type}`);
+const generator = schemas[type];
+if (!generator) {
+    logWarn(`Unknown JSON-LD type: ${type}`, undefined, 'seo');
     return '';
-  }
+}
   
   const result = generator(data);
   return `<script type="application/ld+json">${JSON.stringify(result)}</script>`;
