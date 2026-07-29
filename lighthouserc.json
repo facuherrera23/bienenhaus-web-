@@ -4,8 +4,8 @@
       "numberOfRuns": 3,
       "startServerCommand": "npx serve dist -p 3000",
       "url": [
-        "http://localhost:3000/",
-        "http://localhost:3000/admin.html"
+        "http://localhost:3000/bienenhaus-web-/",
+        "http://localhost:3000/bienenhaus-web-/admin.html"
       ],
       "settings": {
         "preset": "desktop",
