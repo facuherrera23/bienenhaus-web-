@@ -7,7 +7,7 @@
 (function() {
   if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
     var path = window.location.pathname;
-    if (path !== '/' && path !== '/bienenhaus-web-/') {
+    if (path !== '/' && path !== '/index.html') {
       sessionStorage.redirect = location.href;
       window.location.replace('/');
     }

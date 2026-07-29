@@ -9,6 +9,10 @@ export default defineConfig({
   ],
   build: {
     rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        admin: resolve(__dirname, 'admin.html')
+      },
       output: {
         manualChunks(id) {
           if (id.includes('cropperjs')) {
@@ -55,12 +59,6 @@ export default defineConfig({
       '@utils': resolve(__dirname, './src/utils'),
       '@hooks': resolve(__dirname, './src/hooks')
     }
-  },
-  define: {
-    'import.meta.env.DEV': true,
-    'import.meta.env.PROD': false,
-    'import.meta.env.VITE_SUPABASE_URL': '"https://test.supabase.co"',
-    'import.meta.env.VITE_SUPABASE_ANON_KEY': '"test-key"'
   },
   assetsInclude: ['**/*.cjs']
 });
