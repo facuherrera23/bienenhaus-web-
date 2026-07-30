@@ -19,6 +19,7 @@ import './styles/property-detail.css';
 import './styles/map.css';
 import './styles/conversion-ux.css';
 import './styles/ml-auth.css';
+import './components/Agents/Agents.css';
 
 import { logInfo, logError, logDebug } from './utils/logger.ts';
 import { initHero3D } from './components/Hero3D/Hero3D.tsx';
@@ -26,6 +27,7 @@ import { initSearchBar } from './components/SearchBar/SearchBar.ts';
 import { initPropertyGrid, loadProperties } from './components/PropertyGrid/PropertyGrid.ts';
 import { initFooter } from './components/Layout/Footer.ts';
 import { initHeader } from './components/Layout/Header.ts';
+import { initAgents } from './components/Agents/Agents.ts';
 import { cargarContenidoSitio } from './content.ts';
 import { initAnalytics, trackPageView } from './utils/analytics.ts';
 import { auditAndLog, autoFixAccessibility } from './utils/a11yAudit.ts';
@@ -151,6 +153,7 @@ async function init(): Promise<void> {
     initHero3D();
     initSearchBar();
     initPropertyGrid();
+    initAgents();
     
     // 4. Initialize analytics
     initAnalytics();

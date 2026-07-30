@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -16,8 +16,7 @@
   <link rel="dns-prefetch" href="https://api.cloudinary.com">
   <link rel="dns-prefetch" href="https://api.maptiler.com">
   <link rel="dns-prefetch" href="https://tile.openstreetmap.org">
-  <!-- Preload Google Fonts CSS (not individual font files) -->
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap">
   <link rel="preload" as="image" type="image/webp" href="/hero-bg.webp">
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -26,21 +25,21 @@
   <!-- Early scripts - must run before module -->
   <script src="/early-scripts.js"></script>
   <meta name="robots" content="index, follow">
-  <meta name="description" content="Bienenhaus Propiedades - Agencia inmobiliaria en Córdoba, Argentina. Encuentra tu hogar ideal.">
+  <meta name="description" content="Bienenhaus Propiedades - Agencia inmobiliaria en CÃ³rdoba, Argentina. Encuentra tu hogar ideal.">
   <meta name="author" content="Bienenhaus Propiedades">
   <link rel="canonical" href="https://bienenhaus.com.ar/">
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://bienenhaus.com.ar/">
-  <meta property="og:title" content="Bienenhaus · Propiedades en Córdoba">
-  <meta property="og:description" content="Encuentra tu próximo hogar con Bienenhaus Propiedades. Expertos en el mercado inmobiliario de Córdoba.">
+  <meta property="og:title" content="Bienenhaus Â· Propiedades en CÃ³rdoba">
+  <meta property="og:description" content="Encuentra tu prÃ³ximo hogar con Bienenhaus Propiedades. Expertos en el mercado inmobiliario de CÃ³rdoba.">
   <meta property="og:image" content="https://bienenhaus.com.ar/og-image.svg">
   <meta property="og:locale" content="es_AR">
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@bienenhaus">
-  <meta name="twitter:title" content="Bienenhaus · Propiedades en Córdoba">
-  <meta name="twitter:description" content="Encuentra tu próximo hogar con Bienenhaus Propiedades. Expertos en el mercado inmobiliario de Córdoba.">
+  <meta name="twitter:title" content="Bienenhaus Â· Propiedades en CÃ³rdoba">
+  <meta name="twitter:description" content="Encuentra tu prÃ³ximo hogar con Bienenhaus Propiedades. Expertos en el mercado inmobiliario de CÃ³rdoba.">
   <meta name="twitter:image" content="https://bienenhaus.com.ar/og-image.svg">
   <!-- Schema.org -->
   <script type="application/ld+json">
@@ -48,10 +47,10 @@
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
     "name": "Bienenhaus Propiedades",
-    "description": "Agencia inmobiliaria en Córdoba, Argentina",
+    "description": "Agencia inmobiliaria en CÃ³rdoba, Argentina",
     "address": {
       "@type": "PostalAddress",
-      "addressLocality": "Córdoba",
+      "addressLocality": "CÃ³rdoba",
       "addressCountry": "AR"
     },
     "telephone": "+54 351 123-4567",
@@ -59,18 +58,451 @@
     "url": "https://bienenhaus.com.ar"
   }
   </script>
-  <title>Bienenhaus · Propiedades en Córdoba</title>
+  <title>Bienenhaus Â· Propiedades en CÃ³rdoba</title>
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <!-- Google Fonts: Bienenhaus (Subject-anchored) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Google Fonts: Nocturne Design System -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <!-- Header placeholder - will be replaced by Header component -->
+    <header id="header-placeholder"></header>
+    
+    <!-- Hero 3D Section -->
+    <section id="hero-placeholder" aria-labelledby="hero-title"></section>
+    
+    <!-- Search Bar placeholder - will be replaced by SearchBar component -->
+    <div id="search-bar-placeholder"></div>
+    
+    <!-- Main Content -->
+    <main id="main-content">
+      <!-- Property Catalog Section -->
+      <section id="catalogo" aria-labelledby="catalogo-title">
+        <div class="container">
+          <header class="section-header">
+            <h2 id="catalogo-title" class="section-title"><i class="fas fa-home" aria-hidden="true"></i> Nuestras Propiedades</h2>
+            <p class="section-subtitle">Encuentra la propiedad que se adapta a tu vida</p>
+          </header>
+          
+          <!-- View Toggle & Load Mode -->
+          <div class="view-controls" role="group" aria-label="Opciones de vista">
+            <div class="view-toggle" role="radiogroup" aria-label="Tipo de vista">
+              <button type="button" class="vista-btn active" data-vista="grid" role="radio" aria-checked="true" aria-label="Vista en cuadrÃ­cula">
+                <i class="fas fa-th-large" aria-hidden="true"></i>
+                <span>CuadrÃ­cula</span>
+              </button>
+              <button type="button" class="vista-btn" data-vista="lista" role="radio" aria-checked="false" aria-label="Vista en lista">
+                <i class="fas fa-list" aria-hidden="true"></i>
+                <span>Lista</span>
+              </button>
+              <button type="button" class="vista-btn" data-vista="mapa" role="radio" aria-checked="false" aria-label="Vista en mapa">
+                <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
+                <span>Mapa</span>
+              </button>
+            </div>
+            <div class="load-mode-toggle" role="radiogroup" aria-label="Modo de carga">
+              <button type="button" class="carga-btn active" data-modo="pagination" role="radio" aria-checked="true" aria-label="PaginaciÃ³n">
+                <i class="fas fa-list-ol" aria-hidden="true"></i>
+                <span>PaginaciÃ³n</span>
+              </button>
+              <button type="button" class="carga-btn" data-modo="infinite" role="radio" aria-checked="false" aria-label="Carga infinita">
+                <i class="fas fa-infinity" aria-hidden="true"></i>
+                <span>Infinita</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Property Grid -->
+          <div class="table-container" role="region" aria-label="Listado de propiedades" tabindex="0">
+            <table class="property-table" id="propertiesTable" role="grid">
+              <thead>
+                <tr role="row">
+                  <th scope="col">Imagen</th>
+                  <th scope="col">TÃ­tulo</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col">OperaciÃ³n</th>
+                  <th scope="col">Precio</th>
+                  <th scope="col">UbicaciÃ³n</th>
+                  <th scope="col">Agente</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">ML</th>
+                  <th scope="col">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="propertiesTableBody" role="rowgroup">
+                <tr><td colspan="10" class="empty-state">Cargando propiedades...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Pagination -->
+          <nav class="pagination" id="propertiesPagination" aria-label="PaginaciÃ³n de propiedades"></nav>
+          
+          <!-- Load More Button (for infinite scroll mode) -->
+          <div class="load-more text-center" style="display: none;">
+            <button class="btn btn-primary load-more-btn" id="loadMoreBtn" type="button">
+              <i class="fas fa-chevron-down" aria-hidden="true"></i> Cargar mÃ¡s propiedades
+            </button>
+          </div>
+        </div>
+      </section>
+      
+      <!-- QuiÃ©nes Somos Section -->
+      <section id="nosotros" aria-labelledby="nosotros-title" class="section section-alt">
+        <div class="container">
+          <header class="section-header">
+            <h2 id="nosotros-title" class="section-title"><i class="fas fa-users" aria-hidden="true"></i> QuiÃ©nes Somos</h2>
+            <p class="section-subtitle">MÃ¡s de 15 aÃ±os acompaÃ±ando a familias cordobesas a encontrar su hogar ideal</p>
+          </header>
+          
+          <div class="about-content">
+            <div class="about-text">
+              <h3>Nuestra Historia</h3>
+              <p>Bienenhaus Propiedades naciÃ³ en 2008 con una misiÃ³n clara: transformar la experiencia de comprar, vender o alquilar una propiedad en CÃ³rdoba. Lo que comenzÃ³ como una pequeÃ±a oficina en Nueva CÃ³rdoba, hoy es una de las inmobiliarias de referencia en la provincia, con mÃ¡s de 500 propiedades activas y un equipo de 15 agentes especializados.</p>
+              <p>Nuestro nombre, <strong>Bienenhaus</strong> (casa de las abejas en alemÃ¡n), refleja nuestra filosofÃ­a: trabajo en equipo, dedicaciÃ³n incansable y construcciÃ³n de hogares que perduran. Al igual que las abejas construyen sus panales con precisiÃ³n y cuidado, nosotros construimos relaciones de confianza que duran toda la vida.</p>
+            </div>
+            <div class="about-values">
+              <h3>Nuestros Valores</h3>
+              <div class="values-grid">
+                <article class="value-card">
+                  <i class="fas fa-handshake" aria-hidden="true"></i>
+                  <h4>Transparencia</h4>
+                  <p>InformaciÃ³n clara y honesta en cada operaciÃ³n. Sin sorpresas ni letra chica.</p>
+                </article>
+                <article class="value-card">
+                  <i class="fas fa-lightbulb" aria-hidden="true"></i>
+                  <h4>InnovaciÃ³n</h4>
+                  <p>TecnologÃ­a de vanguardia para encontrar tu hogar ideal: tours 3D, firma digital, CRM propio.</p>
+                </article>
+<article class="value-card">
+                  <i class="fas fa-heart" aria-hidden="true"></i>
+                  <h4>Cercanía</h4>
+                  <p>Te acompañamos en cada paso. Un asesor dedicado desde la primera visita hasta la firma.</p>
+                </article>
+                <article class="value-card">
+                  <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                  <h4>Seguridad</h4>
+                  <p>VerificaciÃ³n jurÃ­dica completa. Tu inversiÃ³n protegida en cada etapa del proceso.
+                </article>
+              </div>
+            </div>
+          </div>
+          
+          <div class="about-stats" role="list" aria-label="EstadÃ­sticas de Bienenhaus">
+            <div class="stat-item" role="listitem">
+              <span class="stat-number">500+</span>
+              <span class="stat-label">Propiedades activas</span>
+            </div>
+            <div class="stat-item" role="listitem">
+              <span class="stat-number">15</span>
+              <span class="stat-label">Agentes especializados</span>
+            </div>
+            <div class="stat-item" role="listitem">
+              <span class="stat-number">15+</span>
+              <span class="stat-label">AÃ±os de experiencia</span>
+            </div>
+            <div class="stat-item" role="listitem">
+              <span class="stat-number">98%</span>
+              <span class="stat-label">Clientes satisfechos</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Equipo / Agentes Section -->
+      <section id="equipo" aria-labelledby="equipo-title" class="section">
+        <div class="container">
+          <header class="section-header">
+            <h2 id="equipo-title" class="section-title"><i class="fas fa-user-tie" aria-hidden="true"></i> Nuestro Equipo</h2>
+            <p class="section-subtitle">Agentes especializados por zona y tipo de propiedad</p>
+          </header>
+          
+          <div class="agents-grid" id="agentsGrid" role="list" aria-label="Lista de agentes">
+            <!-- Agents will be rendered here by JS -->
+            <div class="loading-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+              <div class="spinner" aria-label="Cargando agentes"></div>
+              <p>Cargando equipo...</p>
+            </div>
+          </div>
+          
+          <div class="team-cta text-center" style="margin-top: 3rem;">
+            <a href="#contacto" class="btn btn-primary btn-lg">
+              <i class="fas fa-comments" aria-hidden="true"></i> Â¿QuerÃ©s trabajar con nosotros? Contactanos
+            </a>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Servicios Section -->
+      <section id="servicios" aria-labelledby="servicios-title" class="section section-alt">
+        <div class="container">
+          <header class="section-header">
+            <h2 id="servicios-title" class="section-title"><i class="fas fa-concierge-bell" aria-hidden="true"></i> Nuestros Servicios</h2>
+            <p class="section-subtitle">Soluciones integrales para cada necesidad inmobiliaria</p>
+          </header>
+          
+          <div class="services-grid">
+            <article class="service-card">
+              <div class="service-icon"><i class="fas fa-search" aria-hidden="true"></i></div>
+              <h3>BÃºsqueda Personalizada</h3>
+              <p>Te escuchamos y filtramos el mercado para mostrarte solo lo que realmente buscÃ¡s.
+            </article>
+            <article class="service-card">
+              <div class="service-icon"><i class="fas fa-home" aria-hidden="true"></i></div>
+              <h3>Venta de Propiedades</h3>
+              <p>ComercializaciÃ³n profesional con marketing digital, fotos profesionales y difusiÃ³n masiva.
+            </article>
+            <article class="service-card">
+              <div class="service-icon"><i class="fas fa-key" aria-hidden="true"></i></div>
+              <h3>Alquileres</h3>
+              <p>GestiÃ³n integral: publicaciÃ³n, selecciÃ³n de inquilinos, contratos y cobranzas.
+            </article>
+            <article class="service-card">
+              <div class="service-icon"><i class="fas fa-calculator" aria-hidden="true"></i></div>
+              <h3>TasaciÃ³n Profesional</h3>
+              <p>ValoraciÃ³n real de mercado con informe tÃ©cnico respaldado por CPI CÃ³rdoba.
+            </article>
+            <article class="service-card">
+              <div class="service-icon"><i class="fas fa-file-contract" aria-hidden="true"></i></div>
+              <h3>GestiÃ³n Legal y Notarial</h3>
+              <p>Escrituras, boletos, sucesiones, hipotecas. Todo el papeleo, nosotros nos encargamos.
+            </article>
+            <article class="service-card">
+              <div class="service-icon"><i class="fas fa-camera" aria-hidden="true"></i></div>
+              <h3>FotografÃ­a y Tours 3D</h3>
+              <p>Equipo propio de fotografÃ­a profesional, videos aÃ©reos y recorridos virtuales 360Â°.
+            </article>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Testimonios / FAQ Section -->
+      <section id="faq" aria-labelledby="faq-title" class="section">
+        <div class="container">
+          <header class="section-header">
+            <h2 id="faq-title" class="section-title"><i class="fas fa-question-circle" aria-hidden="true"></i> Preguntas Frecuentes</h2>
+            <p class="section-subtitle">Resolvemos tus dudas antes de que las tengas</p>
+          </header>
+          
+          <div class="faq-grid" id="faqGrid">
+            <!-- FAQ items rendered by JS -->
+          </div>
+        </div>
+      </section>
+      
+      <!-- Contacto Section -->
+      <section id="contacto" aria-labelledby="contacto-title" class="section section-alt">
+        <div class="container">
+          <header class="section-header">
+            <h2 id="contacto-title" class="section-title"><i class="fas fa-envelope" aria-hidden="true"></i> Contactanos</h2>
+            <p class="section-subtitle">Estamos para ayudarte. Escribinos y te respondemos en menos de 24hs.
+          </header>
+          
+          <div class="contact-grid">
+            <form class="contact-form" id="contactForm" novalidate>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="contactName">Nombre completo <span class="required" aria-hidden="true">*</span></label>
+                  <input type="text" id="contactName" name="name" required autocomplete="name" placeholder="Juan PÃ©rez">
+                </div>
+                <div class="form-group">
+                  <label for="contactEmail">Email <span class="required" aria-hidden="true">*</span></label>
+                  <input type="email" id="contactEmail" name="email" required autocomplete="email" placeholder="juan@email.com">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="contactPhone">TelÃ©fono</label>
+                  <input type="tel" id="contactPhone" name="phone" autocomplete="tel" placeholder="+54 351 XXX-XXXX">
+                </div>
+                <div class="form-group">
+                  <label for="contactSubject">Asunto</label>
+                  <select id="contactSubject" name="subject" required>
+                    <option value="">SeleccionÃ¡ un tema</option>
+                    <option value="compra">Quiero comprar una propiedad</option>
+                    <option value="venta">Quiero vender mi propiedad</option>
+                    <option value="alquiler">Busco alquilar / Quiero alquilar mi propiedad</option>
+                    <option value="tasacion">Solicitar tasaciÃ³n gratuita</option>
+                    <option value="asesoria">AsesorÃ­a legal / notarial</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="contactMessage">Mensaje <span class="required" aria-hidden="true">*</span></label>
+                <textarea id="contactMessage" name="message" required rows="5" placeholder="Contanos quÃ© necesitÃ¡s..."></textarea>
+              </div>
+              <div class="form-group checkbox-group">
+                <input type="checkbox" id="contactConsent" name="consent" required>
+                <label for="contactConsent">Acepto la <a href="/politica-privacidad" target="_blank">PolÃ­tica de Privacidad</a> y autorizo a Bienenhaus a contactarme <span class="required" aria-hidden="true">*</span></label>
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg btn-full">
+                <i class="fas fa-paper-plane" aria-hidden="true"></i> Enviar mensaje
+              </button>
+              <div class="form-message" id="contactFormMessage" aria-live="polite"></div>
+            </form>
+            
+            <div class="contact-info">
+              <h3>Otras formas de contactarnos</h3>
+              <div class="contact-methods">
+                <a href="https://wa.me/5493511234567" target="_blank" rel="noopener" class="contact-method whatsapp">
+                  <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                  <div>
+                    <strong>WhatsApp</strong>
+                    <span>+54 9 351 123-4567</span>
+                  </div>
+                </a>
+                <a href="tel:+543511234567" class="contact-method phone">
+                  <i class="fas fa-phone" aria-hidden="true"></i>
+                  <div>
+                    <strong>TelÃ©fono</strong>
+                    <span>+54 351 123-4567</span>
+                  </div>
+                </a>
+                <a href="mailto:bienenhaus.propiedades@gmail.com" class="contact-method email">
+                  <i class="fas fa-envelope" aria-hidden="true"></i>
+                  <div>
+                    <strong>Email</strong>
+                    <span>bienenhaus.propiedades@gmail.com</span>
+                  </div>
+                </a>
+                <div class="contact-method address">
+                  <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                  <div>
+                    <strong>Oficina</strong>
+                    <span>Av. Rafael NÃºÃ±ez 4250, CÃ³rdoba Capital</span>
+                    <small>Lun-Vie 9:00-19:00 / SÃ¡b 10:00-14:00</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Newsletter Section -->
+      <section id="newsletter" class="section newsletter-section" aria-labelledby="newsletter-title">
+        <div class="container">
+          <div class="newsletter-content">
+            <h2 id="newsletter-title">Â¿No querÃ©s perderte ninguna oportunidad?</h2>
+            <p>Suscribite a nuestro newsletter y recibÃ­ las mejores propiedades en tu inbox cada semana.
+          <form class="newsletter-form" id="newsletterForm" novalidate>
+            <div class="newsletter-input-group">
+              <input type="email" id="newsletterEmail" name="email" required placeholder="Tu email" autocomplete="email" aria-label="Email para suscripciÃ³n">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane" aria-hidden="true"></i> Suscribirme
+              </button>
+            </div>
+            <p class="newsletter-note">Sin spam. Solo las mejores propiedades. PodÃ©s darte de baja cuando quieras.
+          </form>
+        </div>
+      </section>
+    </main>
+    
+    <!-- Footer placeholder - will be replaced by Footer component -->
+    <footer id="footer-placeholder"></footer>
+    
+    <!-- Toast container for notifications -->
+    <div id="toast-container" class="toast-container" role="region" aria-label="Notificaciones" aria-live="polite"></div>
+    
+    <!-- Modals -->
+    <div class="modal-overlay" id="propertyModal" role="dialog" aria-modal="true" aria-labelledby="propertyModalTitle" hidden>
+      <div class="modal" role="document">
+        <header class="modal-header">
+          <h3 id="propertyModalTitle">Detalle de la Propiedad</h3>
+          <button type="button" class="modal-close" aria-label="Cerrar">&times;</button>
+        </header>
+        <div class="modal-body" id="propertyModalBody"></div>
+      </div>
+      
+      <div class="modal-overlay" id="agentModal" role="dialog" aria-modal="true" aria-labelledby="agentModalTitle" hidden>
+        <div class="modal" role="document">
+          <header class="modal-header">
+            <h3 id="agentModalTitle">Nuevo Agente</h3>
+            <button type="button" class="modal-close" aria-label="Cerrar">&times;</button>
+          </header>
+          <form class="modal-form" id="agentForm">
+            <input type="hidden" name="id" id="agentId">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="agentName">Nombre *</label>
+                <input type="text" id="agentName" name="nombre" required autocomplete="given-name" placeholder="Juan">
+              </div>
+              <div class="form-group">
+                <label for="agentSurname">Apellido *</label>
+                <input type="text" id="agentSurname" name="apellido" required autocomplete="family-name" placeholder="PÃ©rez">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="agentPhone">TelÃ©fono</label>
+                <input type="tel" id="agentPhone" name="telefono">
+              </div>
+              <div class="form-group">
+                <label for="agentSpecialty">Especialidad</label>
+                <input type="text" id="agentSpecialty" name="especialidad" placeholder="Ej: Zona Norte, Venta, Alquiler">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="agentEmail">Email *</label>
+              <input type="email" id="agentEmail" name="email" required autocomplete="email" placeholder="juan@email.com">
+            </div>
+            <div class="form-group">
+              <label for="agentDescription">DescripciÃ³n</label>
+              <textarea id="agentDescription" name="descripcion" rows="3" placeholder="Especialista en zona norte, ventas, alquileres..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="agentAvatar">Avatar</label>
+              <div class="avatar-upload" id="agentAvatarUpload">
+                <input type="file" id="agentAvatarFile" name="avatar" accept="image/*" hidden>
+                <div class="avatar-preview" id="agentAvatarPreview">
+                  <i class="fas fa-user"></i>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" id="agentAvatarBtn">Seleccionar imagen</button>
+              </div>
+            </div>
+            <div class="checkbox-group">
+              <label><input type="checkbox" name="activo" value="1" checked> Activo</label>
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn btn-secondary" data-action="cancel-agent">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Guardar Agente</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div class="modal-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
+        <div class="modal modal-sm" role="document">
+          <header class="modal-header">
+            <h3 id="confirmTitle">Confirmar</h3>
+          </header>
+          <div class="modal-body">
+            <p id="confirmMessage">Â¿EstÃ¡s seguro?</p>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="confirmCancel">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="confirmOk">Confirmar</button>
+          </div>
+        </div>
+      </div>
+  </div>
+  
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+

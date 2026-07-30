@@ -42,8 +42,8 @@ function createHeader() {
         <a href="/" class="header-nav-link" data-page="home">Inicio</a>
         <a href="#propiedades" class="header-nav-link" data-page="properties">Propiedades</a>
         <a href="#nosotros" class="header-nav-link" data-page="about">Quiénes somos</a>
-        <a href="#servicios" class="header-nav-link" data-page="services">Servicios</a>
         <a href="#equipo" class="header-nav-link" data-page="team">Equipo</a>
+        <a href="#servicios" class="header-nav-link" data-page="services">Servicios</a>
         <a href="#faq" class="header-nav-link" data-page="faq">FAQ</a>
         <a href="#contacto" class="header-nav-link header-nav-cta" data-page="contact"><i class="fas fa-envelope" aria-hidden="true"></i> Contacto</a>
       </nav>
