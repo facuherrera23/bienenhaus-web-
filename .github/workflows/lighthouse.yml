@@ -44,13 +44,32 @@ jobs:
           cp dist/admin.html dist/admin-ci.html
           sed -i 's|<meta http-equiv="Content-Security-Policy" content="[^"]*">|<meta http-equiv="Content-Security-Policy" content="default-src * '"'"'unsafe-inline'"'"' '"'"'unsafe-eval'"'"' data: blob:; script-src * '"'"'unsafe-inline'"'"' '"'"'unsafe-eval'"'"'; style-src * '"'"'unsafe-inline'"'"'; font-src * data:; img-src * data: blob:; connect-src *; frame-src *;">|' dist/admin-ci.html
            
+      - name: Start preview server
+        run: |
+          npx serve dist -p 3000 -s > server.log 2>&1 &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+          # Wait for server to be ready
+          for i in {1..30}; do
+            if curl -f http://localhost:3000/ > /dev/null 2>&1; then
+              echo "Server ready"
+              break
+            fi
+            sleep 1
+          done
+           
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v11
         with:
           configPath: ./lighthouserc.json
           urls: |
-            file://${{ github.workspace }}/dist/index-ci.html
-            file://${{ github.workspace }}/dist/admin-ci.html
+            http://localhost:3000/index-ci.html
+            http://localhost:3000/admin-ci.html
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
           CHROME_PATH: /usr/bin/google-chrome-stable
+
+      - name: Kill preview server
+        if: always()
+        run: |
+          if [ -n "$SERVER_PID" ]; then kill $SERVER_PID; fi
