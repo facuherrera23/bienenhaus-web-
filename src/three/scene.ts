@@ -56,7 +56,7 @@ export class Hero3DScene {
     this.handleResize();
     window.addEventListener('resize', this.handleResize.bind(this));
 
-    this.timer.start();
+    this.timer.reset();
 
     if (!config.reducedMotion) {
       this.animate();
@@ -152,7 +152,7 @@ export class Hero3DScene {
     this.animationId = requestAnimationFrame(this.animate.bind(this));
 
     this.timer.update();
-    const elapsed = this.timer.getElapsedTime();
+    const elapsed = this.timer.getElapsed();
 
     // Dolly-in de entrada (easeOutExpo)
     if (this.introProgress < 1) {

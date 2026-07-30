@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'preact/hooks';
-import { logDebug } from '../../utils/logger.ts';
+import { logDebug, logError } from '../../utils/logger.ts';
 import styles from './Hero3D.module.css';
 
 interface Hero3DProps {

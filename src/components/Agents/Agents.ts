@@ -4,7 +4,7 @@
 
 import { supabase } from '../../supabase.ts';
 import { showToast, getInitials } from '../shared/utils.ts';
-import { logError, logInfo } from '../../utils/logger.ts';
+import { logError, logInfo, logWarn } from '../../utils/logger.ts';
 import { escapeHtml } from '../../utils/sanitize.ts';
 
 interface Agent {
