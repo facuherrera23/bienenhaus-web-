@@ -9,6 +9,16 @@ import { formatPrice } from '../../utils/format.ts';
 import { useFocusTrap } from '../../hooks/useFocusTrap.ts';
 import './ConversionUX.css';
 
+interface WhatsAppContext {
+  property?: { id?: string | number };
+  section?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  location?: string;
+  propertyType?: string;
+  operation?: string;
+}
+
 interface Property {
   id: number;
   titulo: string;
@@ -108,11 +118,7 @@ export function ConversionUX({
   }, [scrollY]);
 
   // Generate contextual WhatsApp message
-  const generateWhatsAppMessage = useCallback((context: {
-    property?: { titulo: string; operacion: string; precio: number; moneda: string; ubicacion: string; id?: string };
-    section?: string;
-    filters?: { operacion?: string; tipo?: string; precioMin?: number; precioMax?: number; habitaciones?: number; ubicacion?: string };
-  } = {}) => {
+  const generateWhatsAppMessage = useCallback((context: WhatsAppContext = {}) => {
     
     let message = 'Hola! ';
     
@@ -149,7 +155,7 @@ export function ConversionUX({
   }, []);
 
   // Open WhatsApp with context
-  const openWhatsApp = useCallback((context = {}) => {
+  const openWhatsApp = useCallback((context: WhatsAppContext = {}) => {
     const message = generateWhatsAppMessage(context);
     const encoded = encodeURIComponent(message);
     const phone = '5493511234567'; // Configurar número real
@@ -170,7 +176,7 @@ export function ConversionUX({
   }, [generateWhatsAppMessage, onWhatsAppClick]);
 
   // WhatsApp modal handlers
-  const openWhatsAppModal = useCallback((context = {}) => {
+  const openWhatsAppModal = useCallback((context: WhatsAppContext = {}) => {
     const message = generateWhatsAppMessage(context);
     setWaForm(prev => ({ ...prev, message, source: context.section || 'modal' }));
     setShowWhatsApp(true);
@@ -224,7 +230,7 @@ export function ConversionUX({
   }, [waForm, onWhatsAppClick]);
 
   // Price alert handlers
-  const openPriceAlert = useCallback((context = {}) => {
+  const openPriceAlert = useCallback((context: WhatsAppContext = {}) => {
     setAlertForm(prev => ({
       ...prev,
       minPrice: context.minPrice || 0,
@@ -436,7 +442,7 @@ export function ConversionUX({
                     value={waForm.message}
                     onChange={(e) => setWaForm(prev => ({ ...prev, message: (e.target as HTMLTextAreaElement).value }))}
                     required
-                    rows="4"
+                    rows={4}
                     placeholder="Tu mensaje..."
                     aria-invalid={!!waError}
                     aria-describedby={waError ? 'wa-error' : undefined}

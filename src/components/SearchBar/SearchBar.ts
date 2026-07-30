@@ -292,6 +292,7 @@ function applyFilters() {
   
   // Collect all filter values
   currentFilters = {
+    ...currentFilters,
     operacion: searchBarElement.querySelector('#tipoOperacion').value,
     tipo: searchBarElement.querySelector('#tipoPropiedadFiltro').value,
     precioMin: parseInt(searchBarElement.querySelector('#precioMin').value) || 0,
@@ -401,7 +402,7 @@ function updateURLFilters(filters) {
   
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== '' && value !== 0 && value !== false && value !== 'todos' && value !== 'ambos' && value !== 'todas' && value !== 'destacado' && value !== null) {
-      params.set(key, value);
+      params.set(key, String(value));
     }
   });
   

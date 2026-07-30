@@ -40,7 +40,7 @@ export function runAccessibilityAudit() {
   });
 
   // 3. Check for missing labels on form inputs
-  document.querySelectorAll('input:not([type="hidden"]):not([aria-label]):not([aria-labelledby])').forEach(input => {
+  document.querySelectorAll('input:not([type="hidden"]):not([aria-label]):not([aria-labelledby])').forEach((input: HTMLInputElement) => {
     const hasLabel = document.querySelector(`label[for="${input.id}"]`) ||
                      input.closest('label');
     if (!hasLabel && !input.hasAttribute('aria-label') && !input.hasAttribute('aria-labelledby')) {

@@ -51,7 +51,7 @@ export function measureWebVitals(onReport) {
     
     // TTFB - Time to First Byte
     if ('PerformanceNavigationTiming' in window) {
-      const navTiming = performance.getEntriesByType('navigation')[0];
+      const navTiming = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       if (navTiming) {
         const ttfb = navTiming.responseStart - navTiming.requestStart;
         onReport({ name: 'TTFB', value: ttfb, rating: getTTFBRating(ttfb) });
@@ -120,7 +120,7 @@ export function lazyLoadImages(selector = 'img[data-src]', options = {}) {
  * @param {Object} options - Options for lazy loading
  * @returns {Promise} Resolves with the component
  */
-export function lazyLoadComponent(importFn, options = {}) {
+export function lazyLoadComponent(importFn: any, options: Record<string, any> = {}) {
   const { fallback = null, timeout = 10000 } = options;
   
   return new Promise((resolve, reject) => {

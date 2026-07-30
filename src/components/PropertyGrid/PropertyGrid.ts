@@ -271,7 +271,7 @@ function createPropertyCard(property) {
     <div class="property-content">
       <div class="property-price">
         <span class="currency">$</span>
-        <span class="amount">${price.amount.toLocaleString('es-AR')}</span>
+        <span class="amount">${Number(price.amount).toLocaleString('es-AR')}</span>
         <span class="period">${price.period || ''}</span>
       </div>
       

@@ -270,7 +270,7 @@ export function generateSitemap(urls) {
  * @param {Object} options - Robots options
  * @returns {string} robots.txt content
  */
-export function generateRobotsTxt(options = {}) {
+export function generateRobotsTxt(options: Record<string, any> = {}) {
   const { 
     baseUrl = 'https://bienenhaus.com.ar',
     disallow = ['/admin/', '/api/', '/private/'],

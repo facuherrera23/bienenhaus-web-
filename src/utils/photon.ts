@@ -18,7 +18,7 @@ const PHOTON_REVERSE = 'https://photon.komoot.io/reverse/';
  * @param {Array} options.osmTag - Filter by OSM tags (e.g., [{ key: 'place', value: 'city' }])
  * @returns {Promise<Array>} Array of { name, city, state, country, lat, lon, type, extent, bbox, osm_id, osm_type, osm_key, osm_value }
  */
-export async function searchPhoton(query, options = {}) {
+export async function searchPhoton(query: any, options: Record<string, any> = {}) {
   const { 
     limit = 5, 
     lang = 'es', 
@@ -93,7 +93,7 @@ export async function searchPhoton(query, options = {}) {
  * @param {Object} options
  * @returns {Promise<Object|null>}
  */
-export async function reversePhoton(lat, lng, options = {}) {
+export async function reversePhoton(lat: any, lng: any, options: Record<string, any> = {}) {
   const { lang = 'es' } = options;
   
   try {
@@ -119,7 +119,8 @@ export async function reversePhoton(lat, lng, options = {}) {
       lat,
       lng,
       type: props.type,
-      displayName: formatDisplayName(props)
+      displayName: formatDisplayName(props),
+      shortName: formatShortName(props)
     };
 } catch (error) {
     logError('Photon reverse error', error, 'photon');
@@ -153,7 +154,7 @@ function formatShortName(props) {
 /**
  * Autocomplete helper with debounce + cache
  */
-export function createAutocomplete(options = {}) {
+export function createAutocomplete(options: Record<string, any> = {}) {
   const { 
     debounceMs = 300, 
     minQueryLength = 2,
@@ -274,7 +275,7 @@ export function createAutocomplete(options = {}) {
  * @param {Object} options - { enableHighAccuracy, timeout, maximumAge }
  * @returns {Promise<{ lat, lng, accuracy }>}
  */
-export function getUserLocation(options = {}) {
+export function getUserLocation(options: PositionOptions = {}): Promise<{lat: number; lng: number; accuracy: number}> {
   const { 
     enableHighAccuracy = true, 
     timeout = 10000, 
@@ -305,7 +306,7 @@ export function getUserLocation(options = {}) {
  * @param {Object} options
  * @returns {Number} watchId (for clearWatch)
  */
-export function watchUserLocation(callback, options = {}) {
+export function watchUserLocation(callback: any, options: PositionOptions = {}) {
   const { 
     enableHighAccuracy = true, 
     timeout = 10000, 

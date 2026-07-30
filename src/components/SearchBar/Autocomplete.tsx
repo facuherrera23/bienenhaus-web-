@@ -28,8 +28,8 @@ import './Autocomplete.css';
 export function Autocomplete({ 
   name = 'location',
   placeholder = 'Buscar zona, barrio, ciudad...',
-  onSelect = () => {},
-  onChange = () => {},
+  onSelect = (...args: any[]) => {},
+  onChange = (...args: any[]) => {},
   value = '',
   disabled = false,
   bias = null,

@@ -93,7 +93,7 @@ function bindEvents() {
       if (target instanceof HTMLElement) {
         e.preventDefault();
         const header = document.querySelector('.header');
-        const headerHeight = header?.offsetHeight || 0;
+        const headerHeight = (header as HTMLElement)?.offsetHeight || 0;
         const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - headerHeight;
         window.scrollTo({ top: targetPosition, behavior: 'smooth' });
       }
@@ -105,7 +105,7 @@ function bindEvents() {
 }
 
 function initStatsAnimation() {
-  const stats = heroElement?.querySelectorAll<HTMLSpanElement>('.stat .number');
+  const stats = heroElement?.querySelectorAll('.stat .number') as NodeListOf<HTMLSpanElement>;
   if (!stats.length) return;
 
   const observer = new IntersectionObserver((entries) => {
@@ -121,7 +121,7 @@ function initStatsAnimation() {
 
   stats.forEach(stat => {
     if (!stat.dataset.target) {
-      stat.dataset.target = parseInt(stat.textContent.replace(/\D/g, '')) || 0;
+      stat.dataset.target = String(parseInt(stat.textContent.replace(/\D/g, '')) || 0);
     }
     observer.observe(stat);
   });
