@@ -3,8 +3,8 @@ import { logWarn } from './utils/logger.ts';
 
 export const CONFIG = {
   // Supabase (obligatorio)
-  SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL || 'https://TU_PROYECTO.supabase.co',
-  SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY || 'TU_CLAVE_ANONIMA',
+  SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL || 'https://rnldqiwwzhjnurkguihu.supabase.co',
+  SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubGRxaXd3emhqbnVya2d1aWh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkzNzU5NjgsImV4cCI6MjA1NDk1MTk2OH0.7J7b8s0Qx5FJ-fR_6u2V9cF2nL8sX4Q8Y4L8Y7cQ7Jk',
 
   // Cloudinary (obligatorio para subir imágenes)
   CLOUDINARY_CLOUD_NAME: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'TU_CLOUD_NAME',
