@@ -186,6 +186,49 @@
   gap: var(--ds-space-3);
 }
 
+.hero3d__nav-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--ds-color-border);
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-color-surface-2);
+  cursor: pointer;
+  padding: 0;
+  pointer-events: auto;
+  transition: var(--ds-transition-fast);
+}
+
+.hero3d__nav-hamburger span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--ds-color-text-secondary);
+  border-radius: 2px;
+  transition: var(--ds-transition-fast);
+  transform-origin: center;
+}
+
+.hero3d__nav-hamburger:hover { background: var(--ds-color-surface-3); border-color: var(--ds-color-border-medium); }
+
+.hero3d__nav-hamburger--open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hero3d__nav-hamburger--open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hero3d__nav-hamburger--open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.hero3d__nav-hamburger:focus-visible { outline: 2px solid var(--ds-color-primary); outline-offset: 2px; }
+
 .hero3d__nav-btn {
   width: 44px;
   height: 44px;
@@ -448,7 +491,32 @@
     gap: var(--ds-space-4);
   }
 
-  .hero3d__nav-links { display: none; }
+  .hero3d__nav-links {
+    display: none;
+    position: fixed;
+    inset: 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--ds-space-6);
+    background: rgba(10, 8, 7, 0.98);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    z-index: calc(var(--ds-z-modal) - 1);
+    pointer-events: auto;
+  }
+
+  .hero3d__nav-links--open {
+    display: flex;
+    animation: fade-in 200ms var(--ds-ease-out) both;
+  }
+
+  .hero3d__nav-link {
+    font-size: 1rem;
+    padding: var(--ds-space-3) var(--ds-space-5);
+  }
+
+  .hero3d__nav-hamburger { display: flex; }
 
   .hero3d__content {
     padding: var(--ds-space-7) var(--ds-container-padding-mobile) var(--ds-space-6);

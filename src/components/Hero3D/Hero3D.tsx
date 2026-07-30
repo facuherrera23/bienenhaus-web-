@@ -2,6 +2,15 @@ import { useEffect, useRef, useState, useCallback } from 'preact/hooks';
 import { logDebug, logError } from '../../utils/logger.ts';
 import styles from './Hero3D.module.css';
 
+function webglSupported(): boolean {
+  try {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl') || c.getContext('webgl2'));
+  } catch {
+    return false;
+  }
+}
+
 interface Hero3DProps {
   className?: string;
 }
@@ -11,9 +20,12 @@ export function Hero3D({ className = '' }: Hero3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
   const [sceneReady, setSceneReady] = useState(false);
+  const [webglFailed, setWebglFailed] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [saveData, setSaveData] = useState(false);
   const [navScrolled, setNavScrolled] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('home');
   const sceneRef = useRef<any>(null);
 
   // Detect user preferences
@@ -45,15 +57,55 @@ export function Hero3D({ className = '' }: Hero3DProps) {
   useEffect(() => {
     const handleScroll = () => {
       setNavScrolled(window.scrollY > 50);
+      updateActiveSection();
     };
+    const updateActiveSection = () => {
+      const sections = [
+        { id: 'home', el: document.body },
+        { id: 'properties', el: document.getElementById('catalogo') },
+        { id: 'about', el: document.getElementById('nosotros') },
+        { id: 'team', el: document.getElementById('equipo') },
+        { id: 'services', el: document.getElementById('servicios') },
+        { id: 'faq', el: document.getElementById('faq') },
+        { id: 'contact', el: document.getElementById('contacto') },
+      ];
+      const scrollY = window.scrollY + 120;
+      let current = 'home';
+      for (const s of sections) {
+        if (s.el) {
+          const top = s.el.offsetTop;
+          const bottom = top + s.el.offsetHeight;
+          if (scrollY >= top && scrollY < bottom) {
+            current = s.id;
+            break;
+          }
+        }
+      }
+      setActiveSection(current);
+    };
+    updateActiveSection();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const toggleNav = useCallback(() => {
+    setNavOpen(prev => !prev);
+    document.body.style.overflow = navOpen ? '' : 'hidden';
+  }, [navOpen]);
+
+  // Close nav on link click
+  const handleNavClick = useCallback(() => {
+    setNavOpen(false);
+    document.body.style.overflow = '';
   }, []);
 
   // Initialize 3D scene
   useEffect(() => {
     if (!canvasRef.current) return;
-    if (saveData || reducedMotion) return;
+    if (saveData || reducedMotion || !webglSupported()) {
+      if (!webglSupported()) setWebglFailed(true);
+      return;
+    }
 
     import('../../three/scene').then(({ Hero3DScene }) => {
       if (!canvasRef.current) return;
@@ -81,6 +133,8 @@ export function Hero3D({ className = '' }: Hero3DProps) {
         containerRef.current?.removeEventListener('mousemove', handleMouseMove);
         scene.dispose();
       };
+    }).catch(() => {
+      setWebglFailed(true);
     });
   }, [reducedMotion, saveData]);
 
@@ -91,8 +145,8 @@ export function Hero3D({ className = '' }: Hero3DProps) {
     };
   }, []);
 
-  // Static fallback for saveData / reducedMotion / automated testing / small mobile
-  const useStaticFallback = saveData || reducedMotion || isAutomated || window.innerWidth < 480;
+  // Static fallback for saveData / reducedMotion / automated testing / small mobile / no WebGL
+  const useStaticFallback = saveData || reducedMotion || isAutomated || window.innerWidth < 480 || webglFailed;
 
   const scrollToSearch = useCallback(() => {
     const searchSection = document.getElementById('search-bar');
@@ -179,16 +233,31 @@ export function Hero3D({ className = '' }: Hero3DProps) {
               <span>Bienenhaus<span className="ds-text-primary">.</span></span>
             </a>
 
-            <div className={styles['hero3d__nav-links']}>
-              <a href="#propiedades" className={styles['hero3d__nav-link']}>Propiedades</a>
-              <a href="#agentes" className={styles['hero3d__nav-link']}>Agentes</a>
-              <a href="#contacto" className={styles['hero3d__nav-link']}>Contacto</a>
+            <div className={`${styles['hero3d__nav-links']} ${navOpen ? styles['hero3d__nav-links--open'] : ''}`}>
+              <a href="/" className={`${styles['hero3d__nav-link']} ${activeSection === 'home' ? styles.active : ''}`} data-page="home" onClick={handleNavClick}>Inicio</a>
+              <a href="#catalogo" className={`${styles['hero3d__nav-link']} ${activeSection === 'properties' ? styles.active : ''}`} data-page="properties" onClick={handleNavClick}>Propiedades</a>
+              <a href="#nosotros" className={`${styles['hero3d__nav-link']} ${activeSection === 'about' ? styles.active : ''}`} data-page="about" onClick={handleNavClick}>Quiénes somos</a>
+              <a href="#equipo" className={`${styles['hero3d__nav-link']} ${activeSection === 'team' ? styles.active : ''}`} data-page="team" onClick={handleNavClick}>Equipo</a>
+              <a href="#servicios" className={`${styles['hero3d__nav-link']} ${activeSection === 'services' ? styles.active : ''}`} data-page="services" onClick={handleNavClick}>Servicios</a>
+              <a href="#faq" className={`${styles['hero3d__nav-link']} ${activeSection === 'faq' ? styles.active : ''}`} data-page="faq" onClick={handleNavClick}>FAQ</a>
+              <a href="#contacto" className={`${styles['hero3d__nav-link']} ${activeSection === 'contact' ? styles.active : ''}`} data-page="contact" onClick={handleNavClick}>Contacto</a>
             </div>
 
             <div className={styles['hero3d__nav-actions']}>
               <a href="/admin.html" className={styles['hero3d__nav-btn']} aria-label="Panel de administración">
                 <i className="fas fa-cog"></i>
               </a>
+              <button
+                type="button"
+                className={`${styles['hero3d__nav-hamburger']} ${navOpen ? styles['hero3d__nav-hamburger--open'] : ''}`}
+                aria-label={navOpen ? 'Cerrar menú' : 'Abrir menú'}
+                aria-expanded={navOpen}
+                onClick={toggleNav}
+              >
+                <span></span>
+                <span></span>
+                <span></span>
+              </button>
             </div>
           </div>
         </nav>
@@ -204,7 +273,7 @@ export function Hero3D({ className = '' }: Hero3DProps) {
           </div>
 
           {/* Headline */}
-          <h1 className={styles['hero3d__title']}>
+          <h1 id="hero-title" className={styles['hero3d__title']}>
             Encontrá tu <span className={styles['hero3d__highlight']}>próximo hogar</span>
           </h1>
 

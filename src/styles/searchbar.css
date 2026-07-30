@@ -1,21 +1,27 @@
 /* ================================================================
-   SEARCH BAR / FILTER BAR
+   SEARCH BAR / FILTER BAR — Glass + Glow
    ================================================================ */
 
 .search-bar {
-  background: var(--color-surface-1);
+  background: rgba(16, 18, 20, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   padding: var(--space-5) var(--space-6);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-glass), var(--shadow-glow);
   margin-bottom: var(--space-7);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-4) var(--space-5);
   border: 1px solid var(--color-border);
-  transition: box-shadow var(--transition-base);
+  transition: box-shadow var(--transition-base), border-color var(--transition-base);
 }
-.search-bar:hover { box-shadow: var(--shadow-lg); }
+.search-bar:focus-within {
+  border-color: var(--color-brand-border);
+  box-shadow: var(--shadow-glass), var(--shadow-glow-lg);
+}
+.search-bar:hover { box-shadow: var(--shadow-glass), var(--shadow-glow-lg); }
 
 .search-group { display: flex; align-items: center; gap: var(--space-2); flex: 1; min-width: 12.5rem; }
 .search-group label {
@@ -30,7 +36,9 @@
   padding: var(--space-3) var(--space-5);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
-  background: var(--color-surface-2);
+  background: rgba(22, 24, 26, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   font-size: var(--text-sm);
   min-width: 9.375rem;
   transition: var(--transition-fast);
@@ -41,8 +49,8 @@
 .search-group input:focus {
   border-color: var(--color-brand);
   outline: none;
-  background: var(--color-surface-3);
-  box-shadow: var(--color-brand-focus);
+  background: rgba(28, 31, 33, 0.8);
+  box-shadow: var(--color-brand-focus), var(--shadow-glow);
 }
 
 .search-actions { display: flex; gap: var(--space-3); margin-left: auto; flex-wrap: wrap; }
@@ -62,11 +70,13 @@
   font-family: inherit;
   min-height: var(--touch-target);
 }
-.search-btn:hover { background: var(--color-brand-dark); transform: translateY(-1px); box-shadow: var(--shadow-glow); }
+.search-btn:hover { background: var(--color-brand-dark); transform: translateY(-1px); box-shadow: var(--shadow-glow-lg); }
 .search-btn:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
 
 .search-btn-clear {
-  background: transparent;
+  background: rgba(22, 24, 26, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--color-border);
   padding: var(--space-3) var(--space-5);
   border-radius: var(--radius-full);
@@ -77,10 +87,12 @@
   font-family: inherit;
   min-height: var(--touch-target);
 }
-.search-btn-clear:hover { background: var(--color-surface-3); border-color: var(--color-border-medium); color: var(--color-text); }
+.search-btn-clear:hover { background: rgba(28, 31, 33, 0.6); border-color: var(--color-border-medium); color: var(--color-text); }
 
 .advanced-toggle {
-  background: var(--color-surface-3);
+  background: rgba(22, 24, 26, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--color-border);
   padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-full);
@@ -93,7 +105,7 @@
   gap: var(--space-2);
   font-family: inherit;
 }
-.advanced-toggle:hover { background: var(--color-surface-4); border-color: var(--color-border-medium); }
+.advanced-toggle:hover { background: rgba(28, 31, 33, 0.6); border-color: var(--color-border-medium); }
 .advanced-toggle[aria-expanded="true"] { background: var(--color-brand-glow); border-color: var(--color-brand-border); color: var(--color-brand); }
 .advanced-toggle[aria-expanded="true"] .chevron-icon { transform: rotate(180deg); }
 
@@ -128,7 +140,7 @@
 }
 
 /* ================================================================
-   AUTOCOMPLETE
+   AUTOCOMPLETE — Glass
    ================================================================ */
 
 .autocomplete-wrapper { position: relative; flex: 1; min-width: 0; }
@@ -139,10 +151,12 @@
   left: 0;
   right: 0;
   margin-top: var(--space-1);
-  background: var(--color-surface-2);
+  background: rgba(16, 18, 20, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-glass), var(--shadow-glow);
   z-index: var(--z-dropdown);
   max-height: 300px;
   overflow-y: auto;
@@ -159,7 +173,7 @@
 }
 .autocomplete-option:last-child { border-bottom: none; }
 .autocomplete-option:hover,
-.autocomplete-option.highlighted { background: var(--color-surface-3); }
+.autocomplete-option.highlighted { background: rgba(28, 31, 33, 0.6); }
 .autocomplete-option-icon { color: var(--color-brand); font-size: 1.125rem; }
 .autocomplete-option-content { flex: 1; min-width: 0; }
 .autocomplete-option-title { font-weight: var(--font-weight-medium); color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

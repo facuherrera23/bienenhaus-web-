@@ -80,8 +80,7 @@ function renderAgentsGrid(): void {
       <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
         <i class="fas fa-users" style="font-size: 3rem; color: var(--ds-color-text-muted); margin-bottom: 1rem; display: block;"></i>
         <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--ds-color-text-secondary); margin-bottom: 0.5rem;">No hay agentes registrados</h3>
-        <p style="font-size: 0.95rem; color: var(--ds-color-text-muted); margin-bottom: 1.5rem;">No hay agentes activos para mostrar</p>
-        <button class="btn btn-primary" onclick="window.openAgentModal?.()"><i class="fas fa-plus" aria-hidden="true"></i> Agregar primer agente</button>
+        <p style="font-size: 0.95rem; color: var(--ds-color-text-muted);">No hay agentes activos para mostrar</p>
       </div>
     `;
     return;

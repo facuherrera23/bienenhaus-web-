@@ -28,7 +28,6 @@ import { initHero3D } from './components/Hero3D/Hero3D.tsx';
 import { initSearchBar } from './components/SearchBar/SearchBar.ts';
 import { initPropertyGrid, loadProperties } from './components/PropertyGrid/PropertyGrid.ts';
 import { initFooter } from './components/Layout/Footer.ts';
-import { initHeader } from './components/Layout/Header.ts';
 import { initAgents } from './components/Agents/Agents.ts';
 import { cargarContenidoSitio } from './content.ts';
 import { initAnalytics, trackPageView } from './utils/analytics.ts';
@@ -148,7 +147,6 @@ async function init(): Promise<void> {
     await cargarContenidoSitio();
     
     // 2. Initialize layout components
-    initHeader();
     initFooter();
     
     // 3. Initialize page components (hero, search, property grid)
