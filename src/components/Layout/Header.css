@@ -171,6 +171,11 @@
   transform: scale(0.97);
 }
 
+.header-btn:focus-visible {
+  outline: 2px solid var(--ds-color-primary);
+  outline-offset: 2px;
+}
+
 .mobile-menu-btn {
   display: none;
 }

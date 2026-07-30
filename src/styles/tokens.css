@@ -27,6 +27,7 @@
   --color-warning-bg: rgba(204, 153, 34, 0.10);
   --color-warning-border: rgba(204, 153, 34, 0.25);
   --color-danger: #cc3535;
+  --color-danger-dark: #a02828;
   --color-danger-bg: rgba(204, 53, 53, 0.10);
   --color-danger-border: rgba(204, 53, 53, 0.25);
   --color-info: #2ee6c5;

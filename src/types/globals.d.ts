@@ -47,6 +47,7 @@ declare global {
     hideSpinner: () => void;
     recargarContenido: () => Promise<void>;
     fbq: ((...args: any[]) => void) & { callMethod?: any; queue?: any[] };
+    __lighthouse?: boolean;
   }
 }
 

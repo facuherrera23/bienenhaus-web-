@@ -163,6 +163,17 @@
 
 .hero3d__nav-link:hover::after { width: 80%; }
 
+.hero3d__nav-link.active {
+  color: var(--ds-color-primary);
+  background: var(--ds-color-primary-glow);
+}
+
+.hero3d__nav-link.active::after {
+  width: 80%;
+  background: var(--ds-color-primary);
+  box-shadow: 0 0 8px var(--ds-color-primary);
+}
+
 .hero3d__nav-link:focus-visible {
   outline: 2px solid var(--ds-color-primary);
   outline-offset: 2px;
@@ -190,6 +201,7 @@
 }
 
 .hero3d__nav-btn:hover { background: var(--ds-color-surface-3); border-color: var(--ds-color-border-medium); color: var(--ds-color-text); }
+.hero3d__nav-btn:active { transform: scale(0.97); }
 .hero3d__nav-btn:focus-visible { outline: 2px solid var(--ds-color-primary); outline-offset: 2px; }
 
 .hero3d__content {
@@ -378,6 +390,10 @@
   margin-top: var(--ds-space-9);
   padding-bottom: var(--ds-space-8);
   animation: slide-up 800ms var(--ds-ease-out) 800ms both;
+}
+
+.hero3d__cta-secondary .btn:active {
+  transform: scale(0.97);
 }
 
 .hero3d__scroll {

@@ -60,6 +60,7 @@ export class Hero3DScene {
 
     if (!config.reducedMotion) {
       this.animate();
+      this.bindVisibility();
     } else {
       // Posición final inmediata en reduced motion
       this.camera.position.set(0, 8, 22);
@@ -181,6 +182,29 @@ export class Hero3DScene {
 
   private renderFrame(): void {
     this.composer.render();
+  }
+
+  private bindVisibility(): void {
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        this.pause();
+      } else {
+        this.resume();
+      }
+    });
+  }
+
+  public pause(): void {
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+  }
+
+  public resume(): void {
+    if (this.animationId !== null || this.isDisposed) return;
+    this.timer.reset();
+    this.animate();
   }
 
   public setMousePosition(x: number, y: number): void {

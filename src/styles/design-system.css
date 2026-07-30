@@ -23,6 +23,7 @@
   --ds-color-warning-bg: var(--color-warning-bg);
   --ds-color-warning-border: var(--color-warning-border);
   --ds-color-danger: var(--color-danger);
+  --ds-color-danger-dark: var(--color-danger-dark);
   --ds-color-danger-bg: var(--color-danger-bg);
   --ds-color-danger-border: var(--color-danger-border);
   --ds-color-info: var(--color-info);

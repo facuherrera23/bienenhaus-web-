@@ -86,6 +86,12 @@
   transform: scale(0.97);
 }
 
+.footer-brand .social a:focus-visible {
+  outline: 2px solid var(--bh-color-primary);
+  outline-offset: 2px;
+  border-radius: var(--bh-radius-full);
+}
+
 .footer-col h4 {
   color: var(--bh-color-text);
   font-family: var(--bh-font-body);
@@ -174,6 +180,11 @@
   box-shadow: var(--bh-color-primary-focus-ring);
 }
 
+.footer-newsletter input:focus-visible {
+  outline: 2px solid var(--bh-color-primary);
+  outline-offset: 1px;
+}
+
 .footer-newsletter .btn-subscribe {
   background: var(--bh-color-primary);
   color: var(--bh-color-text-on-primary);
@@ -198,6 +209,11 @@
 
 .footer-newsletter .btn-subscribe:active {
   transform: scale(0.97);
+}
+
+.footer-newsletter .btn-subscribe:focus-visible {
+  outline: 2px solid var(--bh-color-primary);
+  outline-offset: 2px;
 }
 
 .footer-bottom {
