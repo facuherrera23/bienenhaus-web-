@@ -9,7 +9,7 @@ interface Hero3DProps {
 export function Hero3D({ className = '' }: Hero3DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const navRef = useRef<HTMLNavElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
   const [sceneReady, setSceneReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [saveData, setSaveData] = useState(false);

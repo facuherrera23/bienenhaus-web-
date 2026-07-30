@@ -15,30 +15,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+       
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
-          
-      - name: Install Chrome
+           
+      - name: Install Google Chrome
         run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
-          sudo apt-get install -y chromium-browser
-          
+          sudo apt-get install -y google-chrome-stable
+           
       - name: Install dependencies
         run: npm ci
-        
+         
       - name: Build (base=/ for CI testing)
         run: VITE_BASE_PATH=/ npm run build
-        
+         
       - name: Create CI index.html with relaxed CSP
         run: |
           cp dist/index.html dist/index-ci.html
           # Replace CSP meta tag with permissive version
           sed -i 's|<meta http-equiv="Content-Security-Policy" content="[^"]*">|<meta http-equiv="Content-Security-Policy" content="default-src * '"'"'unsafe-inline'"'"' '"'"'unsafe-eval'"'"' data: blob:; script-src * '"'"'unsafe-inline'"'"' '"'"'unsafe-eval'"'"'; style-src * '"'"'unsafe-inline'"'"'; font-src * data:; img-src * data: blob:; connect-src *; frame-src *;">|' dist/index-ci.html
-          
+           
       - name: Start preview server
         run: |
           npx serve dist -p 3000 -s > server.log 2>&1 &
@@ -52,7 +54,7 @@ jobs:
             fi
             sleep 1
           done
-          
+           
       - name: Debug - Check served content
         run: |
           echo "=== Index-ci.html ==="
@@ -63,7 +65,7 @@ jobs:
           echo ""
           echo "=== Server log ==="
           cat server.log || true
-          
+           
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v11
         with:
@@ -73,4 +75,4 @@ jobs:
             http://localhost:3000/admin.html
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-          CHROME_PATH: /usr/bin/chromium-browser
+          CHROME_PATH: /usr/bin/google-chrome-stable

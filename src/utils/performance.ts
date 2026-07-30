@@ -68,10 +68,14 @@ export function measureWebVitals(onReport) {
 export function lazyLoadImages(selector = 'img[data-src]', options = {}) {
   if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
     // Fallback for browsers without IntersectionObserver
-    document.querySelectorAll(selector).forEach(img => {
+    document.querySelectorAll<HTMLImageElement>(selector).forEach(img => {
       if (img.dataset.src) {
         img.src = img.dataset.src;
         img.removeAttribute('data-src');
+      }
+      if (img.dataset.srcset) {
+        img.srcset = img.dataset.srcset;
+        img.removeAttribute('data-srcset');
       }
     });
     return;
@@ -85,7 +89,7 @@ export function lazyLoadImages(selector = 'img[data-src]', options = {}) {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        const img = entry.target;
+        const img = entry.target as HTMLImageElement;
         if (img.dataset.src) {
           img.src = img.dataset.src;
           img.removeAttribute('data-src');
@@ -100,7 +104,7 @@ export function lazyLoadImages(selector = 'img[data-src]', options = {}) {
     });
   }, { ...defaultOptions, ...options });
   
-  document.querySelectorAll(selector).forEach(img => {
+  document.querySelectorAll<HTMLImageElement>(selector).forEach(img => {
     if (img.dataset.src) {
       img.loading = 'lazy';
       observer.observe(img);
@@ -309,7 +313,7 @@ export function throttle(fn, limit) {
 export function getConnectionInfo() {
   if (typeof navigator === 'undefined') return {};
   
-  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
   if (!conn) return {};
   
   return {
@@ -335,7 +339,7 @@ export function prefersReducedMotion() {
  */
 export function prefersReducedData() {
   if (typeof navigator === 'undefined') return false;
-  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
   return conn?.saveData === true;
 }
 

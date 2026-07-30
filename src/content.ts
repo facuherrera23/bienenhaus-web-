@@ -3,6 +3,7 @@
 // ================================================================
 import { supabase } from './supabase.ts';
 import { logError, logWarn, logDebug } from './utils/logger.ts';
+import { escapeHtml, sanitizeHtml, sanitizeUrl } from './utils/sanitize.ts';
 
 let siteContent = {};
 

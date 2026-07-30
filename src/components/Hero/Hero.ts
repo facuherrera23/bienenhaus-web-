@@ -90,7 +90,7 @@ function bindEvents() {
       if (href === '#') return;
 
       const target = document.querySelector(href);
-      if (target) {
+      if (target instanceof HTMLElement) {
         e.preventDefault();
         const header = document.querySelector('.header');
         const headerHeight = header?.offsetHeight || 0;
@@ -105,14 +105,14 @@ function bindEvents() {
 }
 
 function initStatsAnimation() {
-  const stats = heroElement?.querySelectorAll('.stat .number');
+  const stats = heroElement?.querySelectorAll<HTMLSpanElement>('.stat .number');
   if (!stats.length) return;
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        const el = entry.target;
-        const target = parseInt(el.dataset.target || el.textContent.replace(/\D/g, '')) || 0;
+        const el = entry.target as HTMLSpanElement;
+        const target = parseInt(el.dataset.target || el.textContent?.replace(/\D/g, '') || '0') || 0;
         animateCounter(el, target);
         observer.unobserve(el);
       }
@@ -153,12 +153,11 @@ function easeOutCubic(t) {
 }
 
 // Pre-load supabase module at module level (Vercel: bundle-dynamic-imports)
-const supabasePromise = import('../../supabase.ts').then(m => m.supabase);
+// Using imported supabasePromise from lib/supabase-loader.ts
 
 async function populateFromContent() {
   try {
-    // Use shared module-level promise (Vercel: bundle-dynamic-imports, async-parallel)
-    const supabase = await supabasePromise;
+    const { supabase } = await import('../../supabase.ts');
     const { data, error } = await supabase
       .from('contenido_sitio')
       .select('*');

@@ -255,23 +255,23 @@ export function createAutocompleteComponent(config) {
     if (!listRef) return;
     listRef.querySelectorAll('.autocomplete-item').forEach(item => {
       item.addEventListener('click', () => {
-        const index = parseInt(item.dataset.index);
+        const index = parseInt((item as HTMLElement).dataset.index || '-1');
         if (index >= 0 && suggestions[index]) {
           handleSelect(suggestions[index]);
         }
       });
       item.addEventListener('mouseenter', () => {
-        highlightedIndex = parseInt(item.dataset.index);
+        highlightedIndex = parseInt((item as HTMLElement).dataset.index || '-1');
         renderSuggestions();
       });
     });
   }
 
   function attachRecentClickHandlers() {
-if (!listRef) return;
+  if (!listRef) return;
   listRef.querySelectorAll('.autocomplete-recent').forEach(item => {
     item.addEventListener('click', () => {
-      const search = recentSearches[parseInt(item.dataset.index)];
+      const search = recentSearches[parseInt((item as HTMLElement).dataset.index || '-1')];
       if (search) {
 const suggestion = {
           ...search,

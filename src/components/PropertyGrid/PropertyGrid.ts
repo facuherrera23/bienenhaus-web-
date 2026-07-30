@@ -46,11 +46,11 @@ function setupViewToggle() {
   const mapView = document.getElementById('vistaMapa');
   
   viewButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+btn.addEventListener('click', () => {
       viewButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       
-      const view = btn.dataset.vista;
+      const view = (btn as HTMLElement).dataset.vista;
       if (view === 'lista') {
         listView.hidden = false;
         mapView.hidden = true;
@@ -70,11 +70,11 @@ function setupLoadModeToggle() {
   const modeButtons = document.querySelectorAll('.carga-btn');
   
   modeButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+btn.addEventListener('click', () => {
       modeButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       
-      loadMode = btn.dataset.modo;
+      loadMode = (btn as HTMLElement).dataset.modo;
       currentPage = 1;
       currentProperties = [];
       
@@ -390,9 +390,9 @@ function updatePagination(total) {
   pagination.innerHTML = html;
   
   // Bind pagination clicks
-  pagination.querySelectorAll('button[data-page]').forEach(btn => {
+pagination.querySelectorAll('button[data-page]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const page = parseInt(btn.dataset.page);
+      const page = parseInt((btn as HTMLElement).dataset.page || '1');
       if (page !== currentPage && page >= 1 && page <= totalPages) {
         currentPage = page;
         loadProperties();

@@ -79,11 +79,11 @@ export function runAccessibilityAudit() {
     }
   });
 
-  // 6. Check for focus visible styles
+// 6. Check for focus visible styles
   const hasFocusStyles = Array.from(document.styleSheets).some(sheet => {
     try {
       return Array.from(sheet.cssRules || []).some(rule => 
-        rule.selectorText && rule.selectorText.includes(':focus-visible')
+        (rule as CSSStyleRule).selectorText && (rule as CSSStyleRule).selectorText.includes(':focus-visible')
       );
     } catch (e) {
       return false;

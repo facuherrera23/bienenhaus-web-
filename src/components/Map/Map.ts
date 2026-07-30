@@ -27,7 +27,7 @@ export function initMap(containerId: string, properties: any[], options: {
 
     // Initialize Leaflet map
     map = L.map(containerId, {
-      center,
+center,
       zoom,
       zoomControl: true,
       scrollWheelZoom: true,
@@ -36,7 +36,6 @@ export function initMap(containerId: string, properties: any[], options: {
       keyboard: true,
       tap: true,
       touchZoom: true,
-      zoom: true,
     });
 
     // Dark tile layer (CartoDB Dark Matter)

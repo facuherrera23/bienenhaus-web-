@@ -9,13 +9,41 @@ import { formatPrice } from '../../utils/format.ts';
 import { useFocusTrap } from '../../hooks/useFocusTrap.ts';
 import './ConversionUX.css';
 
+interface Property {
+  id: number;
+  titulo: string;
+  operacion: 'venta' | 'alquiler';
+  precio: number;
+  moneda: string;
+  ubicacion: string;
+  tipo: string;
+}
+
+interface Filters {
+  operacion?: 'venta' | 'alquiler' | 'ambos';
+  tipo?: string;
+  precioMin?: number;
+  precioMax?: number;
+  habitaciones?: number;
+  ubicacion?: string;
+  [key: string]: unknown;
+}
+
+interface ConversionUXProps {
+  property?: Property | null;
+  currentSection?: string;
+  filters?: Filters;
+  onWhatsAppClick?: (context: unknown) => void;
+  className?: string;
+}
+
 export function ConversionUX({ 
   property = null,
   currentSection = 'home',
   filters = {},
   onWhatsAppClick = () => {},
   className = ''
-}) {
+}: ConversionUXProps) {
   // Sticky CTA state
   const [showSticky, setShowSticky] = useState(false);
   const [scrollY, setScrollY] = useState(0);
@@ -80,8 +108,11 @@ export function ConversionUX({
   }, [scrollY]);
 
   // Generate contextual WhatsApp message
-  const generateWhatsAppMessage = useCallback((context = {}) => {
-    const { property, section, filters } = context;
+  const generateWhatsAppMessage = useCallback((context: {
+    property?: { titulo: string; operacion: string; precio: number; moneda: string; ubicacion: string; id?: string };
+    section?: string;
+    filters?: { operacion?: string; tipo?: string; precioMin?: number; precioMax?: number; habitaciones?: number; ubicacion?: string };
+  } = {}) => {
     
     let message = 'Hola! ';
     
@@ -368,7 +399,7 @@ export function ConversionUX({
                       id="waNombre"
                       name="name"
                       value={waForm.name}
-                      onChange={(e) => setWaForm(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) => setWaForm(prev => ({ ...prev, name: (e.target as HTMLInputElement).value }))}
                       required
                       autoComplete="name"
                       placeholder="Tu nombre"
@@ -385,7 +416,7 @@ export function ConversionUX({
                       id="waTelefono"
                       name="phone"
                       value={waForm.phone}
-                      onChange={(e) => setWaForm(prev => ({ ...prev, phone: e.target.value }))}
+                      onChange={(e) => setWaForm(prev => ({ ...prev, phone: (e.target as HTMLInputElement).value }))}
                       required
                       autoComplete="tel"
                       placeholder="+54 9 351 123-4567"
@@ -403,7 +434,7 @@ export function ConversionUX({
                     id="waMensaje"
                     name="message"
                     value={waForm.message}
-                    onChange={(e) => setWaForm(prev => ({ ...prev, message: e.target.value }))}
+                    onChange={(e) => setWaForm(prev => ({ ...prev, message: (e.target as HTMLTextAreaElement).value }))}
                     required
                     rows="4"
                     placeholder="Tu mensaje..."
@@ -490,7 +521,7 @@ export function ConversionUX({
                       id="alertEmail"
                       name="email"
                       value={alertForm.email}
-                      onChange={(e) => setAlertForm(prev => ({ ...prev, email: e.target.value }))}
+                      onChange={(e) => setAlertForm(prev => ({ ...prev, email: (e.target as HTMLInputElement).value }))}
                       required
                       autoComplete="email"
                       placeholder="tu@email.com"
@@ -510,7 +541,7 @@ export function ConversionUX({
                       id="alertMinPrice"
                       name="minPrice"
                       value={alertForm.minPrice}
-                      onChange={(e) => setAlertForm(prev => ({ ...prev, minPrice: parseInt(e.target.value) || 0 }))}
+                      onChange={(e) => setAlertForm(prev => ({ ...prev, minPrice: parseInt((e.target as HTMLInputElement).value) || 0 }))}
                       min="0"
                       step="5000"
                       aria-invalid={!!alertError}
@@ -526,7 +557,7 @@ export function ConversionUX({
                       id="alertMaxPrice"
                       name="maxPrice"
                       value={alertForm.maxPrice}
-                      onChange={(e) => setAlertForm(prev => ({ ...prev, maxPrice: parseInt(e.target.value) || 900000 }))}
+                      onChange={(e) => setAlertForm(prev => ({ ...prev, maxPrice: parseInt((e.target as HTMLInputElement).value) || 900000 }))}
                       min="0"
                       step="10000"
                       aria-invalid={!!alertError}
@@ -545,7 +576,7 @@ export function ConversionUX({
                       id="alertLocation"
                       name="location"
                       value={alertForm.location}
-                      onChange={(e) => setAlertForm(prev => ({ ...prev, location: e.target.value }))}
+                      onChange={(e) => setAlertForm(prev => ({ ...prev, location: (e.target as HTMLInputElement).value }))}
                       placeholder="Ej: Nueva Córdoba"
                       aria-invalid={!!alertError}
                       aria-describedby={alertError ? 'alert-error' : undefined}
@@ -559,7 +590,7 @@ export function ConversionUX({
                       id="alertPropertyType"
                       name="propertyType"
                       value={alertForm.propertyType}
-                      onChange={(e) => setAlertForm(prev => ({ ...prev, propertyType: e.target.value }))}
+                      onChange={(e) => setAlertForm(prev => ({ ...prev, propertyType: (e.target as HTMLSelectElement).value }))}
                       aria-invalid={!!alertError}
                       aria-describedby={alertError ? 'alert-error' : undefined}
                     >
@@ -582,7 +613,7 @@ export function ConversionUX({
                       id="alertOperation"
                       name="operation"
                       value={alertForm.operation}
-                      onChange={(e) => setAlertForm(prev => ({ ...prev, operation: e.target.value }))}
+                      onChange={(e) => setAlertForm(prev => ({ ...prev, operation: (e.target as HTMLSelectElement).value }))}
                     >
                       <option value="ambos">Ambos</option>
                       <option value="venta">Venta</option>
