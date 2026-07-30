@@ -25,7 +25,7 @@
 // 3. Maintenance mode check (non-blocking, fail-open)
 (function() {
   var SUPABASE_URL = 'https://rnldqiwwzhjnurkguihu.supabase.co';
-  var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubGRxaXd3emhqbnVya2d1aWh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NDA4MzMsImV4cCI6MjEwMDUxNjgzM30.tzqe0Z1vS9R5GiCTxIe3m6uY4kkggF3kewPrRUY8BwE';
+  var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubGRxaXd3emhqbnVya2d1aWh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkzNzU5NjgsImV4cCI6MjA1NDk1MTk2OH0.7J7b8s0Qx5FJ-fR_6u2V9cF2nL8sX4Q8Y4L8Y7cQ7Jk';
   
   fetch(SUPABASE_URL + '/rest/v1/contenido_sitio?clave=eq.maintenance_mode&select=valor', {
     headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + SUPABASE_ANON },
