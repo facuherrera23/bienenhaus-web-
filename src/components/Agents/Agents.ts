@@ -34,14 +34,25 @@ async function loadAgents(): Promise<void> {
       .eq('activo', true)
       .order('orden', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      if (error.status === 401 || error.status === 403 || error.message?.includes('JWT')) {
+        logWarn('Supabase auth issue - showing empty agents', { status: error.status }, 'agents');
+        agentsCache = [];
+        renderAgentsGrid();
+        updateAgentStats();
+        return;
+      }
+      throw error;
+    }
     
     agentsCache = data || [];
     renderAgentsGrid();
     updateAgentStats();
   } catch (e) {
-    logError('Error loading agents', e, 'agents');
-    showToast('Error cargando agentes', 'error');
+    logWarn('Agents load failed - showing empty', { error: e }, 'agents');
+    agentsCache = [];
+    renderAgentsGrid();
+    updateAgentStats();
   }
 }
 

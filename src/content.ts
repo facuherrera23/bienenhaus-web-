@@ -82,25 +82,29 @@ const contentRenderers = {
 // ================================================================
 export async function cargarContenidoSitio() {
   try {
-    // Use supabase directly (already imported at module level)
     const { data, error } = await supabase
       .from('contenido_sitio')
       .select('clave, valor');
     
-    if (error) throw error;
+    if (error) {
+      // Silently handle auth/permission errors - fail gracefully
+      if (error.status === 401 || error.status === 403 || error.message?.includes('JWT')) {
+        logWarn('Supabase auth issue - using default content', { status: error.status }, 'content');
+        return {};
+      }
+      throw error;
+    }
     
     siteContent = {};
     (data || []).forEach(item => {
       siteContent[item.clave] = item.valor;
     });
     
-    // Renderizar todo el contenido
     renderAllContent();
     
     return siteContent;
   } catch (e) {
-    logError('Error cargando contenido', e, 'content');
-    // Mantener contenido por defecto del HTML
+    logWarn('Content load failed - using default HTML content', { error: e }, 'content');
     return {};
   }
 }

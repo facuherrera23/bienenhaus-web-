@@ -7,7 +7,7 @@ import {
   Fog,
   WebGLRenderer,
   Color,
-  Clock,
+  Timer,
   Vector3,
   Vector2,
   SRGBColorSpace,
@@ -30,7 +30,7 @@ export class Hero3DScene {
   private camera: PerspectiveCamera;
   private renderer: WebGLRenderer;
   private composer: EffectComposer;
-  private clock: Clock;
+  private timer: Timer;
   private house: ReturnType<typeof createHouseModel>;
   private animationId: number | null = null;
   private config: Hero3DConfig;
@@ -42,7 +42,7 @@ export class Hero3DScene {
 
   constructor(config: Hero3DConfig) {
     this.config = config;
-    this.clock = new Clock();
+    this.timer = new Timer();
     this.introDuration = 1800; // ms
 
     this.scene = this.createScene();
@@ -55,6 +55,8 @@ export class Hero3DScene {
     this.setupLights();
     this.handleResize();
     window.addEventListener('resize', this.handleResize.bind(this));
+
+    this.timer.start();
 
     if (!config.reducedMotion) {
       this.animate();
@@ -149,7 +151,8 @@ export class Hero3DScene {
     if (this.isDisposed) return;
     this.animationId = requestAnimationFrame(this.animate.bind(this));
 
-    const elapsed = this.clock.getElapsedTime();
+    this.timer.update();
+    const elapsed = this.timer.getElapsedTime();
 
     // Dolly-in de entrada (easeOutExpo)
     if (this.introProgress < 1) {
