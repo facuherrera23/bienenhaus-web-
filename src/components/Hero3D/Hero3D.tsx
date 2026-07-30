@@ -294,7 +294,17 @@ export function Hero3D({ className = '' }: Hero3DProps) {
 
 export default Hero3D;
 
-// Init function for main.ts
+// Init function for main.ts - renders Hero3D into #hero-placeholder
 export function initHero3D(): void {
-  logDebug('Hero3D initialized', undefined, 'hero3d');
+  const placeholder = document.getElementById('hero-placeholder');
+  if (!placeholder) {
+    logError('Hero placeholder not found', undefined, 'hero3d');
+    return;
+  }
+
+  // Import render from preact and render the component
+  import('preact').then(({ render }) => {
+    render(<Hero3D />, placeholder);
+    logDebug('Hero3D rendered', undefined, 'hero3d');
+  });
 }
