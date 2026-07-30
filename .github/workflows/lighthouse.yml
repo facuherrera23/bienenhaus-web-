@@ -49,8 +49,8 @@ jobs:
         with:
           configPath: ./lighthouserc.json
           urls: |
-            ./dist/index-ci.html
-            ./dist/admin-ci.html
+            file://${{ github.workspace }}/dist/index-ci.html
+            file://${{ github.workspace }}/dist/admin-ci.html
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
           CHROME_PATH: /usr/bin/google-chrome-stable
