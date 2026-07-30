@@ -7,6 +7,8 @@ import './scripts/maintenance.ts';
 import './scripts/redirect.ts';
 
 // Design System - Nocturne
+import './styles/tokens.css';
+import './styles/critical.css';
 import './styles/design-system.css';
 import './styles/components.css';
 import './styles/layout.css';

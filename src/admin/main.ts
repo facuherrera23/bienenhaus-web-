@@ -1,6 +1,7 @@
 // ================================================================
 // ADMIN ENTRY POINT - Lazy-loaded features with dynamic imports
 // ================================================================
+import '../styles/tokens.css';
 import '../styles/admin.css';
 import { supabase } from '../supabase.ts';
 import { CONFIG } from '../config.ts';
