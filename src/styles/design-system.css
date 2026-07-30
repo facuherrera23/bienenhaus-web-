@@ -70,6 +70,7 @@
      ============================================================ */
   --ds-font-display: var(--font-display);
   --ds-font-body: var(--font-body);
+  --ds-font-elegant: var(--font-display);
   --ds-font-num: var(--font-numbers);
   --ds-font-mono: var(--font-mono);
 
@@ -80,6 +81,8 @@
   --ds-text-label: var(--text-label);
   --ds-text-sm: var(--text-sm);
   --ds-text-xs: var(--text-xs);
+  --ds-text-lg: 1.125rem;
+  --ds-text-2xl: 1.5rem;
 
   --ds-font-weight-normal: 400;
   --ds-font-weight-medium: 500;
@@ -142,6 +145,7 @@
 
   --ds-transition-fast: var(--transition-fast);
   --ds-transition-base: var(--transition-base);
+  --ds-transition-normal: var(--transition-base);
   --ds-transition-slow: var(--transition-slow);
 
   /* ============================================================
@@ -171,4 +175,42 @@
      ============================================================ */
   --ds-touch-target: var(--touch-target);
   --ds-font-size-mobile-min: var(--font-size-mobile-min);
+
+  /* ============================================================
+     BH ALIASES — backward compat para componentes existentes
+     ============================================================ */
+  --bh-color-surface-1: var(--ds-color-surface-1);
+  --bh-color-surface-3: var(--ds-color-surface-3);
+  --bh-color-surface-4: var(--ds-color-surface-4);
+  --bh-color-text: var(--ds-color-text);
+  --bh-color-text-secondary: var(--ds-color-text-secondary);
+  --bh-color-text-muted: var(--ds-color-text-muted);
+  --bh-color-text-disabled: var(--ds-color-text-disabled);
+  --bh-color-primary: var(--ds-color-primary);
+  --bh-color-primary-dark: var(--ds-color-primary-dark);
+  --bh-color-primary-focus-ring: var(--ds-color-primary-focus-ring);
+  --bh-color-text-on-primary: var(--ds-color-text-on-primary);
+  --bh-color-border: var(--ds-color-border);
+  --bh-font-display: var(--ds-font-display);
+  --bh-font-body: var(--ds-font-body);
+  --bh-font-num: var(--ds-font-num);
+  --bh-font-weight-black: var(--ds-font-weight-black);
+  --bh-font-weight-bold: var(--ds-font-weight-bold);
+  --bh-font-weight-semibold: var(--ds-font-weight-semibold);
+  --bh-text-sm: var(--ds-text-sm);
+  --bh-text-lg: var(--ds-text-lg);
+  --bh-text-2xl: var(--ds-text-2xl);
+  --bh-text-xs: var(--ds-text-xs);
+  --bh-space-2: var(--ds-space-2);
+  --bh-space-3: var(--ds-space-3);
+  --bh-space-4: var(--ds-space-4);
+  --bh-space-5: var(--ds-space-5);
+  --bh-space-6: var(--ds-space-6);
+  --bh-space-7: var(--ds-space-7);
+  --bh-space-8: var(--ds-space-8);
+  --bh-radius-full: var(--ds-radius-full);
+  --bh-transition-fast: var(--ds-transition-fast);
+  --bh-shadow-glow: var(--ds-shadow-glow);
+  --bh-touch-target: var(--ds-touch-target);
+  --bh-ease-out: var(--ds-ease-out);
 }
