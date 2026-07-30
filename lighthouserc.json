@@ -3,13 +3,15 @@
     "collect": {
       "numberOfRuns": 3,
       "url": [
-        "http://localhost:3000/",
-        "http://localhost:3000/admin.html"
+        "./dist/index-ci.html",
+        "./dist/admin-ci.html"
       ],
       "settings": {
         "preset": "desktop",
         "staticDistDir": "./dist",
-        "chromeFlags": "--no-sandbox --disable-dev-shm-usage --disable-gpu --headless=new"
+        "chromeFlags": "--no-sandbox --disable-dev-shm-usage --disable-gpu --headless=new --disable-extensions",
+        "maxWaitForFcp": 30000,
+        "maxWaitForLoad": 45000
       }
     },
     "assert": {

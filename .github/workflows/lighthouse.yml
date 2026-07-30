@@ -40,39 +40,17 @@ jobs:
           cp dist/index.html dist/index-ci.html
           # Replace CSP meta tag with permissive version
           sed -i 's|<meta http-equiv="Content-Security-Policy" content="[^"]*">|<meta http-equiv="Content-Security-Policy" content="default-src * '"'"'unsafe-inline'"'"' '"'"'unsafe-eval'"'"' data: blob:; script-src * '"'"'unsafe-inline'"'"' '"'"'unsafe-eval'"'"'; style-src * '"'"'unsafe-inline'"'"'; font-src * data:; img-src * data: blob:; connect-src *; frame-src *;">|' dist/index-ci.html
-           
-      - name: Start preview server
-        run: |
-          npx serve dist -p 3000 -s > server.log 2>&1 &
-          SERVER_PID=$!
-          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
-          # Wait for server to be ready
-          for i in {1..30}; do
-            if curl -f http://localhost:3000/ > /dev/null 2>&1; then
-              echo "Server ready"
-              break
-            fi
-            sleep 1
-          done
-           
-      - name: Debug - Check served content
-        run: |
-          echo "=== Index-ci.html ==="
-          curl -s http://localhost:3000/index-ci.html | head -80
-          echo ""
-          echo "=== Checking JS bundle ==="
-          curl -s http://localhost:3000/assets/main-*.js | head -5
-          echo ""
-          echo "=== Server log ==="
-          cat server.log || true
+          # Replace admin.html too
+          cp dist/admin.html dist/admin-ci.html
+          sed -i 's|<meta http-equiv="Content-Security-Policy" content="[^"]*">|<meta http-equiv="Content-Security-Policy" content="default-src * '"'"'unsafe-inline'"'"' '"'"'unsafe-eval'"'"' data: blob:; script-src * '"'"'unsafe-inline'"'"' '"'"'unsafe-eval'"'"'; style-src * '"'"'unsafe-inline'"'"'; font-src * data:; img-src * data: blob:; connect-src *; frame-src *;">|' dist/admin-ci.html
            
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v11
         with:
           configPath: ./lighthouserc.json
           urls: |
-            http://localhost:3000/index-ci.html
-            http://localhost:3000/admin.html
+            ./dist/index-ci.html
+            ./dist/admin-ci.html
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
           CHROME_PATH: /usr/bin/google-chrome-stable
