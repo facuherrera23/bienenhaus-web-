@@ -1,0 +1,62 @@
+project_id = "bienenhaus-web"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+max_rows = 1000
+
+[db]
+major_version = 15
+
+[analytics]
+enabled = false
+
+[edge_runtime]
+enabled = true
+policy = "per_worker"
+inspector_port = 8083
+deno_version = 2
+
+[functions.ml-oauth-init]
+verify_jwt = true
+
+[functions.ml-oauth-callback]
+verify_jwt = false
+
+[functions.ml-refresh-token]
+verify_jwt = false
+
+[functions.ml-webhook]
+verify_jwt = false
+
+[functions.ml-webhook-receiver]
+verify_jwt = false
+
+[functions.ml-webhook-register]
+verify_jwt = false
+
+[functions.ml-import]
+verify_jwt = false
+
+[functions.ml-publish]
+verify_jwt = false
+
+[functions.ml-status]
+verify_jwt = false
+
+[functions.geocode-batch]
+verify_jwt = false
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["https://bienenhaus.vercel.app"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+enable_signup = true
+enable_anonymous_sign_ins = false
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
