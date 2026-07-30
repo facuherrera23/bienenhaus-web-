@@ -145,7 +145,7 @@ jobs:
       - name: Vendor Edge Function dependencies
         run: |
           cd supabase/functions
-          deno vendor --import-map=import_map.json \
+          deno vendor \
             geocode-batch/index.ts \
             ml-import/index.ts \
             ml-webhook/index.ts \
