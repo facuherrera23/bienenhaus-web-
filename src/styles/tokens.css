@@ -20,6 +20,11 @@
   --color-brand-border: rgba(32, 184, 171, 0.25);
   --color-brand-focus: 0 0 0 2px rgba(32, 184, 171, 0.18);
 
+  /* ===== GRAY SCALE (Compatibilidad legacy) ===== */
+  --color-gray-300: #3D4651;
+  --color-gray-500: #7A838C;
+  --color-gray-700: #C7CDD3;
+
   /* ===== SEMANTIC ===== */
   --color-success: #3aaa55;
   --color-success-bg: rgba(58, 170, 85, 0.10);
@@ -88,6 +93,13 @@
   --text-sm: 0.875rem;
   --text-xs: 0.75rem;
 
+  /* Font-size legacy (compatibilidad con componentes existentes) */
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-4xl: 2.25rem;
+
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
@@ -124,20 +136,23 @@
   --radius-full: 9999px;
 
   /* ===== SHADOWS (Functional, turquoise-tinted) ===== */
-  --shadow-sm: 0 1px 3px rgba(8, 9, 11, 0.4);
-  --shadow-md: 0 4px 12px rgba(8, 9, 11, 0.5);
-  --shadow-lg: 0 8px 32px rgba(8, 9, 11, 0.6);
-  --shadow-xl: 0 20px 60px rgba(8, 9, 11, 0.7);
+  --shadow-sm: 0 1px 2px rgba(8, 9, 11, 0.4);
+  --shadow-md: 0 4px 8px rgba(8, 9, 11, 0.5);
+  --shadow-lg: 0 12px 24px rgba(8, 9, 11, 0.55);
+  --shadow-xl: 0 20px 40px rgba(8, 9, 11, 0.6);
   --shadow-2xl: 0 25px 50px -12px rgba(8, 9, 11, 0.35);
-  --shadow-glow: 0 4px 20px rgba(86, 231, 222, 0.18);
-  --shadow-glow-lg: 0 8px 32px rgba(86, 231, 222, 0.25);
-  --shadow-card-hover: 0 32px 80px rgba(8, 9, 11, 0.9), 0 0 0 1px rgba(32, 184, 171, 0.18);
-  --shadow-glass: 0 8px 32px rgba(8, 9, 11, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  --shadow-glow: 0 0 20px rgba(86, 231, 222, 0.12), 0 4px 12px rgba(8, 9, 11, 0.4);
+  --shadow-glow-lg: 0 0 32px rgba(86, 231, 222, 0.18), 0 8px 24px rgba(8, 9, 11, 0.5);
+  --shadow-card-hover: 0 20px 40px rgba(8, 9, 11, 0.8), 0 0 0 1px rgba(32, 184, 171, 0.15), 0 0 24px rgba(86, 231, 222, 0.1);
+  --shadow-glass: 0 8px 32px rgba(8, 9, 11, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  --shadow-inner-glow: inset 0 1px 0 rgba(86, 231, 222, 0.08), inset 0 -1px 0 rgba(8, 9, 11, 0.3);
 
   /* ===== TRANSITIONS (Emil: specific properties, custom curves) ===== */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
   --transition-fast:
     transform 120ms var(--ease-out),
@@ -147,16 +162,20 @@
     background-color 120ms var(--ease-out),
     border-color 120ms var(--ease-out);
   --transition-base:
-    transform 200ms var(--ease-out),
-    opacity 200ms var(--ease-out),
-    box-shadow 200ms var(--ease-out),
-    color 200ms var(--ease-out),
-    background-color 200ms var(--ease-out),
-    border-color 200ms var(--ease-out);
+    transform 180ms var(--ease-out),
+    opacity 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out),
+    color 180ms var(--ease-out),
+    background-color 180ms var(--ease-out),
+    border-color 180ms var(--ease-out);
   --transition-slow:
-    transform 400ms var(--ease-in-out),
-    opacity 400ms var(--ease-in-out),
-    box-shadow 400ms var(--ease-in-out);
+    transform 300ms var(--ease-in-out),
+    opacity 300ms var(--ease-in-out),
+    box-shadow 300ms var(--ease-in-out);
+  --transition-spring:
+    transform 300ms var(--ease-spring),
+    opacity 200ms var(--ease-out),
+    box-shadow 250ms var(--ease-out);
 
   /* ===== Z-INDEX LAYERS ===== */
   --z-dropdown: 100;

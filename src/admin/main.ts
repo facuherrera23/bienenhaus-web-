@@ -67,6 +67,26 @@ const AUTH_CONFIG = {
 // Edge Function URL for rate limiting (set via VITE_SUPABASE_URL)
 const RATE_LIMIT_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL?.replace(/\.supabase\.co.*/, '')}.supabase.co/functions/v1/rate-limit`;
 
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  'Invalid login credentials': 'Credenciales inválidas. Verificá tu email y contraseña.',
+  'Invalid Refresh Token': 'Sesión expirada. Volvé a iniciar sesión.',
+  'Email not confirmed': 'Email no confirmado. Revisá tu casilla de correo.',
+  'User already registered': 'Este email ya está registrado.',
+  'Signup disabled': 'Registro deshabilitado. Contactá al administrador.',
+  'Email rate limit exceeded': 'Demasiados intentos. Probá de nuevo en unos minutos.',
+};
+
+function translateAuthError(message: string): string {
+  if (AUTH_ERROR_MESSAGES[message]) return AUTH_ERROR_MESSAGES[message];
+  if (/network|fetch|failed to fetch/i.test(message)) {
+    return 'Error de conexión. Verificá tu internet e intentá de nuevo.';
+  }
+  if (/timeout/i.test(message)) {
+    return 'La solicitud tardó demasiado. Probá de nuevo.';
+  }
+  return message;
+}
+
 let currentUser: any = null;
 let sessionTimer: number | null = null;
 let lastActivity = Date.now();
@@ -224,7 +244,8 @@ async function handleLogin(email: string, password: string): Promise<void> {
     showDashboard();
   } catch (e: unknown) {
     await recordFailedAttempt(ip);
-    errorDiv.textContent = e instanceof Error ? e.message : 'Error desconocido';
+    const raw = e instanceof Error ? e.message : 'Error desconocido';
+    errorDiv.textContent = translateAuthError(raw);
     errorDiv.classList.add('visible');
   } finally {
     btn.disabled = false;
@@ -280,7 +301,13 @@ async function navigate(section: string): Promise<void> {
   });
 
   document.querySelectorAll('.settings-panel[id^="section-"]').forEach(panel => {
-    panel.classList.toggle('active', panel.id === `section-${section}`);
+    const isActive = panel.id === `section-${section}`;
+    panel.classList.toggle('active', isActive);
+    if (isActive) {
+      panel.removeAttribute('hidden');
+    } else {
+      panel.setAttribute('hidden', '');
+    }
   });
 
   const titles: Record<string, string> = {
@@ -668,7 +695,7 @@ function setupEventListeners(): void {
   if (btnLogout) btnLogout.addEventListener('click', logout);
 
   // Navigation
-  document.querySelectorAll('.nav-item[data-section]').forEach(item => {
+  document.querySelectorAll('.nav-link[data-section]').forEach(item => {
     item.addEventListener('click', async (e: Event) => {
       e.preventDefault();
       const section = (item as HTMLElement).dataset.section;

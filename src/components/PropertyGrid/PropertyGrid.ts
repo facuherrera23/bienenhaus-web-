@@ -3,10 +3,12 @@
 // PROPERTY GRID COMPONENT
 // ================================================================
 
+import { h, render } from 'preact';
 import './PropertyGrid.css';
 import { supabasePromise } from '../../lib/supabase-loader.ts';
 import { logWarn, logError } from '../../utils/logger.ts';
 import { formatPrice } from '../../utils/format.ts';
+import { PropertyCard, PropertyCardSkeleton } from './PropertyCard.tsx';
 
 let gridElement = null;
 let currentProperties = [];
@@ -195,34 +197,31 @@ async function loadProperties() {
 
 function renderProperties(properties) {
   if (!gridElement) return;
-  
+
   if (properties.length === 0) {
-    gridElement.innerHTML = `
-      <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: var(--color-gray-500);">
-        <i class="fas fa-home" style="font-size: 3rem; color: var(--color-gray-300); margin-bottom: 1rem; display: block;"></i>
-        <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--color-gray-700); margin-bottom: 0.5rem;">No hay propiedades</h3>
-        <p style="font-size: 0.95rem; margin-bottom: 1.5rem;">No se encontraron propiedades con los filtros actuales</p>
-        <button class="btn btn-secondary" onclick="window.clearFilters?.(); window.applyFilters?.();">Limpiar filtros</button>
-      </div>
-    `;
+    render(h('div', { style: { gridColumn: '1 / -1', textAlign: 'center', padding: '4rem 2rem' } },
+      h('i', { class: 'fas fa-home', style: { fontSize: '3rem', color: 'var(--color-text-muted)', marginBottom: '1rem', display: 'block' } }),
+      h('h3', { style: { fontSize: '1.25rem', fontWeight: 600, color: 'var(--color-text)', marginBottom: '0.5rem' } }, 'No hay propiedades'),
+      h('p', { style: { fontSize: '0.95rem', marginBottom: '1.5rem', color: 'var(--color-text-disabled)' } }, 'No se encontraron propiedades con los filtros actuales'),
+      h('button', { class: 'btn btn-secondary', onClick: () => { window.clearFilters?.(); window.applyFilters?.(); } }, 'Limpiar filtros')
+    ), gridElement);
     gridElement.removeAttribute('aria-busy');
     return;
   }
-  
-  // Render with staggered animation
-  gridElement.innerHTML = '';
-  const fragment = document.createDocumentFragment();
-  
-  properties.forEach((prop, index) => {
-    const card = createPropertyCard(prop);
-    card.style.animationDelay = `${index * 80}ms`;
-    fragment.appendChild(card);
-  });
-  
-  gridElement.appendChild(fragment);
+
+  const cards = properties.map((prop, i) =>
+    h(PropertyCard, {
+      key: prop.id,
+      property: prop,
+      index: i,
+      onDetail: (id) => window.abrirDetalle?.(id),
+      onToggleFavorite: (id) => { toggleFavorite(id); },
+    })
+  );
+
+  render(h('div', { style: { display: 'contents' } }, ...cards), gridElement);
   gridElement.removeAttribute('aria-busy');
-  
-  // Setup infinite scroll if needed
+
   if (loadMode === 'infinite') {
     setupInfiniteScroll();
   }
@@ -230,125 +229,29 @@ function renderProperties(properties) {
 
 function renderPropertiesAppend(properties) {
   if (!gridElement) return;
-  
-  const fragment = document.createDocumentFragment();
   const startIndex = currentProperties.length - properties.length;
-  
-  properties.forEach((prop, index) => {
-    const card = createPropertyCard(prop);
-    card.style.animationDelay = `${(startIndex + index) * 80}ms`;
-    fragment.appendChild(card);
-  });
-  
-  gridElement.appendChild(fragment);
+  const cards = properties.map((prop, i) =>
+    h(PropertyCard, {
+      key: prop.id,
+      property: prop,
+      index: startIndex + i,
+      onDetail: (id) => window.abrirDetalle?.(id),
+      onToggleFavorite: (id) => toggleFavorite(id),
+    })
+  );
+  render(h('div', { style: { display: 'contents' } }, ...cards), gridElement);
 }
 
-function createPropertyCard(property) {
-  const card = document.createElement('article');
-  card.className = 'property-card';
-  card.setAttribute('role', 'listitem');
-  card.setAttribute('data-id', property.id);
-  card.tabIndex = 0;
-  
-  const badgeClass = property.operacion === 'venta' ? 'badge-venta' : 'badge-alquiler';
-  const formattedPrice = formatPrice(property.precio, property.moneda, property.operacion);
-  
-  const features = [];
-  
-  if (property.habitaciones) features.push(`<span><i class="fas fa-bed" aria-hidden="true"></i> ${property.habitaciones}</span>`);
-  if (property.banos) features.push(`<span><i class="fas fa-bath" aria-hidden="true"></i> ${property.banos}</span>`);
-  if (property.m2) features.push(`<span><i class="fas fa-arrows-alt" aria-hidden="true"></i> ${property.m2} m²</span>`);
-  
-  const imageUrl = property.imagen_principal || 'https://via.placeholder.com/400x300?text=Sin+imagen';
-  
-  card.innerHTML = `
-    <button class="property-favorite" aria-label="${property.favorito ? 'Quitar de favoritos' : 'Agregar a favoritos'}" data-id="${property.id}" tabindex="0">
-      <i class="fas ${property.favorito ? 'fa-heart favorito activo' : 'fa-heart favorito'}" aria-hidden="true"></i>
-    </button>
-    
-    <div class="property-image">
-      <img src="${imageUrl}" alt="${property.titulo}" loading="lazy" width="400" height="300">
-      <span class="badge ${badgeClass}">${property.operacion === 'venta' ? 'Venta' : 'Alquiler'}</span>
-      ${property.destacado ? '<span class="badge badge-destacado">Destacada</span>' : ''}
-    </div>
-    
-<div class="property-content">
-      <div class="property-price">
-        <span class="formatted-price">${formattedPrice}</span>
-      </div>
-      </div>
-      
-      <h3 class="property-title">${property.titulo}</h3>
-      
-      <div class="property-location">
-        <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-        <span>${property.ubicacion}</span>
-      </div>
-      
-      <div class="property-features">
-        ${features.join('')}
-      </div>
-      
-      <button class="property-btn" data-id="${property.id}" onclick="window.abrirDetalle?.(${property.id})">
-        <i class="fas fa-eye" aria-hidden="true"></i> Ver detalles
-      </button>
-    </div>
-  `;
-  
-  // Add click handler for favorite
-  const favBtn = card.querySelector('.property-favorite');
-  if (favBtn) {
-    favBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleFavorite(property.id, favBtn);
-    });
-  }
-  
-  // Parallax Z tilt on hover
-  card.addEventListener('mousemove', (e) => {
-    const rect = card.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    card.style.transform = `translateY(-12px) scale(1.02) rotateX(${y * -6}deg) rotateY(${x * 6}deg)`;
-  });
-
-  card.addEventListener('mouseleave', () => {
-    card.style.transform = '';
-  });
-
-  // Keyboard support
-  card.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      window.abrirDetalle?.(property.id);
-    }
-  });
-  
-  return card;
-}
-
-function toggleFavorite(propertyId, button) {
-  const isActive = button.querySelector('i').classList.contains('activo');
-  const icon = button.querySelector('i');
-  
-  if (isActive) {
-    icon.classList.remove('fa-heart', 'activo');
-    icon.classList.add('fa-heart');
-    button.setAttribute('aria-label', 'Agregar a favoritos');
-  } else {
-    icon.classList.add('activo');
-    button.setAttribute('aria-label', 'Quitar de favoritos');
-  }
-  
-  // Save to localStorage
+function toggleFavorite(propertyId) {
   const favorites = JSON.parse(localStorage.getItem('favoritos') || '[]');
-  if (isActive) {
-    const index = favorites.indexOf(propertyId);
-    if (index > -1) favorites.splice(index, 1);
+  const idx = favorites.indexOf(propertyId);
+  if (idx > -1) {
+    favorites.splice(idx, 1);
   } else {
     favorites.push(propertyId);
   }
   localStorage.setItem('favoritos', JSON.stringify(favorites));
+  window.dispatchEvent(new CustomEvent('favorite-toggled', { detail: { id: propertyId, isFav: idx === -1 } }));
 }
 
 function updateCounter(shown, total) {
@@ -414,22 +317,11 @@ pagination.querySelectorAll('button[data-page]').forEach(btn => {
 function showLoading(show) {
   const grid = gridElement;
   if (!grid) return;
-  
+
   if (show && currentPage === 1) {
     grid.setAttribute('aria-busy', 'true');
-    grid.innerHTML = `
-      <div class="property-skeleton" style="grid-column: 1 / -1;">
-        ${Array(6).fill(0).map(() => `
-          <div class="property-card skeleton-card">
-            <div class="skeleton skeleton-image"></div>
-            <div class="skeleton skeleton-title"></div>
-            <div class="skeleton skeleton-text"></div>
-            <div class="skeleton skeleton-text" style="width: 60%;"></div>
-            <div class="skeleton skeleton-text" style="width: 40%;"></div>
-          </div>
-        `).join('')}
-      </div>
-    `;
+    const skeletons = Array(6).fill(0).map(() => h(PropertyCardSkeleton, {}));
+    render(h('div', { style: { display: 'contents' } }, ...skeletons), grid);
   } else if (!show) {
     grid.removeAttribute('aria-busy');
   }
@@ -464,14 +356,12 @@ function cleanupInfiniteScroll() {
 
 function showError(message) {
   if (!gridElement) return;
-gridElement.innerHTML = `
-    <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: var(--color-gray-500);">
-      <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--color-warning); margin-bottom: 1rem; display: block;"></i>
-      <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--color-gray-700); margin-bottom: 0.5rem;">Error al cargar</h3>
-      <p style="font-size: 0.95rem; margin-bottom: 1.5rem;">${message}</p>
-      <button class="btn btn-primary" onclick="loadProperties()">Reintentar</button>
-    </div>
-  `;
+  render(h('div', { style: { gridColumn: '1 / -1', textAlign: 'center', padding: '4rem 2rem' } },
+    h('i', { class: 'fas fa-exclamation-triangle', style: { fontSize: '3rem', color: 'var(--color-warning)', marginBottom: '1rem', display: 'block' } }),
+    h('h3', { style: { fontSize: '1.25rem', fontWeight: 600, color: 'var(--color-text)', marginBottom: '0.5rem' } }, 'Error al cargar'),
+    h('p', { style: { fontSize: '0.95rem', marginBottom: '1.5rem', color: 'var(--color-text-muted)' } }, message),
+    h('button', { class: 'btn btn-primary', onClick: () => loadProperties() }, 'Reintentar')
+  ), gridElement);
   gridElement.removeAttribute('aria-busy');
 }
 

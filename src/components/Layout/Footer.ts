@@ -36,7 +36,15 @@ function createFooter() {
   footer.innerHTML = `
     <div class="footer-grid container">
       <div class="footer-brand" id="footerBrand">
-        <h3><i class="fas fa-building" aria-hidden="true"></i> <span>Bienen</span>haus</h3>
+        <h3>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="vertical-align:middle">
+            <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" fill="var(--color-brand, #20B8AB)" opacity="0.15"/>
+            <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" stroke="var(--color-brand, #20B8AB)" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M12 7v10M7 12h10" stroke="var(--color-brand, #20B8AB)" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="2" fill="var(--color-brand, #20B8AB)"/>
+          </svg>
+          <span>Bienen</span>haus
+        </h3>
         <p id="footerDescripcion">Comprometidos con tu hogar desde 2008. <strong>CPI. 1834</strong> · Córdoba, Argentina.</p>
         <div class="social">
           <a href="https://instagram.com/bienenhaus.prop" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram" aria-hidden="true"></i></a>
@@ -146,7 +154,14 @@ export function updateFooterContent(content) {
   
   if (content.footer_marca) {
     const brand = footerElement.querySelector('#footerBrand h3');
-    if (brand) brand.innerHTML = `<i class="fas fa-building" aria-hidden="true"></i> <span>${escapeHtml(content.footer_marca)}</span>`;
+    if (brand) brand.innerHTML = `
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="vertical-align:middle">
+            <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" fill="var(--color-brand, #20B8AB)" opacity="0.15"/>
+            <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" stroke="var(--color-brand, #20B8AB)" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M12 7v10M7 12h10" stroke="var(--color-brand, #20B8AB)" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="2" fill="var(--color-brand, #20B8AB)"/>
+          </svg>
+          <span>${escapeHtml(content.footer_marca)}</span>`;
   }
   
   if (content.footer_descripcion) {

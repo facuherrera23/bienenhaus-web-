@@ -26,19 +26,24 @@ body { font-family: var(--ds-font-body); background: var(--ds-color-bg); color: 
 .property-grid { min-height: 400px; }
 
 /* Typography */
-h1, h2, h3, h4, h5, h6 { font-family: var(--ds-font-display); color: var(--ds-color-text); line-height: var(--ds-line-height-headline); letter-spacing: 0.02em; text-transform: uppercase; }
+h1, h2, h3, h4, h5, h6 { font-family: var(--ds-font-display); color: var(--ds-color-text); line-height: var(--ds-line-height-headline); letter-spacing: 0.02em; }
 h1 { font-size: clamp(2.5rem, 7vw, 4.5rem); }
 h2 { font-size: clamp(2rem, 5vw, 3rem); }
 h3 { font-size: clamp(1.5rem, 4vw, 2.25rem); }
+h4 { font-size: clamp(1.125rem, 3vw, 1.5rem); }
 p { color: var(--ds-color-text-secondary); }
+
+/* Eyebrow / overline (opt-in uppercase with letter-spacing) */
+.eyebrow { display: block; font-size: var(--ds-text-xs); font-weight: var(--ds-font-weight-semibold); text-transform: uppercase; letter-spacing: var(--ds-letter-spacing-badge); color: var(--ds-color-primary); margin-bottom: var(--ds-space-3); }
+.eyebrow-neutral { color: var(--ds-color-text-secondary); }
 
 /* Buttons */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--ds-space-2); padding: 12px 26px; border-radius: var(--ds-radius-md); font-family: var(--ds-font-body); font-weight: var(--ds-font-weight-bold); font-size: var(--ds-text-xs); text-transform: uppercase; letter-spacing: var(--ds-letter-spacing-badge); border: 1px solid transparent; cursor: pointer; transition: var(--ds-transition-base); text-decoration: none; min-height: var(--ds-touch-target); }
 .btn-primary { background: var(--ds-color-primary); color: var(--ds-color-text-on-primary); box-shadow: var(--ds-shadow-glow); }
 .btn-primary:hover { background: var(--ds-color-primary-dark); border-color: var(--ds-color-primary-dark); transform: translateY(-1px); box-shadow: var(--ds-shadow-glow-lg); }
-.btn-primary:active { transform: scale(0.97); }
+.btn-primary:active { transform: scale(0.97); box-shadow: var(--ds-shadow-glow); }
 .btn-secondary { background: transparent; color: var(--ds-color-primary); border: 1px solid var(--ds-color-primary-border); }
-.btn-secondary:hover { background: var(--ds-color-primary-glow); border-color: var(--ds-color-primary); transform: translateY(-1px); }
+.btn-secondary:hover { background: var(--ds-color-primary-glow); border-color: var(--ds-color-primary); transform: translateY(-1px); box-shadow: var(--ds-shadow-glow); }
 .btn-secondary:active { transform: scale(0.97); }
 .btn-ghost { background: transparent; color: var(--ds-color-text-secondary); border: transparent; }
 .btn-ghost:hover { background: var(--ds-color-surface-3); color: var(--ds-color-text); }
@@ -51,12 +56,19 @@ p { color: var(--ds-color-text-secondary); }
 .btn-whatsapp:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover { background: var(--ds-color-primary-dark); border-color: var(--ds-color-primary-dark); transform: translateY(-1px); box-shadow: var(--ds-shadow-glow-lg); }
+  .btn-secondary:hover { background: var(--ds-color-primary-glow); border-color: var(--ds-color-primary); transform: translateY(-1px); box-shadow: var(--ds-shadow-glow); }
+  .btn-ghost:hover { background: var(--ds-color-surface-3); color: var(--ds-color-text); }
+  .btn-whatsapp:hover { background: var(--ds-color-whatsapp-hover); box-shadow: 0 0 24px rgba(37,211,102,0.3); transform: scale(1.05); }
+}
+
 /* Inputs */
 .input, input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="tel"], input[type="url"], select, textarea {
-  width: 100%; padding: 10px 13px;
+  width: 100%; padding: 12px 14px;
   background: rgba(22, 24, 26, 0.5); border: 1px solid var(--ds-color-border);
   border-radius: var(--ds-radius-sm); font-family: var(--ds-font-body);
-  font-size: 13px; color: var(--ds-color-text); transition: var(--ds-transition-fast);
+  font-size: 14px; color: var(--ds-color-text); transition: var(--ds-transition-fast);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
@@ -64,8 +76,12 @@ p { color: var(--ds-color-text-secondary); }
 .input:hover, input:hover { background: rgba(28, 31, 33, 0.6); border-color: var(--ds-color-border-medium); }
 .input:focus, input:focus, textarea:focus { outline: none; border-color: var(--ds-color-primary); box-shadow: var(--ds-color-primary-focus-ring); }
 .input:disabled, input:disabled { background: rgba(22, 24, 26, 0.3); color: var(--ds-color-text-disabled); cursor: not-allowed; }
-select { border-radius: 10px; padding: 11px 14px; padding-right: 30px; font-size: 12px; background: rgba(22, 24, 26, 0.5); cursor: pointer; appearance: none; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+select { border-radius: 10px; padding: 12px 14px; padding-right: 36px; font-size: 13px; background: rgba(22, 24, 26, 0.5); cursor: pointer; appearance: none; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
 textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-md); }
+
+@media (hover: hover) and (pointer: fine) {
+  .input:hover, input:hover { background: rgba(28, 31, 33, 0.6); border-color: var(--ds-color-border-medium); }
+}
 
 /* Badges */
 .badge { font-family: var(--ds-font-elegant); font-size: var(--ds-text-xs); font-weight: var(--ds-font-weight-bold); letter-spacing: var(--ds-letter-spacing-badge); text-transform: uppercase; padding: 5px 12px; border-radius: var(--ds-radius-sm); border-width: 1px; border-style: solid; }
@@ -79,13 +95,17 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
 
 /* Card / Grid */
 .card { background: var(--ds-color-surface-1); border: 1px solid var(--ds-color-border); border-radius: var(--ds-radius-md); padding: var(--ds-space-5); transition: var(--ds-transition-base); cursor: default; }
-.card:hover { border-color: var(--ds-color-primary-border); box-shadow: var(--ds-shadow-card-hover); }
+.card:hover { border-color: var(--ds-color-primary-border); box-shadow: var(--ds-shadow-card-hover); transform: translateY(-2px); }
 .card:active { transform: scale(0.98); }
 .grid { display: grid; gap: var(--ds-space-5); }
 .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
 .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
 .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
 .flex { display: flex; }
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover { border-color: var(--ds-color-primary-border); box-shadow: var(--ds-shadow-card-hover); transform: translateY(-2px); }
+}
 
 /* Skeleton */
 .skeleton { background: linear-gradient(90deg, var(--ds-color-surface-2) 25%, var(--ds-color-surface-3) 50%, var(--ds-color-surface-2) 75%); background-size: 600px 100%; border-radius: var(--ds-radius-sm); animation: shimmer 1.4s linear infinite; }
@@ -275,8 +295,9 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
   padding: var(--ds-space-8) 0;
   position: relative;
   opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 600ms var(--ds-ease-out), transform 600ms var(--ds-ease-out);
+  transform: translateY(24px);
+  transition: opacity 500ms var(--ds-ease-out), transform 500ms var(--ds-ease-out);
+  will-change: opacity, transform;
 }
 
 .section.visible {
@@ -285,9 +306,9 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
 }
 
 .section-alt {
-  background: rgba(16, 18, 20, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(var(--ds-color-bg-elevated-rgb), 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-top: 1px solid var(--ds-color-border);
   border-bottom: 1px solid var(--ds-color-border);
 }
@@ -298,16 +319,24 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  max-width: 600px;
+  width: 60%;
+  max-width: 400px;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--ds-color-primary-border), transparent);
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .section-header {
   text-align: center;
   margin-bottom: var(--ds-space-7);
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 400ms var(--ds-ease-out) 100ms, transform 400ms var(--ds-ease-out) 100ms;
+}
+
+.section.visible .section-header {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .section-title {
@@ -389,7 +418,7 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
 }
 
 .value-card {
-  background: rgba(22, 24, 26, 0.6);
+  background: rgba(var(--ds-color-surface-1-rgb), 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: var(--ds-space-5) var(--ds-space-4);
@@ -399,10 +428,12 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
   text-align: center;
 }
 
-.value-card:hover {
-  border-color: var(--ds-color-primary-border);
-  transform: translateY(-4px);
-  box-shadow: var(--ds-shadow-card-hover);
+@media (hover: hover) and (pointer: fine) {
+  .value-card:hover {
+    border-color: var(--ds-color-primary-border);
+    transform: translateY(-4px);
+    box-shadow: var(--ds-shadow-card-hover);
+  }
 }
 
 .value-card:active {
@@ -414,6 +445,14 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
   color: var(--ds-color-primary);
   margin-bottom: var(--ds-space-3);
   display: block;
+  transition: var(--ds-transition-fast);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .value-card:hover i {
+    transform: scale(1.1);
+    color: var(--ds-color-primary-light);
+  }
 }
 
 .value-card h4 {
@@ -449,7 +488,7 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
 .stat-item {
   text-align: center;
   padding: var(--ds-space-5) var(--ds-space-3);
-  background: rgba(22, 24, 26, 0.6);
+  background: rgba(var(--ds-color-surface-1-rgb), 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-radius: var(--ds-radius-md);
@@ -457,10 +496,12 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
   transition: var(--ds-transition-base);
 }
 
-.stat-item:hover {
-  border-color: var(--ds-color-primary-border);
-  transform: translateY(-3px);
-  box-shadow: var(--ds-shadow-glow);
+@media (hover: hover) and (pointer: fine) {
+  .stat-item:hover {
+    border-color: var(--ds-color-primary-border);
+    transform: translateY(-3px);
+    box-shadow: var(--ds-shadow-glow);
+  }
 }
 
 .stat-number {
@@ -500,7 +541,7 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
 }
 
 .service-card {
-  background: rgba(22, 24, 26, 0.6);
+  background: rgba(var(--ds-color-surface-1-rgb), 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: var(--ds-space-6) var(--ds-space-5);
@@ -510,10 +551,12 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
   transition: var(--ds-transition-base);
 }
 
-.service-card:hover {
-  border-color: var(--ds-color-primary-border);
-  transform: translateY(-5px);
-  box-shadow: var(--ds-shadow-card-hover);
+@media (hover: hover) and (pointer: fine) {
+  .service-card:hover {
+    border-color: var(--ds-color-primary-border);
+    transform: translateY(-4px);
+    box-shadow: var(--ds-shadow-card-hover);
+  }
 }
 
 .service-card:active {
@@ -535,11 +578,13 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
   transition: var(--ds-transition-fast);
 }
 
-.service-card:hover .service-icon {
-  background: var(--ds-color-primary);
-  color: var(--ds-color-text-on-primary);
-  box-shadow: var(--ds-shadow-glow);
-  transform: scale(1.05);
+@media (hover: hover) and (pointer: fine) {
+  .service-card:hover .service-icon {
+    background: var(--ds-color-primary);
+    color: var(--ds-color-text-on-primary);
+    box-shadow: var(--ds-shadow-glow);
+    transform: scale(1.08);
+  }
 }
 
 .service-card h3 {
@@ -570,7 +615,7 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
 }
 
 .faq-item {
-  background: rgba(22, 24, 26, 0.6);
+  background: rgba(var(--ds-color-surface-1-rgb), 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: var(--ds-space-5);
@@ -579,11 +624,13 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
   transition: var(--ds-transition-base);
 }
 
-.faq-item:hover {
-  border-color: var(--ds-color-primary-border);
-  background: rgba(28, 31, 33, 0.7);
-  transform: translateY(-3px);
-  box-shadow: var(--ds-shadow-glow);
+@media (hover: hover) and (pointer: fine) {
+  .faq-item:hover {
+    border-color: var(--ds-color-primary-border);
+    background: rgba(var(--ds-color-surface-2-rgb), 0.7);
+    transform: translateY(-2px);
+    box-shadow: var(--ds-shadow-glow);
+  }
 }
 
 .faq-item h4 {
@@ -599,6 +646,14 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
 .faq-item h4 i {
   color: var(--ds-color-primary);
   font-size: var(--ds-text-sm);
+  transition: var(--ds-transition-fast);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .faq-item:hover h4 i {
+    transform: scale(1.15);
+    color: var(--ds-color-primary-light);
+  }
 }
 
 .faq-item p {
@@ -740,7 +795,7 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
   align-items: center;
   gap: var(--ds-space-4);
   padding: var(--ds-space-4) var(--ds-space-5);
-  background: rgba(22, 24, 26, 0.6);
+  background: rgba(var(--ds-color-surface-1-rgb), 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--ds-color-border);
@@ -750,15 +805,17 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
   transition: var(--ds-transition-base);
 }
 
-.contact-method:hover {
-  border-color: var(--ds-color-primary-border);
-  background: rgba(28, 31, 33, 0.7);
-  transform: translateX(4px);
-  box-shadow: var(--ds-shadow-glow);
+@media (hover: hover) and (pointer: fine) {
+  .contact-method:hover {
+    border-color: var(--ds-color-primary-border);
+    background: rgba(var(--ds-color-surface-2-rgb), 0.7);
+    transform: translateX(4px);
+    box-shadow: var(--ds-shadow-glow);
+  }
 }
 
 .contact-method:active {
-  transform: scale(0.98) translateX(4px);
+  transform: scale(0.98) translateX(2px);
 }
 
 .contact-method i {
@@ -773,6 +830,13 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
   font-size: 1.125rem;
   color: var(--ds-color-primary);
   flex-shrink: 0;
+  transition: var(--ds-transition-fast);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-method:hover i {
+    transform: scale(1.1);
+  }
 }
 
 .contact-method.whatsapp i {
@@ -809,9 +873,9 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
    NEWSLETTER SECTION
    ================================================================ */
 .newsletter-section {
-  background: rgba(16, 18, 20, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(var(--ds-color-bg-elevated-rgb), 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-top: 1px solid var(--ds-color-border);
   border-bottom: 1px solid var(--ds-color-border);
 }
@@ -843,7 +907,7 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
 .newsletter-input-group {
   display: flex;
   gap: var(--ds-space-3);
-  background: rgba(22, 24, 26, 0.6);
+  background: rgba(var(--ds-color-surface-1-rgb), 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--ds-color-border);
@@ -864,7 +928,7 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
   outline: none;
   color: var(--ds-color-text);
   font-family: var(--ds-font-body);
-  font-size: var(--ds-text-body);
+  font-size: 1rem;
   padding: var(--ds-space-2) var(--ds-space-4);
   min-width: 0;
 }
@@ -900,7 +964,7 @@ textarea { min-height: 120px; resize: vertical; border-radius: var(--ds-radius-m
 .view-toggle,
 .load-mode-toggle {
   display: flex;
-  background: var(--ds-color-surface-2);
+  background: rgba(var(--ds-color-surface-2-rgb), 0.8);
   border-radius: var(--ds-radius-md);
   border: 1px solid var(--ds-color-border);
   overflow: hidden;

@@ -27,7 +27,7 @@ import { logInfo, logError, logDebug } from './utils/logger.ts';
 import { initSearchBar } from './components/SearchBar/SearchBar.ts';
 import { initPropertyGrid, loadProperties } from './components/PropertyGrid/PropertyGrid.ts';
 import { initFooter } from './components/Layout/Footer.ts';
-import { initAgents } from './components/Agents/Agents.ts';
+import { initAgents } from './components/Agents/Agents.tsx';
 import { cargarContenidoSitio } from './content.ts';
 import { initAnalytics, trackPageView } from './utils/analytics.ts';
 import { auditAndLog, autoFixAccessibility } from './utils/a11yAudit.ts';

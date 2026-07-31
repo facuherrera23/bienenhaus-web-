@@ -13,7 +13,31 @@
       "src": "/bienenhaus/favicon.ico",
       "sizes": "48x48 72x72 96x96 128x128 256x256",
       "type": "image/x-icon",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/bienenhaus/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/bienenhaus/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/bienenhaus/pwa-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/bienenhaus/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
@@ -22,14 +46,14 @@
       "short_name": "Propiedades",
       "description": "Ver propiedades en venta y alquiler",
       "url": "/bienenhaus/#catalogo",
-      "icons": [{ "src": "/bienenhaus/favicon.ico", "sizes": "192x192" }]
+      "icons": [{ "src": "/bienenhaus/pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Contactar",
       "short_name": "Contacto",
       "description": "Contactar con Bienenhaus",
       "url": "/bienenhaus/#contacto",
-      "icons": [{ "src": "/bienenhaus/favicon.ico", "sizes": "192x192" }]
+      "icons": [{ "src": "/bienenhaus/pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ],
   "categories": ["business", "lifestyle"],

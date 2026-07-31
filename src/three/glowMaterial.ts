@@ -9,7 +9,7 @@ import { MeshBasicMaterial, Color, MeshStandardMaterial, MeshPhysicalMaterial, D
 
 export function createSignalGlowMaterial(): MeshBasicMaterial {
   return new MeshBasicMaterial({
-    color: new Color('#2ee6c5'),
+    color: new Color('#20B8AB'),
     transparent: true,
     opacity: 1,
     depthWrite: false,
@@ -18,7 +18,7 @@ export function createSignalGlowMaterial(): MeshBasicMaterial {
 
 export function createSignalGlowStrongMaterial(): MeshBasicMaterial {
   return new MeshBasicMaterial({
-    color: new Color('#3ff5d4'),
+    color: new Color('#5FD7CD'),
     transparent: true,
     opacity: 1,
     depthWrite: false,
@@ -48,7 +48,7 @@ export function createGlassMaterial(): MeshPhysicalMaterial {
 
 export function createWaterMaterial(): MeshBasicMaterial {
   return new MeshBasicMaterial({
-    color: new Color('#2ee6c5'),
+    color: new Color('#20B8AB'),
     transparent: true,
     opacity: 0.85,
     depthWrite: false,
@@ -57,7 +57,7 @@ export function createWaterMaterial(): MeshBasicMaterial {
 
 export function createGardenLightMaterial(): MeshBasicMaterial {
   return new MeshBasicMaterial({
-    color: new Color('#2ee6c5'),
+    color: new Color('#20B8AB'),
     transparent: true,
     opacity: 0.9,
     depthWrite: false,

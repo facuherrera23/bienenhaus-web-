@@ -34,7 +34,12 @@ function createHeader() {
   header.innerHTML = `
     <div class="header-inner container">
       <a href="/" class="header-brand" aria-label="Bienenhaus - Inicio">
-        <i class="fas fa-building header-brand-icon" aria-hidden="true"></i>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="header-brand-icon">
+          <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" fill="var(--color-brand, #20B8AB)" opacity="0.15"/>
+          <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" stroke="var(--color-brand, #20B8AB)" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M12 7v10M7 12h10" stroke="var(--color-brand, #20B8AB)" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="2" fill="var(--color-brand, #20B8AB)"/>
+        </svg>
         <span>Bienen<span>haus</span></span>
       </a>
       

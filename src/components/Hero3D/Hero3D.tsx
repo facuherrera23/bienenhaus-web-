@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'preact/hooks';
 import { logDebug, logError } from '../../utils/logger.ts';
+import { LogoLockup } from '../Brand/Logo';
 import './Hero3D.css';
 
 function webglSupported(): boolean {
@@ -254,18 +255,17 @@ export function Hero3D({ className = '' }: Hero3DProps) {
         >
           <div className="hero3d__nav-inner">
             <a href="/" className="hero3d__nav-brand" aria-label="Bienenhaus - Inicio">
-              <i className="fas fa-building hero-3d__brand-icon" aria-hidden="true" />
-              <span>Bienenhaus<span className="ds-text-primary"></span></span>
+              <LogoLockup size={24} />
            </a>
 
             <div className={`hero3d__nav-links ${navOpen ? 'hero3d__nav-links--open' : ''}`}>
               <a href="/" className={`hero3d__nav-link ${activeSection === 'home' ? 'is-active' : ''}`} data-page="home" onClick={handleNavClick}>Inicio</a>
-              <a href="/seccion/catalogo" className={`hero3d__nav-link ${activeSection === 'properties' ? 'is-active' : ''}`} data-page="properties" onClick={handleNavClick}>Propiedades</a>
-              <a href="/seccion/nosotros" className={`hero3d__nav-link ${activeSection === 'about' ? 'is-active' : ''}`} data-page="about" onClick={handleNavClick}>Quiénes somos</a>
-              <a href="/seccion/equipo" className={`hero3d__nav-link ${activeSection === 'team' ? 'is-active' : ''}`} data-page="team" onClick={handleNavClick}>Equipo</a>
-              <a href="/seccion/servicios" className={`hero3d__nav-link ${activeSection === 'services' ? 'is-active' : ''}`} data-page="services" onClick={handleNavClick}>Servicios</a>
-              <a href="/seccion/faq" className={`hero3d__nav-link ${activeSection === 'faq' ? 'is-active' : ''}`} data-page="faq" onClick={handleNavClick}>FAQ</a>
-              <a href="/seccion/contacto" className={`hero3d__nav-link ${activeSection === 'contact' ? 'is-active' : ''}`} data-page="contact" onClick={handleNavClick}>Contacto</a>
+              <a href="#catalogo" className={`hero3d__nav-link ${activeSection === 'properties' ? 'is-active' : ''}`} data-page="properties" onClick={handleNavClick}>Propiedades</a>
+              <a href="#nosotros" className={`hero3d__nav-link ${activeSection === 'about' ? 'is-active' : ''}`} data-page="about" onClick={handleNavClick}>Quiénes somos</a>
+              <a href="#equipo" className={`hero3d__nav-link ${activeSection === 'team' ? 'is-active' : ''}`} data-page="team" onClick={handleNavClick}>Equipo</a>
+              <a href="#servicios" className={`hero3d__nav-link ${activeSection === 'services' ? 'is-active' : ''}`} data-page="services" onClick={handleNavClick}>Servicios</a>
+              <a href="#faq" className={`hero3d__nav-link ${activeSection === 'faq' ? 'is-active' : ''}`} data-page="faq" onClick={handleNavClick}>FAQ</a>
+              <a href="#contacto" className={`hero3d__nav-link ${activeSection === 'contact' ? 'is-active' : ''}`} data-page="contact" onClick={handleNavClick}>Contacto</a>
            </div>
 
             <div className="hero3d__nav-actions">
@@ -291,7 +291,7 @@ export function Hero3D({ className = '' }: Hero3DProps) {
           <div className="hero3d__badge">
             <span className="hero3d__badge-inner">
               <i className="fas fa-gem" aria-hidden="true"></i>
-              <span>Exclusivas en Córdoba</span>
+              <span>Inmobiliaria Premium · Córdoba</span>
            </span>
          </div>
 

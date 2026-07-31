@@ -128,7 +128,7 @@ const PROPERTY_MODAL_HTML = `
         </div>
         <div role="tabpanel" class="tab-panel" id="tab-images" hidden>
           <div class="image-upload-area" id="imageUploadArea">
-            <input type="file" id="propImages" name="images" accept="image/*" multiple hidden>
+            <input type="file" id="propImages" name="images" accept="image/jpeg,image/png,image/webp" multiple hidden>
             <div class="upload-placeholder">
               <i class="fas fa-cloud-upload-alt"></i>
               <p>Arrastra imágenes aquí o haz clic para seleccionar</p>

@@ -10,13 +10,13 @@
   --admin-color-surface-hover: #191c1d;
   --admin-color-surface-elevated: #1e2122;
 
-  --admin-color-primary: #2ee6c5;
-  --admin-color-primary-hover: #4ff0d3;
-  --admin-color-primary-dark: #1fb89e;
-  --admin-color-primary-dim: #134a42;
-  --admin-color-primary-glow: rgba(46, 230, 197, 0.16);
-  --admin-color-primary-border: rgba(46, 230, 197, 0.25);
-  --admin-color-primary-focus: 0 0 0 2px rgba(46, 230, 197, 0.18);
+  --admin-color-primary: #20B8AB;
+  --admin-color-primary-hover: #5FD7CD;
+  --admin-color-primary-dark: #17A094;
+  --admin-color-primary-dim: #0F5F63;
+  --admin-color-primary-glow: rgba(32, 184, 171, 0.16);
+  --admin-color-primary-border: rgba(32, 184, 171, 0.25);
+  --admin-color-primary-focus: 0 0 0 2px rgba(32, 184, 171, 0.18);
 
   --admin-color-text: #e8ecee;
   --admin-color-text-secondary: #b7bcbe;
@@ -37,16 +37,16 @@
   --admin-color-danger: #cc3535;
   --admin-color-danger-bg: rgba(204, 53, 53, 0.10);
   --admin-color-danger-border: rgba(204, 53, 53, 0.25);
-  --admin-color-info: #2ee6c5;
-  --admin-color-info-bg: rgba(46, 230, 197, 0.10);
-  --admin-color-info-border: rgba(46, 230, 197, 0.25);
+  --admin-color-info: #20B8AB;
+  --admin-color-info-bg: rgba(32, 184, 171, 0.10);
+  --admin-color-info-border: rgba(32, 184, 171, 0.25);
   --admin-color-purple: #8c64dc;
   --admin-color-purple-bg: rgba(140, 100, 220, 0.10);
   --admin-color-purple-border: rgba(140, 100, 220, 0.25);
   --admin-color-blue: #3b82f6;
 
   /* ===== TYPOGRAPHY SYSTEM (ADMIN) ===== */
-  --admin-font-display: 'General Sans', 'Söhne', sans-serif;
+  --admin-font-display: 'Space Grotesk', sans-serif;
   --admin-font-body: 'Inter', sans-serif;
   --admin-font-num: 'JetBrains Mono', monospace;
   --admin-font-elegant: 'Inter', sans-serif;
@@ -91,8 +91,8 @@
   --admin-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
   --admin-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
   --admin-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.65);
-  --admin-shadow-glow: 0 0 20px rgba(46, 230, 197, 0.14);
-  --admin-shadow-glow-lg: 0 0 40px rgba(46, 230, 197, 0.22);
+  --admin-shadow-glow: 0 0 20px rgba(32, 184, 171, 0.14);
+  --admin-shadow-glow-lg: 0 0 40px rgba(32, 184, 171, 0.22);
 
   --admin-transition-base: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
   --admin-transition-slow: all 350ms cubic-bezier(0.16, 1, 0.3, 1);

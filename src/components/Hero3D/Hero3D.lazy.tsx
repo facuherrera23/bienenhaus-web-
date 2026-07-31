@@ -1,57 +1,46 @@
-// ================================================================
-// HERO3D LAZY WRAPPER - Dynamic import with Suspense
-// ================================================================
-
 import { lazy, Suspense } from 'preact/compat';
 import { useEffect } from 'preact/hooks';
 import { logDebug } from '../../utils/logger.ts';
-import styles from './Hero3D.module.css';
+import './Hero3D.css';
 
-// Lazy load the heavy Three.js component
 const Hero3DHeavy = lazy(() => import('./Hero3D.tsx').then(m => ({ default: m.Hero3D })));
 
-// Skeleton fallback matching Hero3D dimensions
 function Hero3DSkeleton() {
   return (
-    <div class={`${styles['hero3d']} ${styles['hero3d--skeleton']}`} role="status" aria-label="Cargando experiencia 3D">
-      <div className={styles['hero3d__canvas-wrapper']} style={{ background: 'var(--ds-color-surface-2)' }}>
-        <div className={`${styles['hero3d__skeleton']} ${styles['hero3d__skeleton--canvas']}`} />
+    <div class="hero3d hero3d--skeleton" role="status" aria-label="Cargando experiencia 3D">
+      <div style={{ position: 'absolute', inset: 0, background: 'var(--color-surface-2)' }}>
+        <div style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, var(--color-surface-2) 25%, var(--color-surface-3) 50%, var(--color-surface-2) 75%)', backgroundSize: '600px 100%', animation: 'shimmer 1.4s linear infinite' }} />
       </div>
-      <main className={styles['hero3d__content']} style={{ opacity: 0.4 }}>
-        <div className={styles['hero3d__badges']}>
-          <span className={`${styles['hero3d__badge']} ${styles['hero3d__badge--skeleton']}`} />
-          <span className={`${styles['hero3d__badge']} ${styles['hero3d__badge--skeleton']}`} />
-          <span className={`${styles['hero3d__badge']} ${styles['hero3d__badge--skeleton']}`} />
-          <span className={`${styles['hero3d__badge']} ${styles['hero3d__badge--skeleton']}`} />
+      <main class="hero3d__content" style={{ opacity: 0.4 }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'center', marginBottom: 'var(--space-4)' }}>
+          {[0,1,2,3].map(i => (
+            <span key={i} style={{ width: '80px', height: '24px', borderRadius: 'var(--radius-full)', background: 'var(--color-surface-3)' }} />
+          ))}
         </div>
-        <h1 className={`${styles['hero3d__title']} ${styles['hero3d__title--skeleton']}`} style={{ width: '70%' }} />
-        <p className={`${styles['hero3d__subtitle']} ${styles['hero3d__subtitle--skeleton']}`} style={{ width: '60%' }} />
-        <div className={styles['hero3d__badges']}>
-          <span className={`${styles['hero3d__badge']} ${styles['hero3d__badge--skeleton']}`} />
-          <span className={`${styles['hero3d__badge']} ${styles['hero3d__badge--skeleton']}`} />
-          <span className={`${styles['hero3d__badge']} ${styles['hero3d__badge--skeleton']}`} />
-          <span className={`${styles['hero3d__badge']} ${styles['hero3d__badge--skeleton']}`} />
+        <h1 style={{ width: '70%', height: 'clamp(2.5rem, 7vw, 4.5rem)', margin: '0 auto var(--space-5)', borderRadius: 'var(--radius-md)', background: 'var(--color-surface-3)' }} />
+        <p style={{ width: '60%', height: '1.25rem', margin: '0 auto var(--space-7)', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface-3)' }} />
+        <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', marginBottom: 'var(--space-7)' }}>
+          {[0,1,2,3].map(i => (
+            <span key={i} style={{ width: '100px', height: '32px', borderRadius: 'var(--radius-full)', background: 'var(--color-surface-3)' }} />
+          ))}
         </div>
-        <div className={styles['hero3d__cta-group']}>
-          <button className={`${styles['hero3d__cta-primary']} ${styles['hero3d__cta--skeleton']}`} disabled />
-          <button className={`${styles['hero3d__cta-secondary']} ${styles['hero3d__cta--skeleton']}`} disabled />
+        <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', marginBottom: 'var(--space-8)' }}>
+          <span style={{ width: '160px', height: '48px', borderRadius: 'var(--radius-md)', background: 'var(--color-surface-3)' }} />
+          <span style={{ width: '120px', height: '48px', borderRadius: 'var(--radius-md)', background: 'var(--color-surface-3)' }} />
         </div>
-        <div className={styles['hero3d__stats']}>
-          <div className={`${styles['hero3d__stat']} ${styles['hero3d__stat--skeleton']}`} />
-          <div className={styles['hero3d__stat']} style={{ opacity: 0.4 }} />
-          <div className={styles['hero3d__stat']} style={{ opacity: 0.4 }} />
-          <div className={styles['hero3d__stat']} style={{ opacity: 0.4 }} />
-        </div>
-        <div className={styles['hero3d__cta-secondary']}>
-          <button className={`${styles['hero3d__scroll-cta']} ${styles['hero3d__cta--skeleton']}`} disabled />
-          <a className={`${styles['hero3d__cta-secondary']} ${styles['hero3d__cta--skeleton']}`} />
+        <div style={{ display: 'flex', gap: 'var(--space-7)', justifyContent: 'center' }}>
+          {[0,1,2,3].map(i => (
+            <div key={i} style={{ textAlign: 'center', width: '80px' }}>
+              <span style={{ display: 'block', width: '60px', height: 'clamp(1.75rem, 3.5vw, 2.5rem)', margin: '0 auto var(--space-1)', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface-3)' }} />
+              <span style={{ display: 'block', width: '50px', height: '14px', margin: '0 auto', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface-3)' }} />
+            </div>
+          ))}
         </div>
       </main>
     </div>
   );
 }
 
-// Preload the Three.js chunk on hover/focus of hero section
 export function preloadHero3D() {
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
     requestIdleCallback(() => {
@@ -60,7 +49,6 @@ export function preloadHero3D() {
   }
 }
 
-// Preload on hover intent
 export function setupHero3DPreload() {
   const heroPlaceholder = document.getElementById('hero-placeholder');
   if (!heroPlaceholder) return;

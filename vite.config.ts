@@ -21,7 +21,7 @@ export default defineConfig({
     }
   },
   css: {
-    treeshake: false
+    treeshake: true
   },
   build: {
     rollupOptions: {

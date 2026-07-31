@@ -1,13 +1,12 @@
 /* ================================================================
-   BIENENHAUS DESIGN SYSTEM - Nocturne (Legacy Alias Layer)
-   This file provides backward compatibility aliases for existing code.
-   All tokens are defined in tokens.css - this just maps --ds-* to --color-* / --space-* etc.
+   BIENENHAUS ALIAS LAYER (Legacy Compatibility)
+   Maps old --ds-* / --bh-* tokens to canonical --color-* / --space-* etc.
+   All canonical tokens are defined in tokens.css.
+   DO NOT ADD NEW TOKENS HERE — use tokens.css.
    ================================================================ */
 
 :root {
-  /* ============================================================
-     BRAND COLORS - Signal accent (Nocturne approved)
-     ============================================================ */
+  /* ── BRAND ── */
   --ds-color-primary: var(--color-brand);
   --ds-color-primary-dark: var(--color-brand-dark);
   --ds-color-primary-light: var(--color-brand-light);
@@ -36,9 +35,7 @@
   --ds-color-alquiler: var(--color-alquiler);
   --ds-color-alquiler-light: var(--color-alquiler-light);
 
-  /* ============================================================
-     SURFACES - Dark Theme (Nocturne)
-     ============================================================ */
+  /* ── SURFACES ── */
   --ds-color-bg: var(--color-bg);
   --ds-color-bg-elevated: var(--color-bg-elevated);
   --ds-color-surface-1: var(--color-surface-1);
@@ -49,26 +46,20 @@
   --ds-color-surface-active: var(--color-surface-active);
   --ds-color-surface-elevated: var(--color-surface-elevated);
 
-  /* ============================================================
-     TEXT
-     ============================================================ */
+  /* ── TEXT ── */
   --ds-color-text: var(--color-text);
   --ds-color-text-secondary: var(--color-text-secondary);
   --ds-color-text-muted: var(--color-text-muted);
   --ds-color-text-disabled: var(--color-text-disabled);
   --ds-color-text-on-primary: var(--color-text-on-brand);
 
-  /* ============================================================
-     BORDERS
-     ============================================================ */
+  /* ── BORDERS ── */
   --ds-color-border: var(--color-border);
   --ds-color-border-medium: var(--color-border-medium);
   --ds-color-border-strong: var(--color-border-strong);
   --ds-color-border-focus: var(--color-border-focus);
 
-  /* ============================================================
-     TYPOGRAPHY
-     ============================================================ */
+  /* ── TYPOGRAPHY ── */
   --ds-font-display: var(--font-display);
   --ds-font-body: var(--font-body);
   --ds-font-elegant: var(--font-display);
@@ -82,30 +73,28 @@
   --ds-text-label: var(--text-label);
   --ds-text-sm: var(--text-sm);
   --ds-text-xs: var(--text-xs);
-  --ds-text-lg: 1.125rem;
-  --ds-text-2xl: 1.5rem;
+  --ds-text-lg: var(--font-size-lg);
+  --ds-text-2xl: var(--font-size-2xl);
 
-  --ds-font-weight-normal: 400;
-  --ds-font-weight-medium: 500;
-  --ds-font-weight-semibold: 600;
-  --ds-font-weight-bold: 700;
-  --ds-font-weight-extrabold: 800;
-  --ds-font-weight-black: 900;
+  --ds-font-weight-normal: var(--font-weight-normal);
+  --ds-font-weight-medium: var(--font-weight-medium);
+  --ds-font-weight-semibold: var(--font-weight-semibold);
+  --ds-font-weight-bold: var(--font-weight-bold);
+  --ds-font-weight-extrabold: var(--font-weight-extrabold);
+  --ds-font-weight-black: var(--font-weight-black);
 
-  --ds-line-height-display: 1.0;
-  --ds-line-height-headline: 1.1;
-  --ds-line-height-title: 1.2;
-  --ds-line-height-body: 1.6;
-  --ds-line-height-label: 1.4;
+  --ds-line-height-display: var(--line-height-display);
+  --ds-line-height-headline: var(--line-height-headline);
+  --ds-line-height-title: var(--line-height-title);
+  --ds-line-height-body: var(--line-height-body);
+  --ds-line-height-label: var(--line-height-label);
 
-  --ds-letter-spacing-display: -0.03em;
-  --ds-letter-spacing-label: 0.1em;
-  --ds-letter-spacing-badge: 0.12em;
-  --ds-letter-spacing-num: -0.02em;
+  --ds-letter-spacing-display: var(--letter-spacing-display);
+  --ds-letter-spacing-label: var(--letter-spacing-label);
+  --ds-letter-spacing-badge: var(--letter-spacing-badge);
+  --ds-letter-spacing-num: var(--letter-spacing-numbers);
 
-  /* ============================================================
-     SPACING - 8px base grid
-     ============================================================ */
+  /* ── SPACING (8px base) ── */
   --ds-space-1: var(--space-1);
   --ds-space-2: var(--space-2);
   --ds-space-3: var(--space-3);
@@ -116,17 +105,13 @@
   --ds-space-8: var(--space-8);
   --ds-space-9: var(--space-9);
 
-  /* ============================================================
-     RADIUS - Strict: 4, 8, 16, 9999
-     ============================================================ */
+  /* ── RADIUS ── */
   --ds-radius-sm: var(--radius-sm);
   --ds-radius-md: var(--radius-md);
   --ds-radius-lg: var(--radius-lg);
   --ds-radius-full: var(--radius-full);
 
-  /* ============================================================
-     SHADOWS - Functional, Signal-tinted glow
-     ============================================================ */
+  /* ── SHADOWS ── */
   --ds-shadow-sm: var(--shadow-sm);
   --ds-shadow-md: var(--shadow-md);
   --ds-shadow-lg: var(--shadow-lg);
@@ -137,9 +122,7 @@
   --ds-shadow-card-hover: var(--shadow-card-hover);
   --ds-shadow-glass: var(--shadow-glass);
 
-  /* ============================================================
-     TRANSITIONS - Emil: specific properties, custom curves
-     ============================================================ */
+  /* ── TRANSITIONS & EASING ── */
   --ds-ease-out: var(--ease-out);
   --ds-ease-in-out: var(--ease-in-out);
   --ds-ease-drawer: var(--ease-drawer);
@@ -149,9 +132,7 @@
   --ds-transition-normal: var(--transition-base);
   --ds-transition-slow: var(--transition-slow);
 
-  /* ============================================================
-     Z-INDEX LAYERS
-     ============================================================ */
+  /* ── Z-INDEX ── */
   --ds-z-dropdown: var(--z-dropdown);
   --ds-z-sidebar: var(--z-sidebar);
   --ds-z-sticky: var(--z-sticky);
@@ -161,9 +142,7 @@
   --ds-z-toast: var(--z-toast);
   --ds-z-tooltip: var(--z-tooltip);
 
-  /* ============================================================
-     LAYOUT CONSTANTS
-     ============================================================ */
+  /* ── LAYOUT ── */
   --ds-header-height: var(--header-height);
   --ds-sidebar-width: var(--sidebar-width);
   --ds-container-max: var(--container-max);
@@ -171,47 +150,43 @@
   --ds-container-padding-tablet: var(--container-padding-tablet);
   --ds-container-padding-mobile: var(--container-padding-mobile);
 
-  /* ============================================================
-     ACCESSIBILITY - WCAG AA
-     ============================================================ */
+  /* ── ACCESSIBILITY ── */
   --ds-touch-target: var(--touch-target);
   --ds-font-size-mobile-min: var(--font-size-mobile-min);
 
-  /* ============================================================
-     BH ALIASES — backward compat para componentes existentes
-     ============================================================ */
-  --bh-color-surface-1: var(--ds-color-surface-1);
-  --bh-color-surface-3: var(--ds-color-surface-3);
-  --bh-color-surface-4: var(--ds-color-surface-4);
-  --bh-color-text: var(--ds-color-text);
-  --bh-color-text-secondary: var(--ds-color-text-secondary);
-  --bh-color-text-muted: var(--ds-color-text-muted);
-  --bh-color-text-disabled: var(--ds-color-text-disabled);
-  --bh-color-primary: var(--ds-color-primary);
-  --bh-color-primary-dark: var(--ds-color-primary-dark);
-  --bh-color-primary-focus-ring: var(--ds-color-primary-focus-ring);
-  --bh-color-text-on-primary: var(--ds-color-text-on-primary);
-  --bh-color-border: var(--ds-color-border);
-  --bh-font-display: var(--ds-font-display);
-  --bh-font-body: var(--ds-font-body);
-  --bh-font-num: var(--ds-font-num);
-  --bh-font-weight-black: var(--ds-font-weight-black);
-  --bh-font-weight-bold: var(--ds-font-weight-bold);
-  --bh-font-weight-semibold: var(--ds-font-weight-semibold);
-  --bh-text-sm: var(--ds-text-sm);
-  --bh-text-lg: var(--ds-text-lg);
-  --bh-text-2xl: var(--ds-text-2xl);
-  --bh-text-xs: var(--ds-text-xs);
-  --bh-space-2: var(--ds-space-2);
-  --bh-space-3: var(--ds-space-3);
-  --bh-space-4: var(--ds-space-4);
-  --bh-space-5: var(--ds-space-5);
-  --bh-space-6: var(--ds-space-6);
-  --bh-space-7: var(--ds-space-7);
-  --bh-space-8: var(--ds-space-8);
-  --bh-radius-full: var(--ds-radius-full);
-  --bh-transition-fast: var(--ds-transition-fast);
-  --bh-shadow-glow: var(--ds-shadow-glow);
-  --bh-touch-target: var(--ds-touch-target);
-  --bh-ease-out: var(--ds-ease-out);
+  /* ── BH ALIASES (backward compat, deprecated) ── */
+  --bh-color-surface-1: var(--color-surface-1);
+  --bh-color-surface-3: var(--color-surface-3);
+  --bh-color-surface-4: var(--color-surface-4);
+  --bh-color-text: var(--color-text);
+  --bh-color-text-secondary: var(--color-text-secondary);
+  --bh-color-text-muted: var(--color-text-muted);
+  --bh-color-text-disabled: var(--color-text-disabled);
+  --bh-color-primary: var(--color-brand);
+  --bh-color-primary-dark: var(--color-brand-dark);
+  --bh-color-primary-focus-ring: var(--color-brand-focus);
+  --bh-color-text-on-primary: var(--color-text-on-brand);
+  --bh-color-border: var(--color-border);
+  --bh-font-display: var(--font-display);
+  --bh-font-body: var(--font-body);
+  --bh-font-num: var(--font-numbers);
+  --bh-font-weight-black: var(--font-weight-black);
+  --bh-font-weight-bold: var(--font-weight-bold);
+  --bh-font-weight-semibold: var(--font-weight-semibold);
+  --bh-text-sm: var(--text-sm);
+  --bh-text-lg: var(--font-size-lg);
+  --bh-text-2xl: var(--font-size-2xl);
+  --bh-text-xs: var(--text-xs);
+  --bh-space-2: var(--space-2);
+  --bh-space-3: var(--space-3);
+  --bh-space-4: var(--space-4);
+  --bh-space-5: var(--space-5);
+  --bh-space-6: var(--space-6);
+  --bh-space-7: var(--space-7);
+  --bh-space-8: var(--space-8);
+  --bh-radius-full: var(--radius-full);
+  --bh-transition-fast: var(--transition-fast);
+  --bh-shadow-glow: var(--shadow-glow);
+  --bh-touch-target: var(--touch-target);
+  --bh-ease-out: var(--ease-out);
 }
