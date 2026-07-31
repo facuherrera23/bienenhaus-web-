@@ -19,7 +19,7 @@ jobs:
       - run: npm ci
       - run: npm run build
         env:
-          VITE_BASE_PATH: /bienenhaus/
+          VITE_BASE_PATH: /bienenhaus-web-/
       - uses: actions/upload-pages-artifact@v4
         with: { path: './dist' }
   deploy:
