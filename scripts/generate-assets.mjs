@@ -116,12 +116,9 @@ async function generateImage(prompt, negativePrompt, resolution, seed) {
 
   const payload = {
     prompt,
-    negative_prompt: negativePrompt,
     width,
     height,
     steps: 4,
-    cfg_scale: 3.5,
-    sampler: 'euler',
     seed
   };
 

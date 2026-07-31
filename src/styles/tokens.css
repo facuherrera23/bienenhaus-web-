@@ -1,23 +1,24 @@
 /* ================================================================
-   DESIGN TOKENS - Bienenhaus (Nocturne — Re-imagined)
+   DESIGN TOKENS - Bienenhaus (Nocturne Turquesa — Re-imagined)
    Subject: Bienenhaus = "casa de las abejas" (alemán). Inmobiliaria Córdoba.
-   Origen: foto de referencia de arquitectura moderna fotografiada de noche.
-   Paleta: monocromática (grises/hormigón/vidrio) + un solo acento Signal #2EE6C5
-   (iluminación LED real de pileta/escalones/jardín) como firma de marca.
-   Display: General Sans (arquitectónico), Body: Inter, Mono/Datos: JetBrains Mono.
-   Signature: Hero 3D en WebGL + glow Signal como fuente de luz puntual.
+   Paleta: Dark mode — Negro profundo #08090B → Carbón #111417 → Grafito #1A1E23
+           Superficies #23282F → Bordes acero #313841
+           Texto #F2F4F6 → #C7CDD3 → #7A838C
+           Acento único: Turquesa #20B8AB / Cian #56E7DE (glow) / Petróleo #0F5F63
+   Display: Space Grotesk (arquitectónico), Body: Inter, Mono: JetBrains Mono.
+   Signature: Hero 3D en WebGL + glow Turquesa como fuente de luz puntual.
    Skills aplicadas: frontend-design (concepción), emil-design-eng (animaciones), vercel-react-best-practices (perf).
    ================================================================ */
 
 :root {
-  /* ===== BRAND — SIGNAL (Único acento, tratado como fuente de luz) ===== */
-  --color-brand: #2ee6c5;
-  --color-brand-dark: #1fb89e;
-  --color-brand-light: #3ddbd0;
-  --color-brand-glow: rgba(46, 230, 197, 0.16);
-  --color-brand-glow-strong: rgba(46, 230, 197, 0.28);
-  --color-brand-border: rgba(46, 230, 197, 0.25);
-  --color-brand-focus: 0 0 0 2px rgba(46, 230, 197, 0.18);
+  /* ===== BRAND — TURQUESA/CIAN (Nueva paleta Dark) ===== */
+  --color-brand: #20B8AB;
+  --color-brand-dark: #17A094;
+  --color-brand-light: #5FD7CD;
+  --color-brand-glow: rgba(86, 231, 222, 0.16);
+  --color-brand-glow-strong: rgba(86, 231, 222, 0.28);
+  --color-brand-border: rgba(32, 184, 171, 0.25);
+  --color-brand-focus: 0 0 0 2px rgba(32, 184, 171, 0.18);
 
   /* ===== SEMANTIC ===== */
   --color-success: #3aaa55;
@@ -30,7 +31,7 @@
   --color-danger-dark: #a02828;
   --color-danger-bg: rgba(204, 53, 53, 0.10);
   --color-danger-border: rgba(204, 53, 53, 0.25);
-  --color-info: #2ee6c5;
+  --color-info: #20B8AB;
 
   /* WhatsApp brand */
   --color-whatsapp: #25d366;
@@ -42,28 +43,34 @@
   --color-alquiler: var(--color-success);
   --color-alquiler-light: var(--color-success-bg);
 
-  /* ===== SURFACES — DARK THEME (PÚBLICO) ===== */
-  --color-bg: #0b0d0e;
-  --color-bg-elevated: #12100e;
-  --color-surface-1: #101214;
-  --color-surface-2: #16181a;
-  --color-surface-3: #1c1f21;
-  --color-surface-4: #24272a;
-  --color-surface-hover: #352518;
-  --color-surface-active: #422d1c;
-  --color-surface-elevated: rgba(28, 31, 33, 0.95);
+  /* ===== SURFACES — DARK THEME (Nueva paleta) ===== */
+  --color-bg: #08090B;
+  --color-bg-rgb: 8, 9, 11;
+  --color-bg-elevated: #111417;
+  --color-bg-elevated-rgb: 17, 20, 23;
+  --color-surface-1: #1A1E23;
+  --color-surface-1-rgb: 26, 30, 35;
+  --color-surface-2: #23282F;
+  --color-surface-2-rgb: 35, 40, 47;
+  --color-surface-3: #2D333B;
+  --color-surface-3-rgb: 45, 51, 59;
+  --color-surface-4: #313841;
+  --color-surface-4-rgb: 49, 56, 65;
+  --color-surface-hover: #2A3038;
+  --color-surface-active: #353C45;
+  --color-surface-elevated: rgba(26, 30, 35, 0.95);
 
   /* ===== TEXT ===== */
-  --color-text: #e8ecee;
-  --color-text-secondary: #c4a882;
-  --color-text-muted: #b8a080;
-  --color-text-disabled: #4a3a2e;
-  --color-text-on-brand: #0a0807;
+  --color-text: #F2F4F6;
+  --color-text-secondary: #C7CDD3;
+  --color-text-muted: #A8AEB7;
+  --color-text-disabled: #7A838C;
+  --color-text-on-brand: #08090B;
 
   /* ===== BORDERS ===== */
-  --color-border: rgba(212, 162, 83, 0.12);
-  --color-border-medium: rgba(212, 162, 83, 0.22);
-  --color-border-strong: rgba(212, 162, 83, 0.35);
+  --color-border: #313841;
+  --color-border-medium: #3D4651;
+  --color-border-strong: #4A545F;
   --color-border-focus: var(--color-brand);
 
   /* ===== TYPOGRAPHY ===== */
@@ -116,16 +123,16 @@
   --radius-lg: 16px;
   --radius-full: 9999px;
 
-  /* ===== SHADOWS (Functional, warm-tinted) ===== */
-  --shadow-sm: 0 1px 3px rgba(10, 8, 7, 0.4);
-  --shadow-md: 0 4px 12px rgba(10, 8, 7, 0.5);
-  --shadow-lg: 0 8px 32px rgba(10, 8, 7, 0.6);
-  --shadow-xl: 0 20px 60px rgba(10, 8, 7, 0.7);
-  --shadow-2xl: 0 25px 50px -12px rgba(10, 8, 7, 0.35);
-  --shadow-glow: 0 4px 20px rgba(46, 230, 197, 0.18);
-  --shadow-glow-lg: 0 8px 32px rgba(46, 230, 197, 0.25);
-  --shadow-card-hover: 0 32px 80px rgba(10, 8, 7, 0.9), 0 0 0 1px rgba(46, 230, 197, 0.18);
-  --shadow-glass: 0 8px 32px rgba(10, 8, 7, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  /* ===== SHADOWS (Functional, turquoise-tinted) ===== */
+  --shadow-sm: 0 1px 3px rgba(8, 9, 11, 0.4);
+  --shadow-md: 0 4px 12px rgba(8, 9, 11, 0.5);
+  --shadow-lg: 0 8px 32px rgba(8, 9, 11, 0.6);
+  --shadow-xl: 0 20px 60px rgba(8, 9, 11, 0.7);
+  --shadow-2xl: 0 25px 50px -12px rgba(8, 9, 11, 0.35);
+  --shadow-glow: 0 4px 20px rgba(86, 231, 222, 0.18);
+  --shadow-glow-lg: 0 8px 32px rgba(86, 231, 222, 0.25);
+  --shadow-card-hover: 0 32px 80px rgba(8, 9, 11, 0.9), 0 0 0 1px rgba(32, 184, 171, 0.18);
+  --shadow-glass: 0 8px 32px rgba(8, 9, 11, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.03);
 
   /* ===== TRANSITIONS (Emil: specific properties, custom curves) ===== */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -214,11 +221,11 @@ body {
 /* Selection */
 ::selection { background: var(--color-brand-glow); color: var(--color-text-on-brand); }
 
-/* Scrollbar (warm tint) */
+/* Scrollbar (turquoise tint) */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-text-secondary); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-brand); }
 
 /* ================================================================
    KEYFRAMES - Emil: no scale(0), start from scale(0.95)

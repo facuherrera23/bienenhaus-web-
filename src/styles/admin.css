@@ -134,7 +134,7 @@
   top: 0;
   z-index: var(--z-sticky);
   height: var(--header-height);
-  background: rgba(8, 9, 10, 0.85);
+  background: rgba(var(--color-bg-rgb), 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--admin-color-border);
