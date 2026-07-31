@@ -351,6 +351,102 @@ CREATE POLICY "Public insert leads" ON leads FOR INSERT WITH CHECK (true);
 -- Service role tiene acceso total (para admin panel)
 -- No necesita políticas explícitas, usa service_role key
 
+-- Políticas de ESCRITURA para admin (authenticated + is_admin)
+DROP POLICY IF EXISTS "Admin insert propiedades" ON propiedades;
+CREATE POLICY "Admin insert propiedades" ON propiedades FOR INSERT
+  WITH CHECK (auth.role() = 'service_role' OR (auth.role() = 'authenticated' AND auth.jwt()->'app_metadata'->>'is_admin' = 'true'));
+
+DROP POLICY IF EXISTS "Admin update propiedades" ON propiedades;
+CREATE POLICY "Admin update propiedades" ON propiedades FOR UPDATE
+  USING (auth.role() = 'service_role' OR (auth.role() = 'authenticated' AND auth.jwt()->'app_metadata'->>'is_admin' = 'true'));
+
+DROP POLICY IF EXISTS "Admin delete propiedades" ON propiedades;
+CREATE POLICY "Admin delete propiedades" ON propiedades FOR DELETE
+  USING (auth.role() = 'service_role' OR (auth.role() = 'authenticated' AND auth.jwt()->'app_metadata'->>'is_admin' = 'true'));
+
+DROP POLICY IF EXISTS "Admin insert imagenes" ON imagenes;
+CREATE POLICY "Admin insert imagenes" ON imagenes FOR INSERT
+  WITH CHECK (auth.role() = 'service_role' OR (auth.role() = 'authenticated' AND auth.jwt()->'app_metadata'->>'is_admin' = 'true'));
+
+DROP POLICY IF EXISTS "Admin delete imagenes" ON imagenes;
+CREATE POLICY "Admin delete imagenes" ON imagenes FOR DELETE
+  USING (auth.role() = 'service_role' OR (auth.role() = 'authenticated' AND auth.jwt()->'app_metadata'->>'is_admin' = 'true'));
+
+DROP POLICY IF EXISTS "Admin all agentes" ON agentes;
+CREATE POLICY "Admin all agentes" ON agentes FOR ALL
+  USING (auth.role() = 'service_role' OR (auth.role() = 'authenticated' AND auth.jwt()->'app_metadata'->>'is_admin' = 'true'))
+  WITH CHECK (auth.role() = 'service_role' OR (auth.role() = 'authenticated' AND auth.jwt()->'app_metadata'->>'is_admin' = 'true'));
+
+DROP POLICY IF EXISTS "Admin all contenido_sitio" ON contenido_sitio;
+CREATE POLICY "Admin all contenido_sitio" ON contenido_sitio FOR ALL
+  USING (auth.role() = 'service_role' OR (auth.role() = 'authenticated' AND auth.jwt()->'app_metadata'->>'is_admin' = 'true'))
+  WITH CHECK (auth.role() = 'service_role' OR (auth.role() = 'authenticated' AND auth.jwt()->'app_metadata'->>'is_admin' = 'true'));
+
+DROP POLICY IF EXISTS "Admin read leads" ON leads;
+CREATE POLICY "Admin read leads" ON leads FOR SELECT
+  USING (auth.role() = 'service_role' OR (auth.role() = 'authenticated' AND auth.jwt()->'app_metadata'->>'is_admin' = 'true'));
+
+DROP POLICY IF EXISTS "Admin delete leads" ON leads;
+CREATE POLICY "Admin delete leads" ON leads FOR DELETE
+  USING (auth.role() = 'service_role' OR (auth.role() = 'authenticated' AND auth.jwt()->'app_metadata'->>'is_admin' = 'true'));
+
+-- ================================================================
+-- MIGRACIÓN: Columnas faltantes en propiedades
+-- ================================================================
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'propiedades' AND column_name = 'user_id') THEN
+    ALTER TABLE propiedades ADD COLUMN user_id UUID REFERENCES auth.users(id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'propiedades' AND column_name = 'latitud') THEN
+    ALTER TABLE propiedades ADD COLUMN latitud DOUBLE PRECISION;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'propiedades' AND column_name = 'longitud') THEN
+    ALTER TABLE propiedades ADD COLUMN longitud DOUBLE PRECISION;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'propiedades' AND column_name = 'estado') THEN
+    ALTER TABLE propiedades ADD COLUMN estado TEXT DEFAULT 'draft' CHECK (estado IN ('draft','published','archived'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'propiedades' AND column_name = 'ml_price') THEN
+    ALTER TABLE propiedades ADD COLUMN ml_price NUMERIC;
+  END IF;
+END $$;
+
+-- ================================================================
+-- TABLA: ml_webhook_log (idempotencia para webhooks ML)
+-- ================================================================
+CREATE TABLE IF NOT EXISTS ml_webhook_log (
+  id BIGSERIAL PRIMARY KEY,
+  ml_event_id TEXT NOT NULL UNIQUE,
+  ml_resource TEXT NOT NULL,
+  ml_topic TEXT,
+  accion TEXT,
+  received_at TIMESTAMPTZ DEFAULT NOW(),
+  processed_at TIMESTAMPTZ,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending','processing','completed','failed')),
+  error TEXT,
+  payload JSONB
+);
+
+CREATE INDEX IF NOT EXISTS idx_ml_webhook_ml_event_id ON ml_webhook_log(ml_event_id);
+CREATE INDEX IF NOT EXISTS idx_ml_webhook_status ON ml_webhook_log(status);
+CREATE INDEX IF NOT EXISTS idx_ml_webhook_received ON ml_webhook_log(received_at DESC);
+
+ALTER TABLE ml_webhook_log ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Service role full access ml_webhook_log" ON ml_webhook_log;
+CREATE POLICY "Service role full access ml_webhook_log" ON ml_webhook_log FOR ALL USING (auth.role() = 'service_role');
+
+-- ================================================================
+-- FUNCIÓN: pg_try_advisory_xact_lock (bigint wrapper para Edge Functions)
+-- ================================================================
+CREATE OR REPLACE FUNCTION pg_try_advisory_xact_lock_bigint(key BIGINT)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+AS $$
+  SELECT pg_try_advisory_xact_lock(key);
+$$;
+
 -- ================================================================
 -- STORAGE / CLOUDINARY - Solo referencia (se maneja en cliente)
 -- ================================================================

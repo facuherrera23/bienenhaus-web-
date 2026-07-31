@@ -1,11 +1,9 @@
 
-// ================================================================
-// CONVERSION UX - Sticky CTA + WhatsApp Contextual + Price Alerts
-// ================================================================
-
 import { useState, useEffect, useCallback, useRef } from 'preact/hooks';
 import { supabase } from '../../supabase.ts';
 import { formatPrice } from '../../utils/format.ts';
+import { CONFIG } from '../../config.ts';
+import { logError } from '../../utils/logger.ts';
 import { useFocusTrap } from '../../hooks/useFocusTrap.ts';
 import './ConversionUX.css';
 
@@ -47,18 +45,16 @@ interface ConversionUXProps {
   className?: string;
 }
 
-export function ConversionUX({ 
+export function ConversionUX({
   property = null,
   currentSection = 'home',
   filters = {},
   onWhatsAppClick = () => {},
   className = ''
 }: ConversionUXProps) {
-  // Sticky CTA state
   const [showSticky, setShowSticky] = useState(false);
   const [scrollY, setScrollY] = useState(0);
-  
-  // WhatsApp modal state
+
   const [showWhatsApp, setShowWhatsApp] = useState(false);
   const [waForm, setWaForm] = useState({
     name: '',
@@ -69,8 +65,7 @@ export function ConversionUX({
   const [waSubmitting, setWaSubmitting] = useState(false);
   const [waSuccess, setWaSuccess] = useState(false);
   const [waError, setWaError] = useState('');
-  
-  // Price alert state
+
   const [showPriceAlert, setShowPriceAlert] = useState(false);
   const [alertForm, setAlertForm] = useState({
     email: '',
@@ -83,61 +78,72 @@ export function ConversionUX({
   const [alertSubmitting, setAlertSubmitting] = useState(false);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState('');
-  
-  // Back to top button
+
   const backToTopRef = useRef(null);
 
-  // Modal refs for focus trap (WCAG 2.4.3)
   const whatsappModalRef = useRef<HTMLDivElement>(null);
   const priceAlertModalRef = useRef<HTMLDivElement>(null);
-  
-  // Apply focus traps (WCAG 2.4.3)
+
   useFocusTrap(showWhatsApp, whatsappModalRef);
   useFocusTrap(showPriceAlert, priceAlertModalRef);
 
-  // Scroll handler for sticky CTA
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTrackedScrollDepth = useRef(0);
+
+  // Cleanup on unmount: restore body scroll + clear pending timeouts
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY;
       setScrollY(y);
       setShowSticky(y > 300);
     };
-    
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Track scroll for analytics
+  // Track scroll depth at quartile milestones only (not every pixel)
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.gtag) {
+    if (typeof window === 'undefined' || !window.gtag || !document.body) return;
+    const max = document.body.scrollHeight - window.innerHeight;
+    if (max <= 0) return;
+    const pct = Math.min(100, Math.round((scrollY / max) * 100));
+    const bucket = Math.floor(pct / 25) * 25;
+    if (bucket > lastTrackedScrollDepth.current && bucket > 0) {
+      lastTrackedScrollDepth.current = bucket;
       window.gtag('event', 'scroll_depth', {
-        scroll_depth: Math.min(Math.round(scrollY / document.body.scrollHeight * 100), 100),
+        scroll_depth: bucket,
         page_location: window.location.href
       });
     }
   }, [scrollY]);
 
-  // Generate contextual WhatsApp message
   const generateWhatsAppMessage = useCallback((context: WhatsAppContext = {}) => {
-    
     let message = 'Hola! ';
-    
+
     if (property) {
       message += `Me interesa la propiedad "${property.titulo}" `;
       message += `(${property.operacion === 'venta' ? 'Venta' : 'Alquiler'} - ${formatPrice(property.precio, property.moneda, property.operacion)}) `;
       message += `en ${property.ubicacion}. `;
     } else if (filters) {
-      const parts = [];
+      const parts: string[] = [];
       if (filters.operacion && filters.operacion !== 'ambos') {
         parts.push(filters.operacion === 'venta' ? 'en venta' : 'en alquiler');
       }
       if (filters.tipo && filters.tipo !== 'todos') {
         parts.push(filters.tipo);
       }
-      if (filters.precioMin > 0 || filters.precioMax < 900000) {
-        parts.push(`hasta ${formatPrice(filters.precioMax)}`);
+      if (filters.precioMin && filters.precioMin > 0 || filters.precioMax && filters.precioMax < 900000) {
+        parts.push(`hasta ${formatPrice(filters.precioMax ?? 0, 'ARS', 'venta')}`);
       }
-      if (filters.habitaciones > 0) {
+      if (filters.habitaciones && filters.habitaciones > 0) {
         parts.push(`${filters.habitaciones === 4 ? '4+' : filters.habitaciones} habitaciones`);
       }
       if (filters.ubicacion) {
@@ -149,33 +155,26 @@ export function ConversionUX({
     } else {
       message += 'Quiero información sobre sus propiedades. ';
     }
-    
+
     message += '¿Podrían contactarme?';
     return message;
-  }, []);
+  }, [property, filters]);
 
-  // Open WhatsApp with context
   const openWhatsApp = useCallback((context: WhatsAppContext = {}) => {
     const message = generateWhatsAppMessage(context);
-    const encoded = encodeURIComponent(message);
-    const phone = '5493511234567'; // Configurar número real
-    const url = `https://wa.me/${phone}?text=${encoded}`;
-    
-    // Track event
+    const url = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'whatsapp_click', {
         context: context.property ? 'property_detail' : context.section || 'search_results',
         property_id: context.property?.id || null
       });
     }
-    
-    // Also call custom callback
+
     onWhatsAppClick(context);
-    
     window.open(url, '_blank', 'noopener,noreferrer');
   }, [generateWhatsAppMessage, onWhatsAppClick]);
 
-  // WhatsApp modal handlers
   const openWhatsAppModal = useCallback((context: WhatsAppContext = {}) => {
     const message = generateWhatsAppMessage(context);
     setWaForm(prev => ({ ...prev, message, source: context.section || 'modal' }));
@@ -189,15 +188,18 @@ export function ConversionUX({
     setWaSuccess(false);
     setWaError('');
     setWaForm({ name: '', phone: '', message: '', source: '' });
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
   }, []);
 
-  const handleWhatsAppSubmit = useCallback(async (e) => {
+  const handleWhatsAppSubmit = useCallback(async (e: Event) => {
     e.preventDefault();
     setWaSubmitting(true);
     setWaError('');
 
     try {
-      // Submit to Supabase
       const { error } = await supabase.from('whatsapp_leads').insert([{
         name: waForm.name,
         phone: waForm.phone,
@@ -209,27 +211,23 @@ export function ConversionUX({
 
       if (error) throw error;
 
-      // Also open WhatsApp with the message
-      const phone = '5493511234567';
-      const url = `https://wa.me/${phone}?text=${encodeURIComponent(waForm.message)}`;
-      
+      const url = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(waForm.message)}`;
+
       setWaSuccess(true);
-      
-      // Open WhatsApp after short delay
-      setTimeout(() => {
-        window.open(`https://wa.me/5493511234567?text=${encodeURIComponent(waForm.message)}`, '_blank');
+
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        window.open(url, '_blank', 'noopener,noreferrer');
         closeWhatsAppModal();
       }, 1500);
-
     } catch (err) {
-      console.error('WhatsApp lead error:', err);
+      logError('WhatsApp lead error', err, 'conversion-ux');
       setWaError('Error al enviar. Intenta nuevamente.');
     } finally {
       setWaSubmitting(false);
     }
-  }, [waForm, onWhatsAppClick]);
+  }, [waForm, closeWhatsAppModal]);
 
-  // Price alert handlers
   const openPriceAlert = useCallback((context: WhatsAppContext = {}) => {
     setAlertForm(prev => ({
       ...prev,
@@ -249,15 +247,18 @@ export function ConversionUX({
     setAlertSuccess(false);
     setAlertError('');
     setAlertForm({ email: '', minPrice: 0, maxPrice: 900000, location: '', propertyType: 'todos', operation: 'ambos' });
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
   }, []);
 
-  const handleAlertSubmit = useCallback(async (e) => {
+  const handleAlertSubmit = useCallback(async (e: Event) => {
     e.preventDefault();
     setAlertSubmitting(true);
     setAlertError('');
 
-    // Validate email
-    if (!alertForm.email || !alertForm.email.includes('@')) {
+    if (!alertForm.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(alertForm.email)) {
       setAlertError('Ingresa un email válido');
       setAlertSubmitting(false);
       return;
@@ -278,128 +279,135 @@ export function ConversionUX({
       if (error) throw error;
 
       setAlertSuccess(true);
-      
-      setTimeout(() => {
+
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
         closePriceAlert();
       }, 2000);
-
     } catch (err) {
-      console.error('Price alert error:', err);
+      logError('Price alert error', err, 'conversion-ux');
       setAlertError('Error al crear la alerta. Intenta nuevamente.');
     } finally {
       setAlertSubmitting(false);
     }
   }, [alertForm, closePriceAlert]);
 
-  // Back to top
   const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  // Track CTA clicks
-  const trackCTA = useCallback((action, label) => {
+  const trackCTA = useCallback((action: string, label: string) => {
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'cta_click', { action, label });
     }
   }, []);
 
-  // ============ RENDER ============
+  // Overlay click handler: only close when the click is on the overlay itself, not bubbled from panel
+  const onWhatsAppOverlayClick = useCallback((e: MouseEvent) => {
+    if (e.target === e.currentTarget) closeWhatsAppModal();
+  }, [closeWhatsAppModal]);
+
+  const onAlertOverlayClick = useCallback((e: MouseEvent) => {
+    if (e.target === e.currentTarget) closePriceAlert();
+  }, [closePriceAlert]);
 
   return (
     <>
-{/* Sticky CTA Mobile */}
       {showSticky && (
-        <div 
-          className={`conversion-ux__sticky-cta ${className}`} 
-          role="complementary" 
+        <div
+          className={`conversion-ux__sticky-cta ${className}`}
+          role="complementary"
           aria-label="Acciones rápidas"
         >
-          <button 
+          <button
             className="conversion-ux__sticky-btn conversion-ux__sticky-btn--secondary"
             onClick={() => { scrollToTop(); trackCTA('scroll_top', 'back_to_top'); }}
             aria-label="Volver al inicio"
           >
-            <i className="fas fa-arrow-up" aria-hidden="true"></i>
+            <i className="fas fa-arrow-up" aria-hidden="true" />
             <span>Arriba</span>
-          </button>
-          
-          <button 
+         </button>
+
+          <button
             className="conversion-ux__sticky-btn conversion-ux__sticky-btn--primary"
             onClick={() => { openWhatsAppModal({ section: 'sticky_cta' }); trackCTA('whatsapp', 'sticky_cta'); }}
             aria-label="Contactar por WhatsApp"
           >
-            <i className="fab fa-whatsapp" aria-hidden="true"></i>
+            <i className="fab fa-whatsapp" aria-hidden="true" />
             <span>WhatsApp</span>
-          </button>
-          
-          {/* Price alert trigger on property pages */}
+         </button>
+
           {property && (
-            <button 
+            <button
               className="conversion-ux__sticky-btn conversion-ux__sticky-btn--alert"
-              onClick={() => { 
-                openPriceAlert({ 
+              onClick={() => {
+                openPriceAlert({
                   minPrice: Math.max(0, property.precio - 500000),
                   maxPrice: property.precio + 500000,
                   location: property.ubicacion,
                   propertyType: property.tipo,
                   operation: property.operacion
-                }); 
+                });
                 trackCTA('price_alert', 'sticky_cta');
               }}
               aria-label="Crear alerta de precio"
             >
-<i className="fas fa-bell" aria-hidden="true"></i>
+              <i className="fas fa-bell" aria-hidden="true" />
               <span>Alerta precio</span>
-            </button>
+           </button>
           )}
-        </div>
+       </div>
       )}
 
-      {/* WhatsApp Modal */}
       {showWhatsApp && (
-        <div className="conversion-ux__modal-overlay" onClick={closeWhatsAppModal} role="dialog" aria-modal="true" aria-labelledby="wa-modal-title">
+        <div
+          className="conversion-ux__modal-overlay"
+          onClick={onWhatsAppOverlayClick}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="wa-modal-title"
+        >
           <div ref={whatsappModalRef} className="conversion-ux__modal conversion-ux__modal--whatsapp">
             <header className="conversion-ux__modal-header">
               <h2 id="wa-modal-title" className="conversion-ux__modal-title">
-                <i className="fab fa-whatsapp" aria-hidden="true"></i>
+                <i className="fab fa-whatsapp" aria-hidden="true" />
                 Contactar por WhatsApp
-              </h2>
-              <button 
-                className="conversion-ux__modal-close" 
+             </h2>
+              <button
+                className="conversion-ux__modal-close"
                 onClick={closeWhatsAppModal}
                 aria-label="Cerrar"
               >
-                <i className="fas fa-times" aria-hidden="true"></i>
-              </button>
-            </header>
+                <i className="fas fa-times" aria-hidden="true" />
+             </button>
+           </header>
 
             {waSuccess ? (
               <div className="conversion-ux__modal-success" role="status" aria-live="polite">
                 <div className="conversion-ux__success-icon">
-                  <i className="fas fa-check-circle" aria-hidden="true"></i>
-                </div>
+                  <i className="fas fa-check-circle" aria-hidden="true" />
+               </div>
                 <h3>¡Mensaje enviado!</h3>
-                <p>Te redirigiremos a WhatsApp en unos segundos...</p>
+                <p>Te redirigiremos a WhatsApp en unos segundos</p>
                 <div className="spinner" aria-label="Redirigiendo..." aria-hidden="true"></div>
-              </div>
+             </div>
             ) : (
               <form onSubmit={handleWhatsAppSubmit} className="conversion-ux__modal-form" noValidate>
                 <div className="conversion-ux__modal-context" aria-live="polite">
-                  <p>Tu mensaje se enviará directamente a WhatsApp.</p>
-                </div>
+                  <p>Tu mensaje se enviará directamente a WhatsApp</p>
+               </div>
 
                 {waError && (
-                  <div id="wa-error" className="conversion-ux__error" role="alert">
-                    <i className="fas fa-exclamation-circle" aria-hidden="true"></i>
+                  <div id="wa-error" className="conversion-ux__error">
                     {waError}
-                  </div>
+                 </div>
                 )}
 
                 <div className="conversion-ux__form-row">
                   <div className="conversion-ux__form-group">
                     <label htmlFor="waNombre" className="conversion-ux__label">
                       Nombre <span className="required" aria-hidden="true">*</span>
-                    </label>
+                   </label>
                     <input
                       type="text"
                       id="waNombre"
@@ -412,11 +420,11 @@ export function ConversionUX({
                       aria-invalid={!!waError}
                       aria-describedby={waError ? 'wa-error' : undefined}
                     />
-                  </div>
+                 </div>
                   <div className="conversion-ux__form-group">
                     <label htmlFor="waTelefono" className="conversion-ux__label">
                       Teléfono <span className="required" aria-hidden="true">*</span>
-                    </label>
+                   </label>
                     <input
                       type="tel"
                       id="waTelefono"
@@ -429,13 +437,13 @@ export function ConversionUX({
                       aria-invalid={!!waError}
                       aria-describedby={waError ? 'wa-error' : undefined}
                     />
-                  </div>
-                </div>
+                 </div>
+               </div>
 
                 <div className="conversion-ux__form-group">
                   <label htmlFor="waMensaje" className="conversion-ux__label">
                     Mensaje <span className="required" aria-hidden="true">*</span>
-                  </label>
+                 </label>
                   <textarea
                     id="waMensaje"
                     name="message"
@@ -447,12 +455,12 @@ export function ConversionUX({
                     aria-invalid={!!waError}
                     aria-describedby={waError ? 'wa-error' : undefined}
                   />
-                </div>
+               </div>
 
                 <div className="conversion-ux__modal-actions">
                   <button type="button" className="btn btn-secondary" onClick={closeWhatsAppModal}>
                     Cancelar
-                  </button>
+                 </button>
                   <button type="submit" className="btn btn-primary" disabled={waSubmitting}>
                     {waSubmitting ? (
                       <>
@@ -461,67 +469,72 @@ export function ConversionUX({
                       </>
                     ) : (
                       <>
-                        <i className="fab fa-whatsapp" aria-hidden="true"></i>
+                        <i className="fab fa-whatsapp" aria-hidden="true" />
                         Enviar por WhatsApp
                       </>
                     )}
-                  </button>
-                </div>
+                 </button>
+               </div>
 
                 <p className="conversion-ux__privacy" aria-live="polite">
-                  <i className="fas fa-shield-alt" aria-hidden="true"></i>
+                  <i className="fas fa-shield-alt" aria-hidden="true" />
                   Tu información es confidencial. No compartimos tus datos.
-                </p>
-              </form>
+               </p>
+             </form>
             )}
-          </div>
-        </div>
+         </div>
+       </div>
       )}
 
-      {/* Price Alert Modal */}
       {showPriceAlert && (
-        <div className="conversion-ux__modal-overlay" onClick={closePriceAlert} role="dialog" aria-modal="true" aria-labelledby="alert-modal-title">
+        <div
+          className="conversion-ux__modal-overlay"
+          onClick={onAlertOverlayClick}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="alert-modal-title"
+        >
           <div ref={priceAlertModalRef} className="conversion-ux__modal conversion-ux__modal--alert">
             <header className="conversion-ux__modal-header">
               <h2 id="alert-modal-title" className="conversion-ux__modal-title">
-                <i className="fas fa-bell" aria-hidden="true"></i>
+                <i className="fas fa-bell" aria-hidden="true" />
                 Alerta de Precio
-              </h2>
-              <button 
-                className="conversion-ux__modal-close" 
+             </h2>
+              <button
+                className="conversion-ux__modal-close"
                 onClick={closePriceAlert}
                 aria-label="Cerrar"
               >
-                <i className="fas fa-times" aria-hidden="true"></i>
-              </button>
-            </header>
+                <i className="fas fa-times" aria-hidden="true" />
+             </button>
+           </header>
 
             {alertSuccess ? (
               <div className="conversion-ux__modal-success" role="status" aria-live="polite">
                 <div className="conversion-ux__success-icon">
-                  <i className="fas fa-check-circle" aria-hidden="true"></i>
-                </div>
-                <h3>¡Alerta creada!</h3>
-                <p>Te avisaremos por email cuando haya propiedades que coincidan.</p>
-              </div>
+                  <i className="fas fa-check-circle" aria-hidden="true" />
+               </div>
+                <h3>¡Alerta creada</h3>
+                <p>Te avisaremos por email cuando haya propiedades que coincidan</p>
+             </div>
             ) : (
               <form onSubmit={handleAlertSubmit} className="conversion-ux__modal-form" noValidate>
                 <div className="conversion-ux__modal-context" aria-live="polite">
-                  <p>Recibe notificaciones cuando una propiedad coincida con tus criterios.</p>
-                </div>
+                  <p>Recibe notificaciones cuando una propiedad coincida con tus criterios</p>
+               </div>
 
                 {alertError && (
                   <div id="alert-error" className="conversion-ux__error" role="alert">
-                    <i className="fas fa-exclamation-circle" aria-hidden="true"></i>
+                    <i className="fas fa-exclamation-circle" aria-hidden="true" />
                     {alertError}
-                  </div>
+                 </div>
                 )}
 
                 <div className="conversion-ux__form-row">
                   <div className="conversion-ux__form-group">
                     <label htmlFor="alertEmail" className="conversion-ux__label">
                       Email <span className="required" aria-hidden="true">*</span>
-                    </label>
+                   </label>
                     <input
                       type="email"
                       id="alertEmail"
@@ -534,14 +547,14 @@ export function ConversionUX({
                       aria-invalid={!!alertError}
                       aria-describedby={alertError ? 'alert-error' : undefined}
                     />
-                  </div>
-                </div>
+                 </div>
+               </div>
 
                 <div className="conversion-ux__form-row">
                   <div className="conversion-ux__form-group">
                     <label htmlFor="alertMinPrice" className="conversion-ux__label">
                       Precio mínimo
-                    </label>
+                   </label>
                     <input
                       type="number"
                       id="alertMinPrice"
@@ -553,11 +566,11 @@ export function ConversionUX({
                       aria-invalid={!!alertError}
                       aria-describedby={alertError ? 'alert-error' : undefined}
                     />
-                  </div>
+                 </div>
                   <div className="conversion-ux__form-group">
                     <label htmlFor="alertMaxPrice" className="conversion-ux__label">
                       Precio máximo
-                    </label>
+                   </label>
                     <input
                       type="number"
                       id="alertMaxPrice"
@@ -569,14 +582,14 @@ export function ConversionUX({
                       aria-invalid={!!alertError}
                       aria-describedby={alertError ? 'alert-error' : undefined}
                     />
-                  </div>
-                </div>
+                 </div>
+               </div>
 
                 <div className="conversion-ux__form-row">
                   <div className="conversion-ux__form-group">
                     <label htmlFor="alertLocation" className="conversion-ux__label">
                       Ubicación (opcional)
-                    </label>
+                   </label>
                     <input
                       type="text"
                       id="alertLocation"
@@ -587,11 +600,11 @@ export function ConversionUX({
                       aria-invalid={!!alertError}
                       aria-describedby={alertError ? 'alert-error' : undefined}
                     />
-                  </div>
+                 </div>
                   <div className="conversion-ux__form-group">
                     <label htmlFor="alertPropertyType" className="conversion-ux__label">
                       Tipo de propiedad
-                    </label>
+                   </label>
                     <select
                       id="alertPropertyType"
                       name="propertyType"
@@ -606,15 +619,15 @@ export function ConversionUX({
                       <option value="atico">Ático</option>
                       <option value="local">Local/Oficina</option>
                       <option value="terreno">Terreno/Solar</option>
-                    </select>
-                  </div>
-                </div>
+                   </select>
+                 </div>
+               </div>
 
                 <div className="conversion-ux__form-row">
                   <div className="conversion-ux__form-group">
                     <label htmlFor="alertOperation" className="conversion-ux__label">
                       Operación
-                    </label>
+                   </label>
                     <select
                       id="alertOperation"
                       name="operation"
@@ -624,14 +637,14 @@ export function ConversionUX({
                       <option value="ambos">Ambos</option>
                       <option value="venta">Venta</option>
                       <option value="alquiler">Alquiler</option>
-                    </select>
-                  </div>
-                </div>
+                   </select>
+                 </div>
+               </div>
 
                 <div className="conversion-ux__modal-actions">
                   <button type="button" className="btn btn-secondary" onClick={closePriceAlert}>
                     Cancelar
-                  </button>
+                 </button>
                   <button type="submit" className="btn btn-primary" disabled={alertSubmitting}>
                     {alertSubmitting ? (
                       <>
@@ -640,64 +653,49 @@ export function ConversionUX({
                       </>
                     ) : (
                       <>
-                        <i className="fas fa-bell" aria-hidden="true"></i>
+                        <i className="fas fa-bell" aria-hidden="true" />
                         Crear alerta
                       </>
                     )}
-                  </button>
-                </div>
+                 </button>
+               </div>
 
                 <p className="conversion-ux__privacy" aria-live="polite">
-                  <i className="fas fa-shield-alt" aria-hidden="true"></i>
+                  <i className="fas fa-shield-alt" aria-hidden="true" />
                   Tu email es confidencial. Solo lo usamos para alertas. Puedes darte de baja cuando quieras.
-                </p>
-              </form>
+               </p>
+             </form>
             )}
-          </div>
-        </div>
+         </div>
+       </div>
       )}
 
-      {/* Floating WhatsApp Button */}
       <div className="conversion-ux__floating-whatsapp">
-        <button 
+        <button
           className="conversion-ux__floating-btn"
           onClick={() => { openWhatsAppModal({ section: 'floating_btn' }); trackCTA('whatsapp', 'floating_btn'); }}
           aria-label="Contactar por WhatsApp"
         >
-          <i className="fab fa-whatsapp" aria-hidden="true"></i>
-        </button>
-        
+          <i className="fab fa-whatsapp" aria-hidden="true" />
+       </button>
+
         <span className="conversion-ux__floating-tooltip">
           Contactar por WhatsApp
-        </span>
-        
-        <div className="conversion-ux__pulse" aria-hidden="true"></div>
-      </div>
+       </span>
 
-      {/* Back to Top Button */}
-      <button 
+        <div className="conversion-ux__pulse" aria-hidden="true"></div>
+     </div>
+
+      <button
         ref={backToTopRef}
-        className="conversion-ux__back-to-top"
+        className={`conversion-ux__back-to-top ${showSticky ? 'is-visible' : ''}`}
         onClick={() => { scrollToTop(); trackCTA('scroll_top', 'back_to_top'); }}
         aria-label="Volver al inicio"
       >
-        <i className="fas fa-arrow-up" aria-hidden="true"></i>
-      </button>
+        <i className="fas fa-arrow-up" aria-hidden="true" />
+     </button>
     </>
   );
-}
-
-// Track CTA clicks
-const trackCTA = (action, label) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', 'cta_click', { action, label });
-  }
-};
-
-// Floating WhatsApp tooltip
-const FloatingWhatsApp = () => {
-  // ... implementation would go here if needed
-  return null;
 }
 
 export default ConversionUX;

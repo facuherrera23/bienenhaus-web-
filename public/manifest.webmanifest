@@ -2,15 +2,15 @@
   "name": "Bienenhaus Propiedades",
   "short_name": "Bienenhaus",
   "description": "Encuentra tu próximo hogar con Bienenhaus Propiedades. Expertos en el mercado inmobiliario de Córdoba.",
-  "start_url": "/",
+  "start_url": "/bienenhaus/",
   "display": "standalone",
   "background_color": "#0b0d0e",
   "theme_color": "#2ee6c5",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": "/bienenhaus/",
   "icons": [
     {
-      "src": "/favicon.ico",
+      "src": "/bienenhaus/favicon.ico",
       "sizes": "48x48 72x72 96x96 128x128 256x256",
       "type": "image/x-icon",
       "purpose": "any maskable"
@@ -21,15 +21,15 @@
       "name": "Ver Propiedades",
       "short_name": "Propiedades",
       "description": "Ver propiedades en venta y alquiler",
-      "url": "/#catalogo",
-      "icons": [{ "src": "/favicon.ico", "sizes": "192x192" }]
+      "url": "/bienenhaus/#catalogo",
+      "icons": [{ "src": "/bienenhaus/favicon.ico", "sizes": "192x192" }]
     },
     {
       "name": "Contactar",
       "short_name": "Contacto",
       "description": "Contactar con Bienenhaus",
-      "url": "/#contacto",
-      "icons": [{ "src": "/favicon.ico", "sizes": "192x192" }]
+      "url": "/bienenhaus/#contacto",
+      "icons": [{ "src": "/bienenhaus/favicon.ico", "sizes": "192x192" }]
     }
   ],
   "categories": ["business", "lifestyle"],

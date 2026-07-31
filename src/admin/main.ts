@@ -96,14 +96,14 @@ async function checkRateLimit(ip: string): Promise<{ allowed: boolean; remaining
     });
     
     if (!response.ok) {
-      console.warn('Rate limit check failed, allowing request');
-      return { allowed: true };
+      console.error('Rate limit check failed, blocking request (fail-closed)');
+      return { allowed: false, remainingTime: 60 };
     }
     
     return await response.json();
   } catch (e) {
-    console.warn('Rate limit check failed, allowing request:', e);
-    return { allowed: true };
+    console.error('Rate limit check failed, blocking request (fail-closed):', e);
+    return { allowed: false, remainingTime: 60 };
   }
 }
 

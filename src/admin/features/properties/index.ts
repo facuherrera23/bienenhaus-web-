@@ -9,6 +9,7 @@ import { showToast } from '../../shared/utils.ts';
 import { formatPrice, formatDate } from '../../../utils/format.ts';
 import { loadMLSyncLog } from '../mercadoLibre/index.ts';
 import { logError, logWarn, logDebug, logInfo } from '../../../utils/logger.ts';
+import { sanitizeText, sanitizeAttr, sanitizeUrl } from '../../../utils/sanitize.ts';
 // Cropper.js loaded dynamically in openImageEditor() (Vercel: bundle-dynamic-imports)
 
 interface Property {
@@ -117,16 +118,16 @@ function renderPropertiesTable(filter = ''): void {
   renderTableHeader();
 
   tbody.innerHTML = filtered.map(p => `
-    <tr data-id="${p.id}">
+    <tr data-id="${sanitizeAttr(String(p.id))}">
       <td>
-        <input type="checkbox" class="row-checkbox" value="${p.id}" ${selectedPropertyIds.has(p.id) ? 'checked' : ''}>
+        <input type="checkbox" class="row-checkbox" value="${sanitizeAttr(String(p.id))}" ${selectedPropertyIds.has(p.id) ? 'checked' : ''}>
       </td>
 <td>
-      <img src="${p.imagen_principal || 'https://via.placeholder.com/80x60?text=Sin+imagen'}"
-           alt="${p.titulo}" style="width: 60px; height: 45px; object-fit: cover; border-radius: 8px;">
+      <img src="${sanitizeUrl(p.imagen_principal || 'https://via.placeholder.com/80x60?text=Sin+imagen')}"
+           alt="${sanitizeAttr(p.titulo)}" style="width: 60px; height: 45px; object-fit: cover; border-radius: 8px;">
       </td>
-      <td><strong>${p.titulo}</strong></td>
-      <td>${p.ubicacion}</td>
+      <td><strong>${sanitizeText(p.titulo)}</strong></td>
+      <td>${sanitizeText(p.ubicacion)}</td>
       <td><span class="badge badge-${p.operacion === 'venta' ? 'sale' : 'rent'}">${p.operacion === 'venta' ? 'Venta' : 'Alquiler'}</span></td>
       <td>${formatPrice(p.precio, p.moneda || 'ARS', p.operacion)}</td>
       <td><span class="badge badge-${p.destacado ? 'featured' : 'active'}">${p.destacado ? 'Destacada' : 'Normal'}</span></td>
@@ -134,7 +135,7 @@ function renderPropertiesTable(filter = ''): void {
         <div class="action-btns">
           <button class="action-btn" onclick="editProperty(${p.id})" title="Editar"><i class="fas fa-edit"></i></button>
           <button class="action-btn" onclick="cloneProperty(${p.id})" title="Clonar"><i class="fas fa-copy"></i></button>
-          <button class="action-btn delete" onclick="confirmDelete('property', ${p.id}, '${p.titulo.replace(/'/g, "\\'")}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+          <button class="action-btn delete" onclick="confirmDelete('property', ${p.id}, '${sanitizeAttr(p.titulo.replace(/'/g, "\\'"))}')" title="Eliminar"><i class="fas fa-trash"></i></button>
         </div>
       </td>
     </tr>
@@ -600,7 +601,7 @@ function openPropertyModal(property: Property | null = null): void {
       property.imagenes.sort((a: any, b: any) => a.orden - b.orden).forEach((img: any, i: number) => {
         const div = document.createElement('div');
         div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:var(--admin-radius-md);overflow:hidden;border:2px solid var(--admin-color-border);' + (i===0?'border-color:var(--admin-color-primary);':'');
-        div.innerHTML = `<img src="${img.url}" style="width:100%;height:100%;object-fit:cover;"><span style="position:absolute;top:2px;right:2px;background:var(--admin-color-text-muted);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span>`;
+        div.innerHTML = `<img src="${sanitizeUrl(img.url)}" style="width:100%;height:100%;object-fit:cover;"><span style="position:absolute;top:2px;right:2px;background:var(--admin-color-text-muted);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span>`;
         preview.appendChild(div);
       });
     }
@@ -678,7 +679,7 @@ function handleFiles(files: FileList, type: 'property' | 'agent'): void {
     const file = validFiles[0];
     const preview = document.getElementById('agentAvatarPreview');
     const url = URL.createObjectURL(file);
-    preview!.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
+    preview!.innerHTML = `<img src="${sanitizeUrl(url)}" style="width:100%;height:100%;object-fit:cover;">`;
     preview!.style.background = 'none';
   }
 }
@@ -693,7 +694,7 @@ function renderPropertyImagePreviews(): void {
     div.draggable = true;
     div.dataset.index = String(i);
     div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:var(--admin-radius-md);overflow:hidden;border:2px solid var(--admin-color-border);cursor:grab;' + (i===0?'border-color:var(--admin-color-primary);':'');
-    div.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" data-index="${i}"><span style="position:absolute;top:2px;right:2px;background:var(--admin-color-text-muted);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span><button type="button" class="remove-img" data-index="${i}" style="position:absolute;bottom:2px;right:2px;background:var(--admin-color-danger);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;">×</button><button type="button" class="edit-img" data-index="${i}" style="position:absolute;bottom:2px;left:2px;background:var(--admin-color-primary);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;" title="Editar"><i class="fas fa-crop"></i></button>`;
+    div.innerHTML = `<img src="${sanitizeUrl(url)}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" data-index="${i}"><span style="position:absolute;top:2px;right:2px;background:var(--admin-color-text-muted);color:white;font-size:0.6rem;padding:1px 4px;border-radius:4px;">${i+1}</span><button type="button" class="remove-img" data-index="${i}" style="position:absolute;bottom:2px;right:2px;background:var(--admin-color-danger);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;">×</button><button type="button" class="edit-img" data-index="${i}" style="position:absolute;bottom:2px;left:2px;background:var(--admin-color-primary);color:white;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;" title="Editar"><i class="fas fa-crop"></i></button>`;
     preview.appendChild(div);
   });
 
@@ -916,7 +917,7 @@ function openImageEditor(index: number): void {
       </div>
       <div class="modal-body" style="padding:24px;max-height:60vh;overflow:auto;text-align:center;">
         <div style="max-width:100%;max-height:50vh;margin:0 auto;">
-          <img id="cropperImage" src="${url}" alt="Editor de imagen" style="max-width:100%;max-height:50vh;">
+          <img id="cropperImage" src="${sanitizeUrl(url)}" alt="Editor de imagen" style="max-width:100%;max-height:50vh;">
         </div>
       </div>
       <div class="modal-footer" style="padding:16px 24px;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;gap:12px;">

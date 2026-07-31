@@ -5,6 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-ml-signature',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Vary': 'Origin',
 }
 
 const ML_API = "https://api.mercadolibre.com"
@@ -17,6 +18,35 @@ interface MLWebhookPayload {
   attempts: number
   sent: string
   received: string
+}
+
+async function verifySignature(payload: string, signature: string | null): Promise<boolean> {
+  const secret = Deno.env.get('ML_WEBHOOK_SECRET')
+  if (!secret || !signature) return false
+
+  const encoder = new TextEncoder()
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  )
+  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(payload))
+  const expected = base64urlencode(new Uint8Array(sig))
+
+  if (expected.length !== signature.length) return false
+  let mismatch = 0
+  for (let i = 0; i < expected.length; i++) {
+    mismatch |= expected.charCodeAt(i) ^ signature.charCodeAt(i)
+  }
+  return mismatch === 0
+}
+
+function base64urlencode(buffer: Uint8Array): string {
+  let binary = ''
+  for (let i = 0; i < buffer.length; i++) binary += String.fromCharCode(buffer[i])
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
 
 interface MLItem {
@@ -46,13 +76,13 @@ async function getValidAccessToken(supabase: any): Promise<string> {
     .select('*')
     .order('updated_at', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
 
   if (!creds) throw new Error('No ML credentials found')
 
   const now = new Date()
   const expiresAt = new Date(creds.expires_at)
-  const buffer = 5 * 60 * 1000 // 5 min buffer
+  const buffer = 5 * 60 * 1000
 
   if (expiresAt.getTime() - now.getTime() < buffer) {
     throw new Error('Token expired, needs refresh')
@@ -66,48 +96,42 @@ async function fetchMLItem(accessToken: string, itemId: string): Promise<MLItem 
     const res = await fetch(`${ML_API}/items/${itemId}`, {
       headers: { Authorization: `Bearer ${accessToken}` }
     })
-
-    if (!res.ok) {
-      console.warn(`Failed to fetch ML item ${itemId}: ${res.status}`)
-      return null
-    }
-
+    if (!res.ok) return null
     return await res.json()
-  } catch (err) {
-    console.error(`Error fetching ML item ${itemId}:`, err)
+  } catch {
     return null
   }
 }
 
-function mapMLItemToProperty(item: MLItem): Partial<any> {
+const ML_OPERATION_MAP: Record<string, string> = {
+  'rental': 'alquiler',
+  'sale': 'venta',
+}
+
+const ML_PROPERTY_TYPE_MAP: Record<string, string> = {
+  'Apartment': 'piso',
+  'House': 'chalet',
+  'Penthouse': 'atico',
+  'Commercial': 'local',
+  'Lot': 'terreno',
+}
+
+function parseValueStruct(val: any): number {
+  if (!val) return 0
+  if (typeof val === 'number') return val
+  if (val.number) return val.number
+  if (typeof val === 'string') {
+    const num = parseInt(val.replace(/[^0-9]/g, ''), 10)
+    return isNaN(num) ? 0 : num
+  }
+  return 0
+}
+
+function mapMLItemToProperty(item: MLItem): Record<string, any> {
   const attrMap: Record<string, any> = {}
   item.attributes.forEach(a => {
     attrMap[a.id] = a.value_name || a.value_id || a.value_struct || ''
   })
-
-  const ML_OPERATION_MAP: Record<string, string> = {
-    'rental': 'alquiler',
-    'sale': 'venta',
-  }
-
-  const ML_PROPERTY_TYPE_REVERSE: Record<string, string> = {
-    'Apartment': 'piso',
-    'House': 'chalet',
-    'Penthouse': 'atico',
-    'Commercial': 'local',
-    'Lot': 'terreno',
-  }
-
-  function parseValueStruct(val: any): number {
-    if (!val) return 0
-    if (typeof val === 'number') return val
-    if (val.number) return val.number
-    if (typeof val === 'string') {
-      const num = parseInt(val.replace(/[^0-9]/g, ''), 10)
-      return isNaN(num) ? 0 : num
-    }
-    return 0
-  }
 
   return {
     ml_item_id: item.id,
@@ -118,12 +142,11 @@ function mapMLItemToProperty(item: MLItem): Partial<any> {
     precio: item.price,
     moneda: item.currency_id,
     operacion: ML_OPERATION_MAP[item.buying_mode] || 'venta',
-    tipo: ML_PROPERTY_TYPE_REVERSE[attrMap['PROPERTY_TYPE']] || 'piso',
+    tipo: ML_PROPERTY_TYPE_MAP[attrMap['PROPERTY_TYPE']] || 'piso',
     habitaciones: parseInt(attrMap['ROOMS'] || '0', 10),
     banos: parseInt(attrMap['FULL_BATHROOMS'] || '0', 10),
     m2: parseValueStruct(attrMap['COVERED_AREA']),
     descripcion: '',
-    imagenes: item.pictures?.map((p, i) => ({ url: p.source, orden: i, es_principal: i === 0 })) || [],
   }
 }
 
@@ -133,57 +156,47 @@ async function handleItemChange(supabase: any, accessToken: string, itemId: stri
 
   const propData = mapMLItemToProperty(item)
 
-  // Check if property exists locally
   const { data: existing } = await supabase
     .from('propiedades')
     .select('id')
     .eq('ml_item_id', itemId)
-    .single()
+    .maybeSingle()
+
+  let propiedadId: number | null = null
 
   if (existing) {
-    // Update local property
-    await supabase
-      .from('propiedades')
-      .update(propData)
-      .eq('id', existing.id)
+    await supabase.from('propiedades').update(propData).eq('id', existing.id)
+    propiedadId = existing.id
   } else {
-    // New property from ML (shouldn't happen often, but handle it)
     const { data: newProp } = await supabase
       .from('propiedades')
       .insert(propData)
       .select('id')
-      .single()
+      .maybeSingle()
+    propiedadId = newProp?.id ?? null
   }
 
-  // Log sync
+  // Log sync using VALID `accion` value (matches CHECK constraint)
   await supabase.from('ml_sync_log').insert({
-    propiedad_id: existing?.id || null,
+    propiedad_id: propiedadId,
     ml_item_id: itemId,
-    accion: 'webhook_sync',
+    accion: 'update',
+    estado: item.status,
     detalle: { title: item.title, status: item.status, source: 'webhook' }
   })
-
-  console.log(`Synced ML item ${itemId} via webhook`)
 }
 
-async function handleQuestion(supabase: any, accessToken: string, questionId: string): Promise<void> {
-  // Could fetch question details and notify admin
-  console.log(`New question received: ${questionId}`)
-  
+async function handleQuestion(supabase: any, _accessToken: string, questionId: string): Promise<void> {
   await supabase.from('ml_sync_log').insert({
-    ml_item_id: questionId,
-    accion: 'question_received',
-    detalle: { question_id: questionId, source: 'webhook' }
+    accion: 'create',
+    detalle: { type: 'question', question_id: questionId, source: 'webhook' }
   })
 }
 
-async function handleOrder(supabase: any, accessToken: string, orderId: string): Promise<void> {
-  console.log(`Order update received: ${orderId}`)
-  
+async function handleOrder(supabase: any, _accessToken: string, orderId: string): Promise<void> {
   await supabase.from('ml_sync_log').insert({
-    ml_item_id: orderId,
-    accion: 'order_update',
-    detalle: { order_id: orderId, source: 'webhook' }
+    accion: 'update',
+    detalle: { type: 'order', order_id: orderId, source: 'webhook' }
   })
 }
 
@@ -205,51 +218,44 @@ serve(async (req) => {
   )
 
   try {
-    // Verify webhook signature (optional but recommended)
     const signature = req.headers.get('x-ml-signature')
     const body = await req.text()
-    
-    // TODO: Validate HMAC signature with ML_CLIENT_SECRET
-    // const expectedSig = crypto.subtle.sign(...)
-    
+
+    if (!await verifySignature(body, signature)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid signature' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const payload: MLWebhookPayload = JSON.parse(body)
-    console.log(`Webhook received: ${payload.topic} - ${payload.resource}`)
 
     const accessToken = await getValidAccessToken(supabase)
 
+    const resourceParts = payload.resource?.split('/')
+    const resourceId = resourceParts?.[resourceParts.length - 1]
+
     switch (payload.topic) {
       case 'items':
-        // resource format: /items/MLA123456
-        const itemId = payload.resource.split('/').pop()
-        if (itemId) await handleItemChange(supabase, accessToken, itemId)
+        if (resourceId) await handleItemChange(supabase, accessToken, resourceId)
         break
-
       case 'questions':
-        // resource format: /questions/123456
-        const questionId = payload.resource.split('/').pop()
-        if (questionId) await handleQuestion(supabase, accessToken, questionId)
+        if (resourceId) await handleQuestion(supabase, accessToken, resourceId)
         break
-
       case 'orders':
-        // resource format: /orders/123456
-        const orderId = payload.resource.split('/').pop()
-        if (orderId) await handleOrder(supabase, accessToken, orderId)
+        if (resourceId) await handleOrder(supabase, accessToken, resourceId)
         break
-
-      default:
-        console.log(`Unhandled topic: ${payload.topic}`)
     }
 
-    // Acknowledge receipt (ML expects 2xx within 500ms)
+    // Acknowledge within 500ms per ML requirement
     return new Response(
       JSON.stringify({ received: true }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (err) {
-    console.error('Webhook error:', err)
-    // Still return 200 to prevent ML from retrying excessively
+    console.error('Webhook error:', err instanceof Error ? err.message : String(err))
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ received: false, error: 'Internal error' }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

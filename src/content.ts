@@ -3,7 +3,7 @@
 // ================================================================
 import { supabase } from './supabase.ts';
 import { logError, logWarn, logDebug } from './utils/logger.ts';
-import { escapeHtml, sanitizeHtml, sanitizeUrl } from './utils/sanitize.ts';
+import { sanitizeText, sanitizeUrl } from './utils/sanitize.ts';
 
 let siteContent = {};
 
@@ -441,11 +441,12 @@ function renderSiteTelefono(value) {
 function renderSiteEmail(value) {
   const emailLinks = document.querySelectorAll('a[href^="mailto:"]');
   emailLinks.forEach(a => {
-    a.href = `mailto:${value}`;
-    a.textContent = value;
+    const safe = sanitizeText(value);
+    a.href = `mailto:${safe}`;
+    a.textContent = safe;
   });
   const emailText = document.getElementById('siteEmail');
-  if (emailText) emailText.textContent = value;
+  if (emailText) emailText.textContent = sanitizeText(value);
 }
 
 function renderSiteWhatsApp(value) {

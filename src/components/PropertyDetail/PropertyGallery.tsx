@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'preact/hooks';
-import styles from './PropertyGallery.module.css';
+import './PropertyGallery.css';
+
 
 interface PropertyGalleryProps {
   images: string[];
@@ -8,17 +9,15 @@ interface PropertyGalleryProps {
   badgeVariant?: 'venta' | 'alquiler' | 'destacada';
 }
 
-export function PropertyGallery({ 
-  images = [], 
-  initialIndex = 0, 
-  badge, 
-  badgeVariant = 'venta' 
+export function PropertyGallery({
+  images = [],
+  initialIndex = 0,
+  badge,
+  badgeVariant = 'venta'
 }: PropertyGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  
-  const mainImageRef = useRef<HTMLDivElement>(null);
+
   const lightboxRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const prevBtnRef = useRef<HTMLButtonElement>(null);
@@ -41,7 +40,7 @@ export function PropertyGallery({
         case 'ArrowRight': nextImage(); break;
         case 'ArrowLeft': prevImage(); break;
         case 'Escape': setIsLightboxOpen(false); break;
-        case 'f': setIsFullscreen(!isFullscreen); break;
+        case 'f': /* fullscreen removed (was dead state) */ break;
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -74,112 +73,115 @@ export function PropertyGallery({
   const currentImg = images[currentIndex] || '/placeholder-property.webp';
 
 return (
-      <div className={styles.gallery}>
-        <div className={styles.main} role="region" aria-label="Galería de imágenes de la propiedad">
+      <div className="property-gallery">
+        <div className="property-gallery__main" role="region" aria-label="Galería de imágenes de la propiedad">
           <img
             src={images[currentIndex] || '/placeholder-property.webp'}
             alt={`Imagen ${currentIndex + 1} de ${images.length}`}
             className={styles.mainImage}
             loading={currentIndex === 0 ? 'eager' : 'lazy'}
+            onClick={() => setIsLightboxOpen(true)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e: KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setIsLightboxOpen(true);
+              }
+            }}
           />
           {badge && (
-            <span className={`${styles.badge} ${badgeVariant === 'venta' ? styles.badgeVenta : badgeVariant === 'alquiler' ? styles.badgeAlquiler : styles.badgeDestacada}`}>
+            <span className={`property-gallery__badge property-gallery__badge--${badgeVariant}`}>
               {badge}
-            </span>
+           </span>
           )}
           {images.length > 1 && (
             <>
               <button
-                className={`${styles.nav} ${styles.navPrev}`}
+                className="property-gallery__nav property-gallery__nav--prev"
                 onClick={prevImage}
                 aria-label="Imagen anterior"
                 disabled={images.length <= 1}
               >
-                <i className="fas fa-chevron-left" aria-hidden="true"></i>
-              </button>
+                <i className="fas fa-chevron-left" aria-hidden="true" />
+             </button>
               <button
-                className={`${styles.nav} ${styles.navNext}`}
+                className="property-gallery__nav property-gallery__nav--next"
                 onClick={nextImage}
                 aria-label="Imagen siguiente"
                 disabled={images.length <= 1}
               >
-                <i className="fas fa-chevron-right" aria-hidden="true"></i>
-              </button>
+                <i className="fas fa-chevron-right" aria-hidden="true" />
+             </button>
             </>
           )}
-          <button
-            className={styles.fullscreen}
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
-            aria-pressed={isFullscreen}
-          >
-            <i className={isFullscreen ? 'fas fa-compress-alt' : 'fas fa-expand-alt'} aria-hidden="true"></i>
-          </button>
-          <div className={styles.counter} aria-live="polite">
+          <div className="property-gallery__counter" aria-live="polite">
             {currentIndex + 1} / {images.length}
-          </div>
-          <nav className={styles.thumbs} aria-label="Miniaturas">
+         </div>
+          <nav className="property-gallery__thumbs" aria-label="Miniaturas">
             {images.map((img, idx) => (
               <button
                 key={idx}
-                className={`${styles.thumb} ${currentIndex === idx ? styles.active : ''}`}
+                className={`property-gallery__thumb ${currentIndex === idx ? 'is-active' : ''}`}
                 onClick={() => goToImage(idx)}
                 aria-label={`Ver imagen ${idx + 1}`}
                 aria-current={currentIndex === idx ? 'true' : 'false'}
               >
                 <img src={img} alt="" loading="lazy" />
-              </button>
+             </button>
             ))}
-          </nav>
-        </div>
+         </nav>
+       </div>
 
         {/* Lightbox */}
-        <div
-          ref={lightboxRef}
-          className={`${styles.lightbox} ${isLightboxOpen ? styles.open : ''}`}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="lightbox-title"
-          hidden={!isLightboxOpen}
-        >
-          <button
-            ref={closeBtnRef}
-            className={styles.close}
-            onClick={() => setIsLightboxOpen(false)}
-            aria-label="Cerrar galería"
+        {isLightboxOpen && (
+          <div
+            ref={lightboxRef}
+            className="property-gallery__lightbox is-open"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="lightbox-title"
+            onClick={(e: MouseEvent) => {
+              if (e.target === e.currentTarget) setIsLightboxOpen(false);
+            }}
           >
-            <i className="fas fa-times" aria-hidden="true"></i>
-          </button>
-          <button
-            ref={prevBtnRef}
-            className={`${styles.nav} ${styles.navPrev}`}
-            onClick={prevImage}
-            aria-label="Imagen anterior"
-            hidden={images.length <= 1}
-          >
-            <i className="fas fa-chevron-left" aria-hidden="true"></i>
-          </button>
-          <button
-            ref={nextBtnRef}
-            className={`${styles.nav} ${styles.navNext}`}
-            onClick={nextImage}
-            aria-label="Imagen siguiente"
-            hidden={images.length <= 1}
-          >
-            <i className="fas fa-chevron-right" aria-hidden="true"></i>
-          </button>
-          <div className={styles.imageWrapper}>
+            <h3 id="lightbox-title" className="visually-hidden">Galería ampliada</h3>
+            <button
+              ref={closeBtnRef}
+              className="property-gallery__close"
+              onClick={() => setIsLightboxOpen(false)}
+              aria-label="Cerrar galería"
+            >
+              <i className="fas fa-times" aria-hidden="true" />
+           </button>
+            {images.length > 1 && (
+              <>
+                <button
+                  ref={prevBtnRef}
+                  className="property-gallery__nav property-gallery__nav--prev property-gallery__nav--lightbox"
+                  onClick={prevImage}
+                  aria-label="Imagen anterior"
+                >
+                  <i className="fas fa-chevron-left" aria-hidden="true" />
+               </button>
+                <button
+                  ref={nextBtnRef}
+                  className="property-gallery__nav property-gallery__nav--next property-gallery__nav--lightbox"
+                  onClick={nextImage}
+                  aria-label="Imagen siguiente"
+                >
+                  <i className="fas fa-chevron-right" aria-hidden="true" />
+               </button>
+              </>
+            )}
             <img
               src={images[currentIndex] || '/placeholder-property.webp'}
               alt={`Imagen ${currentIndex + 1} de ${images.length}`}
-              className={styles.lightboxImage}
+              className="property-gallery__lightbox-image"
             />
-          </div>
-          <div className={styles.counter} aria-live="polite">
-            {currentIndex + 1} / {images.length}
-</div>
-      </div>
-    </div>
+         </div>
+        )}
+     </div>
   );
 }
 

@@ -5,7 +5,7 @@
 
 import './Footer.css';
 import { supabase } from '../../supabase.ts';
-import { showToast } from '../../main.ts';
+import { showToast } from '../../main.tsx';
 import { escapeHtml, sanitizeUrl } from '../../utils/sanitize.ts';
 import { logError } from '../../utils/logger.ts';
 

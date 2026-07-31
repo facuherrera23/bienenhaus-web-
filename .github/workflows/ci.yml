@@ -69,18 +69,31 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install dependencies
+- name: Install dependencies
         run: npm ci
 
       - name: Build
         run: npm run build
         env:
-          VITE_BASE_PATH: /bienenhaus-web-/
+          VITE_BASE_PATH: /bienenhaus/
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_CLOUDINARY_CLOUD_NAME: ${{ secrets.VITE_CLOUDINARY_CLOUD_NAME }}
           VITE_WHATSAPP_NUMBER: ${{ secrets.VITE_WHATSAPP_NUMBER }}
           VITE_ADMIN_EMAIL: ${{ secrets.VITE_ADMIN_EMAIL }}
+
+      - name: TypeCheck
+        run: npm run typecheck
+
+- name: Generate Sitemap
+        run: node scripts/generate-sitemap.mjs
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Lighthouse Audit
+        run: npm run lhci
+        continue-on-error: true
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

@@ -14,8 +14,8 @@ cleanupOutdatedCaches();
 
 // ===== CONSTANTES =====
 const MAINTENANCE_URL = '/maintenance.html';
-const SUPABASE_URL = 'https://rnldqiwwzhjnurkguihu.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubGRxaXd3emhqbnVya2d1aWh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NDA4MzMsImV4cCI6MjEwMDUxNjgzM30.tzqe0Z1vS9R5GiCTxIe3m6uY4kkggF3kewPrRUY8BwE';
+const SUPABASE_URL = (typeof self !== 'undefined' && (self as any).__SUPABASE_URL) || '';
+const SUPABASE_ANON = (typeof self !== 'undefined' && (self as any).__SUPABASE_ANON) || '';
 
 let maintenanceCache: { enabled: boolean; timestamp: number } | null = null;
 const MAINTENANCE_CACHE_TTL = 30000;

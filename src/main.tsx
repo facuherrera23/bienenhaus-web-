@@ -24,7 +24,6 @@ import './styles/ml-auth.css';
 import './components/Agents/Agents.css';
 
 import { logInfo, logError, logDebug } from './utils/logger.ts';
-import { initHero3D } from './components/Hero3D/Hero3D.tsx';
 import { initSearchBar } from './components/SearchBar/SearchBar.ts';
 import { initPropertyGrid, loadProperties } from './components/PropertyGrid/PropertyGrid.ts';
 import { initFooter } from './components/Layout/Footer.ts';
@@ -33,6 +32,8 @@ import { cargarContenidoSitio } from './content.ts';
 import { initAnalytics, trackPageView } from './utils/analytics.ts';
 import { auditAndLog, autoFixAccessibility } from './utils/a11yAudit.ts';
 import { escapeHtml } from './utils/sanitize.ts';
+import { preloadHero3D, setupHero3DPreload } from './components/Hero3D/Hero3D.lazy.tsx';
+import { render } from 'preact';
 
 // Admin button handler (replaces inline onclick in index.html)
 function setupAdminButton(): void {
@@ -48,7 +49,7 @@ function setupAdminButton(): void {
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`)
       .then(registration => {
         logDebug('SW registered', { scope: registration.scope }, 'main');
         registration.addEventListener('updatefound', () => {
@@ -150,7 +151,11 @@ async function init(): Promise<void> {
     initFooter();
     
     // 3. Initialize page components (hero, search, property grid)
-    initHero3D();
+    // Lazy-load Hero3D lazily with preload on hover
+    const { Hero3DLazy } = await import('./components/Hero3D/Hero3D.lazy.tsx');
+    render(<Hero3DLazy />, document.getElementById('hero-placeholder')!);
+    setupHero3DPreload();
+    
     initSearchBar();
     initPropertyGrid();
     initAgents();

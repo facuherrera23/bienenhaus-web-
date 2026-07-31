@@ -79,10 +79,10 @@ function bindAgentModalEvents(): void {
     modal?.classList.remove('active');
     modal?.setAttribute('hidden', '');
     document.getElementById('agentForm')?.reset();
-    const preview = document.getElementById('agentAvatarPreview')!;
-    preview.innerHTML = '<i class="fas fa-user"></i>';
-    preview.style.background = 'var(--admin-color-surface-hover)';
-    preview.style.color = 'var(--admin-color-text-muted)';
+const preview = document.getElementById('agentAvatarPreview')!;
+      preview.innerHTML = '<i class="fas fa-user"></i>';
+      preview.classList.remove('bg-[var(--admin-color-surface-hover)]', 'text-[var(--admin-color-text-muted)]');
+      preview.classList.add('bg-[var(--admin-color-surface-hover)]', 'text-[var(--admin-color-text-muted)]');
   };
   
   const closeBtn = modal.querySelector('.modal-close') as HTMLButtonElement;
@@ -108,9 +108,9 @@ function bindAgentModalEvents(): void {
     if (file && file.type.startsWith('image/')) {
       const url = URL.createObjectURL(file);
       const preview = document.getElementById('agentAvatarPreview')!;
-      preview.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
-      preview.style.background = 'none';
-      preview.style.color = 'transparent';
+      preview.innerHTML = `<img src="${url}" class="w-full h-full object-fit-cover">`;
+      preview.classList.remove('bg-admin-color-surface-hover', 'text-admin-color-text-muted');
+      preview.classList.add('bg-none');
     }
   });
   
@@ -130,8 +130,8 @@ export function openAgentModal(agent: any = null): void {
   form?.reset();
   const preview = document.getElementById('agentAvatarPreview')!;
   preview.innerHTML = '<i class="fas fa-user"></i>';
-  preview.style.background = 'var(--admin-color-surface-hover)';
-  preview.style.color = 'var(--admin-color-text-muted)';
+  preview.classList.remove('bg-none', 'text-transparent');
+  preview.classList.add('bg-[var(--admin-color-surface-hover)]', 'text-[var(--admin-color-text-muted)]');
   
   if (agent) {
     document.getElementById('agentModalTitle')!.textContent = 'Editar Agente';
@@ -146,9 +146,9 @@ export function openAgentModal(agent: any = null): void {
     (document.getElementById('agentActive') as HTMLInputElement).checked = agent.activo !== false;
     if (agent.avatar_url) {
       const preview = document.getElementById('agentAvatarPreview')!;
-      preview.innerHTML = `<img src="${agent.avatar_url}" style="width:100%;height:100%;object-fit:cover;">`;
-      preview.style.background = 'none';
-      preview.style.color = 'transparent';
+      preview.innerHTML = `<img src="${agent.avatar_url}" class="w-full h-full object-fit-cover">`;
+      preview.classList.remove('bg-[var(--admin-color-surface-hover)]', 'text-[var(--admin-color-text-muted)]');
+      preview.classList.add('bg-none', 'text-transparent');
     }
   } else {
     document.getElementById('agentModalTitle')!.textContent = 'Nuevo Agente';
@@ -168,8 +168,8 @@ export function closeAgentModal(): void {
   document.getElementById('agentForm')?.reset();
   const preview = document.getElementById('agentAvatarPreview')!;
   preview.innerHTML = '<i class="fas fa-user"></i>';
-  preview.style.background = 'var(--admin-color-surface-hover)';
-  preview.style.color = 'var(--admin-color-text-muted)';
+  preview.classList.remove('bg-none', 'text-transparent');
+  preview.classList.add('bg-[var(--admin-color-surface-hover)]', 'text-[var(--admin-color-text-muted)]');
 }
 
 export function initAgentModalInDOM(): void {

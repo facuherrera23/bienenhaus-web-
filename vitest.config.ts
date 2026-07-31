@@ -20,7 +20,7 @@ export default defineConfig({
         '*.d.ts',
         '*.config.ts',
         '*.config.js',
-        'src/main.ts',
+        'src/main.tsx',
         'src/router.ts',
         'src/sw.ts'
       ],

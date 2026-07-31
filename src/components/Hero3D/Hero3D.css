@@ -373,8 +373,6 @@
 
 .hero3d__search-field { flex: 1; display: flex; align-items: center; gap: var(--ds-space-3); }
 
-.hero3d__search-icon { color: var(--ds-color-text-muted); font-size: 1.125rem; flex-shrink: 0; }
-
 .hero3d__search-input {
   flex: 1;
   background: transparent;
@@ -435,10 +433,6 @@
   animation: slide-up 800ms var(--ds-ease-out) 800ms both;
 }
 
-.hero3d__cta-secondary .btn:active {
-  transform: scale(0.97);
-}
-
 .hero3d__scroll {
   position: absolute;
   bottom: var(--ds-space-7);
@@ -485,7 +479,6 @@
   60% { transform: translateX(-50%) translateY(-4px); }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .hero3d__nav-inner {
     gap: var(--ds-space-4);
@@ -529,8 +522,6 @@
 
   .hero3d__cta-secondary { flex-direction: column; align-items: stretch; }
 
-  .hero3d__cta-secondary .ds-btn { width: 100%; justify-content: center; }
-
   .hero3d__search-form { flex-direction: column; border-radius: var(--ds-radius-md); }
 
   .hero3d__search-field { width: 100%; }
@@ -547,138 +538,4 @@
   .hero3d__ambient-glow,
   .hero3d__scroll,
   .hero3d__scroll-wheel { animation: none; }
-}
-
-/* ================================================================
-   SKELETON LOADING STYLES
-   ================================================================ */
-.hero3d--skeleton .hero3d__canvas { display: none; }
-.hero3d--skeleton .hero3d__fallback { display: none; }
-
-.hero3d__skeleton {
-  position: absolute;
-  inset: 0;
-  background: var(--ds-color-bg);
-  z-index: 5;
-}
-
-.hero3d__skeleton--canvas {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, var(--ds-color-surface-2) 0%, var(--ds-color-surface-3) 50%, var(--ds-color-surface-2) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  min-height: 500px;
-  z-index: 1;
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.hero3d__badge--skeleton {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-2);
-  padding: var(--ds-space-2) var(--ds-space-5);
-  background: var(--ds-color-surface-3);
-  border: 1px solid var(--ds-color-border);
-  border-radius: var(--ds-radius-full);
-  font-family: var(--ds-font-body);
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-font-weight-semibold);
-  color: var(--ds-color-text-muted);
-  letter-spacing: var(--ds-letter-spacing-label);
-  text-transform: uppercase;
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
-}
-
-.hero3d__title--skeleton {
-  height: 4rem;
-  max-width: 50rem;
-  background: linear-gradient(90deg, var(--ds-color-surface-2) 25%, var(--ds-color-surface-3) 50%, var(--ds-color-surface-2) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: var(--ds-radius-md);
-  margin: 0 auto var(--ds-space-5);
-}
-
-.hero3d__subtitle--skeleton {
-  height: 1.5rem;
-  max-width: 36.25rem;
-  background: linear-gradient(90deg, var(--ds-color-surface-2) 25%, var(--ds-color-surface-3) 50%, var(--ds-color-surface-2) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: var(--ds-radius-sm);
-  margin: 0 auto var(--ds-space-7);
-}
-
-.hero3d__badge--skeleton-inline {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-2);
-  padding: var(--ds-space-2) var(--ds-space-4);
-  background: var(--ds-color-surface-3);
-  border: 1px solid var(--ds-color-border);
-  border-radius: var(--ds-radius-full);
-  font-size: var(--ds-text-sm);
-  color: var(--ds-color-text-muted);
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-.hero3d__cta--skeleton {
-  background: var(--ds-color-surface-3);
-  border: 1px solid var(--ds-color-border);
-  color: var(--ds-color-text-muted);
-  cursor: not-allowed;
-}
-
-.hero3d__stat--skeleton {
-  opacity: 0.5;
-}
-
-.hero3d__stat--skeleton .hero3d__stat-number {
-  height: 3rem;
-  background: linear-gradient(90deg, var(--ds-color-surface-2) 25%, var(--ds-color-surface-3) 50%, var(--ds-color-surface-2) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: var(--ds-radius-md);
-}
-
-.hero3d__cta--skeleton-inline {
-  background: var(--ds-color-surface-3);
-  border: 1px solid var(--ds-color-border);
-  color: var(--ds-color-text-muted);
-  cursor: not-allowed;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero3d__skeleton .hero3d__badge--skeleton,
-  .hero3d__skeleton .hero3d__title--skeleton,
-  .hero3d__skeleton .hero3d__subtitle--skeleton,
-  .hero3d__skeleton .hero3d__badge--skeleton-inline,
-  .hero3d__skeleton .hero3d__cta--skeleton,
-  .hero3d__skeleton .hero3d__stat--skeleton,
-  .hero3d__skeleton .hero3d__badge--skeleton-inline,
-  .hero3d__skeleton .hero3d__cta--skeleton-inline {
-    animation: none;
-    background: var(--ds-color-surface-3);
-  }
-  
-  .hero3d__skeleton--canvas {
-    animation: none;
-    background: var(--ds-color-surface-2);
-  }
-}
-
-/* Shimmer animation for skeleton */
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
 }

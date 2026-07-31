@@ -7,6 +7,19 @@ export default defineConfig({
   plugins: [
     preact()
   ],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+      '@components': resolve(__dirname, './src/components'),
+      '@utils': resolve(__dirname, './src/utils'),
+      '@hooks': resolve(__dirname, './src/hooks'),
+      // Preact compat aliases: lets any React-style code (including CSS modules
+      // emitting `className` props via preact/compat) work without aliases breaking.
+      'react': 'preact/compat',
+      'react-dom': 'preact/compat',
+      'react/jsx-runtime': 'preact/jsx-runtime',
+    }
+  },
   css: {
     treeshake: false
   },
@@ -18,6 +31,15 @@ export default defineConfig({
       },
       output: {
         manualChunks(id) {
+          if (id.includes('node_modules/three')) {
+            return 'three';
+          }
+          if (id.includes('node_modules/preact') || id.includes('node_modules/preact-compat')) {
+            return 'vendor';
+          }
+          if (id.includes('node_modules/@supabase')) {
+            return 'vendor';
+          }
           if (id.includes('cropperjs')) {
             return 'admin-vendor';
           }
@@ -54,14 +76,6 @@ export default defineConfig({
     },
     testTimeout: 10000,
     hookTimeout: 10000
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-      '@components': resolve(__dirname, './src/components'),
-      '@utils': resolve(__dirname, './src/utils'),
-      '@hooks': resolve(__dirname, './src/hooks')
-    }
   },
   assetsInclude: ['**/*.cjs']
 });

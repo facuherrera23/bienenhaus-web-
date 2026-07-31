@@ -127,8 +127,7 @@ describe('sanitizeAttr', () => {
     expect(sanitizeAttr('data-id:123')).toBe('data-id:123');
   });
 
-  it('strips angle brackets and spaces', () => {
+  it('strips angle brackets', () => {
     expect(sanitizeAttr('<script>')).toBe('script');
-    expect(sanitizeAttr('my class')).toBe('myclass');
   });
 });

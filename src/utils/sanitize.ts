@@ -1,84 +1,62 @@
-/**
- * Utilidades de sanitización y escape para prevenir XSS
- * SOLO para salida HTML - NO para atributos, JS, CSS, URLs
- */
-/* eslint-disable no-control-regex */
+const ESCAPE_HTML_MAP: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#x27;',
+};
 
-/**
- * Escapa caracteres HTML especiales
- * @param {string} str
- * @returns {string}
- */
-export function escapeHtml(str) {
+const ESCAPE_HTML_RE = /[&<>"']/g;
+
+export function escapeHtml(str: string): string {
+  if (str == null) return '';
   if (typeof str !== 'string') return '';
-  const entityMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' };
-  return str.replace(/[&<>"']/g, c => entityMap[c]);
+  return String(str).replace(ESCAPE_HTML_RE, (ch) => ESCAPE_HTML_MAP[ch] ?? ch);
 }
 
-/**
- * Alias para escapeHtml (compatibilidad)
- * @param {string} str
- * @returns {string}
- */
-export function sanitizeHtml(str) {
-  return escapeHtml(str);
+export function sanitizeText(str: string): string {
+  if (!str) return '';
+  return escapeHtml(String(str));
 }
 
-/**
- * Sanitiza URL para atributos href/src (allowlist: https, mailto, tel)
- * @param {string} url
- * @returns {string}
- */
-export function sanitizeUrl(url) {
-  if (typeof url !== 'string') return '';
-  const trimmed = url.trim();
-  try {
-    const parsed = new URL(trimmed, 'https://example.com');
-    if (!['https:', 'mailto:', 'tel:'].includes(parsed.protocol)) return '';
-    return parsed.href;
-  } catch {
-    return '';
+export function sanitizeAttr(str: string): string {
+  if (!str) return '';
+  return String(str).replace(/[<>"']/g, '');
+}
+
+export function sanitizeClassName(str: string): string {
+  if (!str) return '';
+  return String(str).replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
+export function sanitizeShortText(str: string, maxLen = 200): string {
+  if (!str) return '';
+  const cleaned = String(str).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+  if (cleaned.length <= maxLen) return cleaned;
+  return cleaned.slice(0, maxLen) + '\u2026';
+}
+
+export function sanitizeUrl(url: string): string {
+  if (url == null) return '';
+  const sanitized = String(url).trim();
+  if (/^(https?:\/\/|mailto:|tel:|#)/i.test(sanitized)) return sanitized;
+  if (sanitized.startsWith('/')) return sanitized;
+  return '';
+}
+
+export function sanitizeJson<T>(data: T): T {
+  if (typeof data === 'string') return sanitizeText(data) as unknown as T;
+  if (Array.isArray(data)) return data.map(sanitizeJson) as unknown as T;
+  if (data && typeof data === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+      result[key] = sanitizeJson(value);
+    }
+    return result as T;
   }
+  return data;
 }
 
-/**
- * Sanitiza clase CSS (solo alfanuméricos, guiones, underscores)
- * @param {string} str
- * @returns {string}
- */
-export function sanitizeClassName(str) {
-  if (typeof str !== 'string') return '';
-  return str.replace(/[^a-zA-Z0-9\-_]/g, '');
-}
-
-/**
- * Sanitiza y trunca texto corto
- * @param {string} str
- * @param {number} maxLen
- * @returns {string}
- */
-export function sanitizeShortText(str, maxLen = 200) {
-  if (typeof str !== 'string') return '';
-  const cleaned = str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
-  return cleaned.length > maxLen ? cleaned.slice(0, maxLen) + '\u2026' : cleaned;
-}
-
-/**
- * Sanitiza atributos HTML (clases, ids, data-*)
- * @param {string} str
- * @returns {string}
- */
-export function sanitizeAttr(str) {
-  if (typeof str !== 'string') return '';
-  return str.replace(/[^a-zA-Z0-9\-_:.]/g, '');
-}
-
-/**
- * Sanitiza texto plano para innerText (no HTML)
- * @param {string} str
- * @returns {string}
- */
-export function sanitizeText(str) {
-  if (typeof str !== 'string') return '';
-  return str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+export function sanitizeHtml(html: string): string {
+  return escapeHtml(html);
 }

@@ -13,6 +13,7 @@ import {
   SRGBColorSpace,
   ACESFilmicToneMapping,
   Mesh,
+  LineSegments,
 } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -37,13 +38,17 @@ export class Hero3DScene {
   private targetPosition = new Vector3();
   private currentPosition = new Vector3();
   private isDisposed = false;
+  private isContextLost = false;
   private introProgress = 0;
   private introDuration: number;
+  // Stored as arrow-function properties so addEventListener/removeEventListener get the SAME reference.
+  private onResize = (): void => this.handleResize();
+  private onVisibilityChange = (): void => this.handleVisibility();
 
   constructor(config: Hero3DConfig) {
     this.config = config;
     this.timer = new Timer();
-    this.introDuration = 1800; // ms
+    this.introDuration = 1800;
 
     this.scene = this.createScene();
     this.camera = this.createCamera();
@@ -54,7 +59,10 @@ export class Hero3DScene {
     this.scene.add(this.house);
     this.setupLights();
     this.handleResize();
-    window.addEventListener('resize', this.handleResize.bind(this));
+
+    window.addEventListener('resize', this.onResize);
+    config.canvas.addEventListener('webglcontextlost', this.onContextLost);
+    config.canvas.addEventListener('webglcontextrestored', this.onContextRestored);
 
     this.timer.reset();
 
@@ -62,7 +70,6 @@ export class Hero3DScene {
       this.animate();
       this.bindVisibility();
     } else {
-      // Posición final inmediata en reduced motion
       this.camera.position.set(0, 8, 22);
       this.camera.lookAt(0, 4, 0);
       this.renderFrame();
@@ -79,7 +86,7 @@ export class Hero3DScene {
 
   private createCamera(): PerspectiveCamera {
     const camera = new PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 8, 35); // posición inicial alejada para dolly-in
+    camera.position.set(0, 8, 35);
     camera.lookAt(0, 4, 0);
     return camera;
   }
@@ -100,21 +107,17 @@ export class Hero3DScene {
   }
 
   private setupLights(): void {
-    // Luz direccional "luna" - fría, tenue
     const moonLight = new DirectionalLight(new Color('#8fa3ad'), 0.15);
     moonLight.position.set(10, 30, 15);
     this.scene.add(moonLight);
 
-    // Luz ambiental tenue, grisácea azulada
     const ambientLight = new AmbientLight(new Color('#1a1f24'), 0.35);
     this.scene.add(ambientLight);
 
-    // Point light interior (ventanas) - cálida
     const interiorLight = new PointLight(new Color('#ffedd6'), 0.8, 25);
     interiorLight.position.set(0, 5, 2);
     this.scene.add(interiorLight);
 
-    // Point light secundaria (esquina opuesta)
     const interiorLight2 = new PointLight(new Color('#ffedd6'), 0.4, 20);
     interiorLight2.position.set(-4, 4, -5);
     this.scene.add(interiorLight2);
@@ -122,14 +125,12 @@ export class Hero3DScene {
 
   private createComposer(renderer: WebGLRenderer): EffectComposer {
     const renderPass = new RenderPass(this.scene, this.camera);
-
     const bloomPass = new UnrealBloomPass(
       new Vector2(window.innerWidth, window.innerHeight),
-      0.55,   // strength
-      0.4,    // radius
-      0.15    // threshold - alto para que solo emissive Signal lo dispare
+      0.55,
+      0.4,
+      0.15
     );
-
     const composer = new EffectComposer(renderer);
     composer.addPass(renderPass);
     composer.addPass(bloomPass);
@@ -137,30 +138,31 @@ export class Hero3DScene {
   }
 
   private handleResize(): void {
+    if (this.isDisposed || this.isContextLost) return;
     const width = window.innerWidth;
     const height = window.innerHeight;
-
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
-
     this.renderer.setSize(width, height);
     this.composer.setSize(width, height);
     this.composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   }
 
-  private animate(): void {
+  private animate = (): void => {
     if (this.isDisposed) return;
-    this.animationId = requestAnimationFrame(this.animate.bind(this));
+    if (this.isContextLost) {
+      // Wait for restore; schedule a re-check next frame.
+      this.animationId = requestAnimationFrame(this.animate);
+      return;
+    }
+    this.animationId = requestAnimationFrame(this.animate);
 
     this.timer.update();
     const elapsed = this.timer.getElapsed();
 
-    // Dolly-in de entrada (easeOutExpo)
     if (this.introProgress < 1) {
       this.introProgress = Math.min(1, elapsed / (this.introDuration / 1000));
-      const eased = 1 - Math.pow(1 - this.introProgress, 5); // easeOutExpo aproximado
-
-      // Interpolar desde posición inicial (0, 8, 35) a final (0, 8, 22)
+      const eased = 1 - Math.pow(1 - this.introProgress, 5);
       this.camera.position.z = 35 - 13 * eased;
       this.camera.lookAt(0, 4, 0);
 
@@ -169,7 +171,6 @@ export class Hero3DScene {
       }
     }
 
-    // Parallax de mouse suave (solo después del intro)
     if (this.introProgress >= 1 && this.targetPosition.length() > 0) {
       this.currentPosition.lerp(this.targetPosition, 0.04);
       this.camera.position.x = this.currentPosition.x;
@@ -178,21 +179,37 @@ export class Hero3DScene {
     }
 
     this.renderFrame();
-  }
+  };
 
   private renderFrame(): void {
+    if (this.isContextLost) return;
     this.composer.render();
   }
 
   private bindVisibility(): void {
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        this.pause();
-      } else {
-        this.resume();
-      }
-    });
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
   }
+
+  private handleVisibility = (): void => {
+    if (document.hidden) {
+      this.pause();
+    } else {
+      this.resume();
+    }
+  };
+
+  private onContextLost = (event: Event): void => {
+    event.preventDefault();
+    this.isContextLost = true;
+    this.pause();
+  };
+
+  private onContextRestored = (): void => {
+    this.isContextLost = false;
+    this.timer.reset();
+    this.introProgress = 0;
+    if (!this.config.reducedMotion) this.animate();
+  };
 
   public pause(): void {
     if (this.animationId) {
@@ -203,13 +220,14 @@ export class Hero3DScene {
 
   public resume(): void {
     if (this.animationId !== null || this.isDisposed) return;
+    if (document.hidden) return;
     this.timer.reset();
+    this.introProgress = 0;
     this.animate();
   }
 
   public setMousePosition(x: number, y: number): void {
     if (this.config.reducedMotion || this.introProgress < 1) return;
-    // Normalizar a [-1, 1] y aplicar factor pequeño
     this.targetPosition.x = x * 1.5;
     this.targetPosition.y = y * 0.8;
   }
@@ -222,10 +240,13 @@ export class Hero3DScene {
       cancelAnimationFrame(this.animationId);
     }
 
-    window.removeEventListener('resize', this.handleResize.bind(this));
+    window.removeEventListener('resize', this.onResize);
+    document.removeEventListener('visibilitychange', this.onVisibilityChange);
+    this.config.canvas.removeEventListener('webglcontextlost', this.onContextLost);
+    this.config.canvas.removeEventListener('webglcontextrestored', this.onContextRestored);
 
     this.house.traverse((obj) => {
-      if (obj instanceof Mesh) {
+      if (obj instanceof Mesh || obj instanceof LineSegments) {
         obj.geometry.dispose();
         if (obj.material) {
           if (Array.isArray(obj.material)) {
@@ -237,7 +258,7 @@ export class Hero3DScene {
       }
     });
 
-    this.renderer.dispose();
     this.composer.dispose();
+    this.renderer.dispose();
   }
 }

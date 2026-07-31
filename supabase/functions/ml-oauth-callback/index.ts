@@ -1,5 +1,5 @@
 // supabase/functions/ml-oauth-callback/index.ts
-// ML OAuth Callback - Handles ML redirect with PKCE verification
+// ML OAuth Callback - Handles ML redirect with PKCE verification and writes tokens to BOTH profiles AND ml_credenciales
 
 import { serve } from 'std/http/server.ts';
 import { createClient } from '@supabase/supabase-js';
@@ -8,6 +8,7 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Vary': 'Origin',
 };
 
 serve(async (req) => {
@@ -17,8 +18,8 @@ serve(async (req) => {
 
   try {
     const { code, state } = await req.json();
-    
-    if (!code || !state) {
+
+    if (!code || !state || typeof code !== 'string' || typeof state !== 'string') {
       return new Response(JSON.stringify({ error: 'Missing code or state' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -34,10 +35,9 @@ serve(async (req) => {
       .from('ml_oauth_pkce')
       .select('code_verifier, user_id')
       .eq('state', state)
-      .single();
+      .maybeSingle();
 
     if (pkceError || !pkceData) {
-      console.error('PKCE not found or expired:', pkceError);
       return new Response(JSON.stringify({ error: 'Estado OAuth inválido o expirado' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -46,10 +46,16 @@ serve(async (req) => {
 
     const { code_verifier, user_id } = pkceData;
 
-    // Exchange code for tokens
     const mlAppId = Deno.env.get('ML_APP_ID');
     const mlSecret = Deno.env.get('ML_SECRET');
     const mlRedirectUri = Deno.env.get('ML_REDIRECT_URI');
+
+    if (!mlAppId || !mlSecret || !mlRedirectUri) {
+      return new Response(JSON.stringify({ error: 'Server misconfigured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
     const tokenResponse = await fetch('https://api.mercadolibre.com/oauth/token', {
       method: 'POST',
@@ -59,17 +65,15 @@ serve(async (req) => {
       },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
-        client_id: mlAppId!,
-        client_secret: mlSecret!,
+        client_id: mlAppId,
+        client_secret: mlSecret,
         code,
         code_verifier,
-        redirect_uri: mlRedirectUri!
+        redirect_uri: mlRedirectUri,
       })
     });
 
     if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      console.error('ML Token error:', errorText);
       return new Response(JSON.stringify({ error: 'Error intercambiando código por tokens' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -78,11 +82,8 @@ serve(async (req) => {
 
     const tokens = await tokenResponse.json();
 
-    // Get ML user info
     const userResponse = await fetch('https://api.mercadolibre.com/users/me', {
-      headers: {
-        'Authorization': `Bearer ${tokens.access_token}`
-      }
+      headers: { 'Authorization': `Bearer ${tokens.access_token}` }
     });
 
     if (!userResponse.ok) {
@@ -94,28 +95,48 @@ serve(async (req) => {
 
     const mlUser = await userResponse.json();
 
-    // Store tokens and user info
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
-    
-    const { error: updateError } = await supabase
+    const mlUserIdStr = mlUser.id.toString();
+    const scope = tokens.scope || '';
+
+    // Update profile (token metadata per-user)
+    const { error: profileError } = await supabase
       .from('profiles')
       .update({
         ml_connected: true,
-        ml_user_id: mlUser.id.toString(),
+        ml_user_id: mlUserIdStr,
         ml_access_token: tokens.access_token,
         ml_refresh_token: tokens.refresh_token,
         ml_token_expires_at: expiresAt,
         ml_token_type: tokens.token_type,
-        ml_scope: tokens.scope
+        ml_scope: scope,
       })
       .eq('id', user_id);
 
-    if (updateError) {
-      console.error('Profile update error:', updateError);
+    if (profileError) {
+      console.error('Profile update error:', profileError.message);
       return new Response(JSON.stringify({ error: 'Error guardando conexión' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
+    }
+
+    // Also upsert into ml_credenciales (single shared row per ML user)
+    // Required so ml-import / ml-publish / ml-status / ml-refresh-token can read credentials.
+    const { error: credsError } = await supabase
+      .from('ml_credenciales')
+      .upsert({
+        ml_user_id: Number(mlUser.id),
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_at: expiresAt,
+        scope,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'ml_user_id' });
+
+    if (credsError) {
+      console.error('ml_credenciales upsert error:', credsError.message);
+      // Non-fatal: profile was updated, tokens still work for per-user webhooks.
     }
 
     // Clean up PKCE
@@ -123,45 +144,17 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       connected: true,
-      user_id: mlUser.id.toString(),
+      user_id: mlUserIdStr,
       expires_at: expiresAt
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
-
   } catch (error) {
-    console.error('ML OAuth callback error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('ML OAuth callback error:', error instanceof Error ? error.message : String(error));
+    return new Response(JSON.stringify({ error: 'Internal error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });
-
-// PKCE Helpers
-function generateCodeVerifier() {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return base64urlencode(array);
-}
-
-async function generateCodeChallenge(verifier) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  const digest = await crypto.subtle.digest('SHA-256', data);
-  return base64urlencode(new Uint8Array(digest));
-}
-
-function generateState() {
-  const array = new Uint8Array(16);
-  crypto.getRandomValues(array);
-  return base64urlencode(array);
-}
-
-function base64urlencode(buffer) {
-  return btoa(String.fromCharCode(...buffer))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-}

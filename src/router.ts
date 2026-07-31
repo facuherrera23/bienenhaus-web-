@@ -111,10 +111,21 @@ export class Router {
 
     // Update URL
     if (replace) {
-      history.replaceState(state, '', `#${url}`);
+      history.replaceState(state, '', url);
     } else {
-      history.pushState(state, '', `#${url}`);
+      history.pushState(state, '', url);
     }
+
+    // Update canonical URL (path-based, not hash)
+    const canonicalPath = url.split('?')[0];
+    const canonicalUrl = `${window.location.origin}${window.location.pathname.replace(/\/+$/, '')}/${canonicalPath.replace(/^\/+/, '')}`;
+    let link = document.querySelector('link[rel="canonical"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      document.head.appendChild(link);
+    }
+    link.setAttribute('href', canonicalUrl.replace(/\/+$/, ''));
 
     // Load component
     await this.#loadRoute(route, to);
@@ -134,18 +145,22 @@ export class Router {
   start(): this {
     if (this.#listening) return this;
 
-    // Extract path from URL (excluding base path) for hash-based routing
-    const fullPath = window.location.pathname + window.location.search + window.location.hash;
+    // Extract path from URL for path-based routing
+    const fullPath = window.location.pathname + window.location.search;
     const basePath = this.#basePath;
-    const initialHash = basePath && fullPath.startsWith(basePath) 
+    const initialPath = basePath && fullPath.startsWith(basePath) 
       ? fullPath.slice(basePath.length) || '/' 
-      : window.location.hash.slice(1) || '/';
+      : window.location.hash.slice(1) || window.location.pathname || '/';
     
-    this.navigate(initialHash, { replace: true });
+    this.navigate(initialPath, { replace: true });
 
-    window.addEventListener('hashchange', () => {
-      const hash = window.location.hash.slice(1) || '/';
-      this.navigate(hash, { replace: false });
+    window.addEventListener('popstate', () => {
+      const path = window.location.pathname + window.location.search;
+      const basePath = this.#basePath;
+      const relativePath = basePath && path.startsWith(basePath) 
+        ? path.slice(basePath.length) || '/' 
+        : path;
+      this.navigate(relativePath, { replace: false });
     });
 
     this.#listening = true;

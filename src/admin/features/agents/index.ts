@@ -8,6 +8,7 @@ import { showToast, getInitials } from '../../shared/utils.ts';
 import { CONFIG } from '../../../config.ts';
 import { propertiesCache } from '../properties/index.ts';
 import { logError, logWarn } from '../../../utils/logger.ts';
+import { sanitizeText, sanitizeAttr, sanitizeUrl } from '../../../utils/sanitize.ts';
 
 interface Agent {
   id: number;
@@ -68,14 +69,14 @@ function renderAgentsTable(filter = ''): void {
   if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay agentes registrados</td></tr>'; return; }
   tbody.innerHTML = filtered.map(a => `
     <tr>
-      <td><div style="width:44px;height:44px;border-radius:50%;background:${a.avatar_url ? 'url(' + a.avatar_url + ')' : 'linear-gradient(135deg, var(--admin-color-primary), var(--admin-color-primary-dark))'};background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:1.1rem;">${a.avatar_url ? '' : getInitials(a.nombre + ' ' + a.apellido)}</div></td>
-      <td><strong>${a.nombre} ${a.apellido}</strong></td>
-      <td>${a.especialidad}</td>
-      <td>${a.email || '-'}</td>
-      <td>${a.telefono || '-'}</td>
+      <td><div class="w-44 h-44 rounded-full bg-cover bg-center flex items-center justify-content-center text-white font-bold text-2xl" style="${a.avatar_url ? 'background-image: url(' + sanitizeUrl(a.avatar_url) + ')' : 'background: linear-gradient(135deg, var(--admin-color-primary), var(--admin-color-primary-dark))'}">${a.avatar_url ? '' : getInitials(sanitizeText(a.nombre) + ' ' + sanitizeText(a.apellido))}</div></td>
+      <td><strong>${sanitizeText(a.nombre)} ${sanitizeText(a.apellido)}</strong></td>
+      <td>${sanitizeText(a.especialidad)}</td>
+      <td>${sanitizeText(a.email || '-')}</td>
+      <td>${sanitizeText(a.telefono || '-')}</td>
       <td><span class="badge badge-${a.activo ? 'active' : 'inactive'}">${a.activo ? 'Activo' : 'Inactivo'}</span></td>
-      <td>${a.orden}</td>
-      <td><div class="action-btns"><button class="action-btn" onclick="editAgent(${a.id})" title="Editar"><i class="fas fa-edit"></i></button><button class="action-btn delete" onclick="confirmDelete('agent', ${a.id}, '${a.nombre} ${a.apellido}')" title="Eliminar"><i class="fas fa-trash"></i></button></div></td>
+      <td>${sanitizeText(String(a.orden))}</td>
+      <td><div class="action-btns flex gap-2"><button class="action-btn" onclick="editAgent(${a.id})" title="Editar"><i class="fas fa-edit"></i></button><button class="action-btn delete" onclick="confirmDelete('agent', ${a.id}, '${sanitizeAttr(a.nombre + ' ' + a.apellido)}')" title="Eliminar"><i class="fas fa-trash"></i></button></div></td>
     </tr>
   `).join('');
 }
@@ -94,10 +95,10 @@ function renderAgentsTableFiltered(filtered: any[]): void {
   const tbody = document.getElementById('agentsTableBody')!;
   if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay agentes</td></tr>'; return; }
   tbody.innerHTML = filtered.map(a => `
-    <tr><td><div style="width:44px;height:44px;border-radius:50%;background:${a.avatar_url ? 'url(' + a.avatar_url + ')' : 'linear-gradient(135deg, var(--primary), var(--accent))'};background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:1.1rem;">${a.avatar_url ? '' : getInitials(a.nombre + ' ' + a.apellido)}</div></td>
-    <td><strong>${a.nombre} ${a.apellido}</strong></td><td>${a.especialidad}</td><td>${a.email || '-'}</td><td>${a.telefono || '-'}</td>
-    <td><span class="badge badge-${a.activo ? 'active' : 'inactive'}">${a.activo ? 'Activo' : 'Inactivo'}</span></td><td>${a.orden}</td>
-    <td><div class="action-btns"><button class="action-btn" onclick="editAgent(${a.id})"><i class="fas fa-edit"></i></button><button class="action-btn delete" onclick="confirmDelete('agent', ${a.id}, '${a.nombre} ${a.apellido}')"><i class="fas fa-trash"></i></button></div></td></tr>
+    <tr><td><div class="w-44 h-44 rounded-full bg-cover bg-center flex items-center justify-content-center text-white font-bold text-2xl" style="${a.avatar_url ? 'background-image: url(' + sanitizeUrl(a.avatar_url) + ')' : 'background: linear-gradient(135deg, var(--admin-color-primary), var(--admin-color-primary-dark))'}">${a.avatar_url ? '' : getInitials(sanitizeText(a.nombre) + ' ' + sanitizeText(a.apellido))}</div></td>
+    <td><strong>${sanitizeText(a.nombre)} ${sanitizeText(a.apellido)}</strong></td><td>${sanitizeText(a.especialidad)}</td><td>${sanitizeText(a.email || '-')}</td><td>${sanitizeText(a.telefono || '-')}</td>
+    <td><span class="badge badge-${a.activo ? 'active' : 'inactive'}">${a.activo ? 'Activo' : 'Inactivo'}</span></td><td>${sanitizeText(String(a.orden))}</td>
+    <td><div class="action-btns"><button class="action-btn" onclick="editAgent(${a.id})"><i class="fas fa-edit"></i></button><button class="action-btn delete" onclick="confirmDelete('agent', ${a.id}, '${sanitizeAttr(a.nombre + ' ' + a.apellido)}')"><i class="fas fa-trash"></i></button></div></td></tr>
   `).join('');
 }
 
@@ -106,9 +107,9 @@ function openAgentModal(agent: Agent | null = null): void {
   const form = document.getElementById('agentForm') as HTMLFormElement;
   const preview = document.getElementById('agentAvatarPreview')!;
   form.reset();
-  preview.innerHTML = '<span>👤</span>';
-  preview.style.background = 'var(--admin-color-surface-hover)';
-  preview.style.color = 'var(--admin-color-text-muted)';
+  preview.innerHTML = '<span class="text-4xl">👤</span>';
+  preview.classList.remove('bg-none');
+  preview.classList.add('bg-admin-color-surface-hover', 'text-admin-color-text-muted');
   document.getElementById('agentAvatar')!.value = '';
 
   if (agent) {
@@ -122,7 +123,7 @@ function openAgentModal(agent: Agent | null = null): void {
     document.getElementById('agentOrder')!.value = String(agent.orden || 99);
     document.getElementById('agentDescription')!.value = agent.descripcion || '';
     document.getElementById('agentActive')!.checked = agent.activo !== false;
-    if (agent.avatar_url) { preview.innerHTML = `<img src="${agent.avatar_url}" style="width:100%;height:100%;object-fit:cover;">`; preview.style.background = 'none'; }
+    if (agent.avatar_url) { preview.innerHTML = `<img src="${sanitizeUrl(agent.avatar_url)}" class="w-full h-full object-fit-cover">`; preview.classList.remove('bg-admin-color-surface-hover', 'text-admin-color-text-muted'); preview.classList.add('bg-none'); }
   } else {
     document.getElementById('agentModalTitle')!.textContent = 'Nuevo Agente';
     document.getElementById('agentId')!.value = '';
