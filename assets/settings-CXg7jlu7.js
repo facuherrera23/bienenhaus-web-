@@ -1,0 +1,1 @@
+function e(){console.warn(`Settings module not yet implemented`)}function t(){return{}}export{t as getSettings,e as loadSettings};

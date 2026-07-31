@@ -1,0 +1,36 @@
+# robots.txt for Bienenhaus
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://bienenhaus.com.ar/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin.html
+Disallow: /admin/
+Disallow: /api/
+Disallow: /functions/
+Disallow: /src/
+Disallow: /supabase/
+Disallow: /scripts/
+Disallow: /dist/
+Disallow: /node_modules/
+Disallow: /public/admin.html
+Disallow: /admin.html
+
+# Allow important files
+Allow: /*.js
+Allow: /*.css
+Allow: /*.svg
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.webp
+Allow: /*.avif
+Allow: /*.woff2
+Allow: /*.woff
+Allow: /*.ttf
+Allow: /*.eot
+Allow: /*.json
+
+# Crawl-delay
+Crawl-delay: 10

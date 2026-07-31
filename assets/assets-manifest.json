@@ -1,0 +1,137 @@
+{
+  "generatedAt": "2026-07-31T14:30:00.000Z",
+  "images": {
+    "hero": [
+      {
+        "file": "images/hero/hero-main.webp",
+        "size": 245000,
+        "resolution": "1344x768"
+      }
+    ],
+    "cta": [
+      {
+        "file": "images/cta/cta-silhouette.webp",
+        "size": 428598,
+        "resolution": "1344x768"
+      }
+    ]
+  },
+  "illustrations": {
+    "general": [
+      {
+        "file": "illustrations/flat-vector-illustration--abstract-calculator-with.svg",
+        "size": 38823,
+        "resolution": "1024x1024"
+      },
+      {
+        "file": "illustrations/flat-vector-illustration--heart-shaped-house-outli.svg",
+        "size": 10042,
+        "resolution": "1024x1024"
+      },
+      {
+        "file": "illustrations/flat-vector-illustration--two-puzzle-pieces-fittin.svg",
+        "size": 15087,
+        "resolution": "1024x1024"
+      },
+      {
+        "file": "illustrations/flat-vector-illustration--upward-trending-chart-ma.svg",
+        "size": 641550,
+        "resolution": "1024x1024"
+      },
+      {
+        "file": "illustrations/flat-vector-illustration-of-a-stylized-modern-hous.svg",
+        "size": 69053,
+        "resolution": "1024x1024"
+      },
+      {
+        "file": "illustrations/flat-vector-illustration-of-an-oversized-magnifyin.svg",
+        "size": 67935,
+        "resolution": "1024x1024"
+      }
+    ]
+  },
+  "svgs": {
+    "navigation": [
+      {
+        "file": "svg/navigation/chevron-left.svg",
+        "size": 287
+      },
+      {
+        "file": "svg/navigation/chevron-right.svg",
+        "size": 287
+      },
+      {
+        "file": "svg/navigation/menu.svg",
+        "size": 324
+      },
+      {
+        "file": "svg/navigation/close.svg",
+        "size": 305
+      }
+    ],
+    "property": [
+      {
+        "file": "svg/property/house.svg",
+        "size": 412
+      },
+      {
+        "file": "svg/property/building.svg",
+        "size": 498
+      },
+      {
+        "file": "svg/property/key.svg",
+        "size": 435
+      },
+      {
+        "file": "svg/property/door.svg",
+        "size": 387
+      },
+      {
+        "file": "svg/property/window.svg",
+        "size": 378
+      },
+      {
+        "file": "svg/property/floor-plan.svg",
+        "size": 543
+      }
+    ],
+    "ui": [
+      {
+        "file": "svg/ui/heart.svg",
+        "size": 421
+      },
+      {
+        "file": "svg/ui/star.svg",
+        "size": 456
+      },
+      {
+        "file": "svg/ui/share.svg",
+        "size": 512
+      },
+      {
+        "file": "svg/ui/map-pin.svg",
+        "size": 389
+      }
+    ]
+  },
+  "animations": {
+    "general": [
+      {
+        "file": "animations/hero-float.json",
+        "size": 2156
+      },
+      {
+        "file": "animations/card-hover-lift.json",
+        "size": 1834
+      },
+      {
+        "file": "animations/skeleton-shimmer.json",
+        "size": 2045
+      },
+      {
+        "file": "animations/heart-beat.json",
+        "size": 1923
+      }
+    ]
+  }
+}

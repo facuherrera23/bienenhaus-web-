@@ -1,0 +1,600 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' https://rnldqiwwzhjnurkguihu.supabase.co https://api.cloudinary.com; frame-src 'none';">
+  <!-- Resource Hints for Performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://rnldqiwwzhjnurkguihu.supabase.co" crossorigin>
+  <link rel="preconnect" href="https://api.cloudinary.com" crossorigin>
+  <link rel="dns-prefetch" href="https://rnldqiwwzhjnurkguihu.supabase.co">
+  <link rel="dns-prefetch" href="https://api.cloudinary.com">
+  <link rel="dns-prefetch" href="https://api.maptiler.com">
+<link rel="dns-prefetch" href="https://tile.openstreetmap.org">
+  <link rel="preload" as="image" href="/bienenhaus-web-/assets/images/hero/hero-main.webp" fetchpriority="high">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/bienenhaus-web-/favicon.ico">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/bienenhaus-web-/manifest.webmanifest">
+  <meta name="robots" content="index, follow">
+  <meta name="description" content="Bienenhaus Propiedades - Agencia inmobiliaria en Córdoba, Argentina. Encuentra tu hogar ideal.">
+  <meta name="keywords" content="inmobiliaria cordoba, venta pisos, alquiler viviendas, bienenhaus propiedades">
+  <meta name="author" content="Bienenhaus Propiedades">
+  <meta name="theme-color" content="#08090B">
+  <link rel="canonical" href="https://facuh.github.io/bienenhaus-web-/">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://facuh.github.io/bienenhaus-web-/">
+  <meta property="og:title" content="Bienenhaus · Propiedades en Córdoba">
+  <meta property="og:description" content="Encuentra tu próximo hogar con Bienenhaus Propiedades. Expertos en el mercado inmobiliario de Córdoba.">
+  <meta property="og:image" content="https://bienenhaus.com.ar/og-image.svg">
+  <meta property="og:locale" content="es_AR">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@bienenhaus">
+  <meta name="twitter:title" content="Bienenhaus · Propiedades en Córdoba">
+  <meta name="twitter:description" content="Encuentra tu próximo hogar con Bienenhaus Propiedades. Expertos en el mercado inmobiliario de Córdoba.">
+  <meta name="twitter:image" content="https://bienenhaus.com.ar/og-image.svg">
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    "name": "Bienenhaus Propiedades",
+    "description": "Agencia inmobiliaria en Córdoba, Argentina",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Córdoba",
+      "addressCountry": "AR"
+    },
+    "telephone": "+54 351 123-4567",
+    "email": "bienenhaus.propiedades@gmail.com",
+    "url": "https://bienenhaus.com.ar"
+  }
+  </script>
+  <title>Bienenhaus · Propiedades en Córdoba</title>
+  <!-- Font Awesome (deferred) -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" as="style" fetchpriority="low">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
+  <!-- Leaflet CSS (deferred: only needed for map view) -->
+  <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" fetchpriority="low">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
+<!-- Google Fonts: Nocturne Design System -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="/bienenhaus-web-/assets/main-CTdL1S31.js"></script>
+  <link rel="modulepreload" crossorigin href="/bienenhaus-web-/assets/rolldown-runtime-QTnfLwEv.js">
+  <link rel="modulepreload" crossorigin href="/bienenhaus-web-/assets/vendor-DgtJN9qV.js">
+  <link rel="modulepreload" crossorigin href="/bienenhaus-web-/assets/format-Dvja-ISt.js">
+  <link rel="stylesheet" crossorigin href="/bienenhaus-web-/assets/format-BlCQY-6Q.css">
+  <link rel="stylesheet" crossorigin href="/bienenhaus-web-/assets/main-kfHFXMK4.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header placeholder - will be replaced by Header component -->
+    <header id="header-placeholder"></header>
+    
+    <!-- Hero 3D Section with fallback background -->
+    <section id="hero-placeholder" aria-labelledby="hero-title" class="hero3d" style="background-image: url('/bienenhaus-web-/assets/images/hero/hero-main.webp'); background-size: cover; background-position: center; background-repeat: no-repeat;"></section>
+    
+    <!-- Search Bar placeholder - will be replaced by SearchBar component -->
+    <div id="search-bar-placeholder"></div>
+    
+    <!-- Main Content -->
+    <main id="main-content">
+      <!-- Property Catalog Section -->
+      <section id="catalogo" aria-labelledby="catalogo-title">
+        <div class="container">
+          <header class="section-header">
+            <h2 id="catalogo-title" class="section-title"><i class="fas fa-home" aria-hidden="true"></i> Nuestras Propiedades</h2>
+            <p class="section-subtitle">Encuentra la propiedad que se adapta a tu vida</p>
+          </header>
+          
+          <!-- View Toggle & Load Mode -->
+          <div class="view-controls" role="group" aria-label="Opciones de vista">
+            <div class="view-toggle" role="radiogroup" aria-label="Tipo de vista">
+              <button type="button" class="vista-btn active" data-vista="grid" role="radio" aria-checked="true" aria-label="Vista en cuadrícula">
+                <i class="fas fa-th-large" aria-hidden="true"></i>
+                <span>Cuadrícula</span>
+              </button>
+              <button type="button" class="vista-btn" data-vista="lista" role="radio" aria-checked="false" aria-label="Vista en lista">
+                <i class="fas fa-list" aria-hidden="true"></i>
+                <span>Lista</span>
+              </button>
+              <button type="button" class="vista-btn" data-vista="mapa" role="radio" aria-checked="false" aria-label="Vista en mapa">
+                <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
+                <span>Mapa</span>
+              </button>
+            </div>
+            <div class="load-mode-toggle" role="radiogroup" aria-label="Modo de carga">
+              <button type="button" class="carga-btn active" data-modo="pagination" role="radio" aria-checked="true" aria-label="Paginación">
+                <i class="fas fa-list-ol" aria-hidden="true"></i>
+                <span>Paginación</span>
+              </button>
+              <button type="button" class="carga-btn" data-modo="infinite" role="radio" aria-checked="false" aria-label="Carga infinita">
+                <i class="fas fa-infinity" aria-hidden="true"></i>
+                <span>Infinita</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Property Grid -->
+          <div id="gridPropiedades" role="region" aria-label="Listado de propiedades" aria-busy="true">
+            <div class="property-skeleton">
+              <div class="property-card skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                <div class="skeleton skeleton-text" style="width: 40%;"></div>
+              </div>
+              <div class="property-card skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                <div class="skeleton skeleton-text" style="width: 40%;"></div>
+              </div>
+              <div class="property-card skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                <div class="skeleton skeleton-text" style="width: 40%;"></div>
+              </div>
+              <div class="property-card skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                <div class="skeleton skeleton-text" style="width: 40%;"></div>
+              </div>
+              <div class="property-card skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                <div class="skeleton skeleton-text" style="width: 40%;"></div>
+              </div>
+              <div class="property-card skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                <div class="skeleton skeleton-text" style="width: 40%;"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Pagination -->
+          <nav class="pagination" id="propertiesPagination" aria-label="Paginación de propiedades"></nav>
+          
+          <!-- Load More Button (for infinite scroll mode) -->
+          <div class="load-more text-center" style="display: none;">
+            <button class="btn btn-primary load-more-btn" id="loadMoreBtn" type="button">
+              <i class="fas fa-chevron-down" aria-hidden="true"></i> Cargar más propiedades
+            </button>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Quiénes Somos Section -->
+      <section id="nosotros" aria-labelledby="nosotros-title" class="section section-alt">
+<div class="container">
+          <header class="section-header">
+            <h2 id="nosotros-title" class="section-title"><i class="fas fa-users" aria-hidden="true"></i> Quiénes Somos</h2>
+            <p class="section-subtitle">Más de 15 años acompañando a familias cordobesas a encontrar su hogar ideal</p>
+          </header>
+
+          <!-- Illustration -->
+          <div style="text-align: center; margin-bottom: var(--space-7);">
+            <img src="/bienenhaus-web-/assets/illustrations/flat-vector-illustration-of-a-stylized-modern-hous.svg" alt="Bienenhaus - Casa de las abejas" style="max-width: 100%; height: auto; max-height: 300px; filter: drop-shadow(0 8px 24px rgba(32, 184, 171, 0.2));" loading="lazy">
+          </div>
+
+          <div class="about-content">
+            <div class="about-text">
+              <h3>Nuestra Historia</h3>
+              <p>Bienenhaus Propiedades nació en 2008 con una misión clara: transformar la experiencia de comprar, vender o alquilar una propiedad en Córdoba. Lo que comenzó como una pequeña oficina en Nueva Córdoba, hoy es una de las inmobiliarias de referencia en la provincia, con más de 500 propiedades activas y un equipo de 15 agentes especializados.</p>
+              <p>Nuestro nombre, <strong>Bienenhaus</strong> (casa de las abejas en alemán), refleja nuestra filosofía: trabajo en equipo, dedicación incansable y construcción de hogares que perduran. Al igual que las abejas construyen sus panales con precisión y cuidado, nosotros construimos relaciones de confianza que duran toda la vida.</p>
+            </div>
+            <div class="about-values">
+              <h3>Nuestros Valores</h3>
+              <div class="values-grid">
+                <article class="value-card">
+                  <i class="fas fa-handshake" aria-hidden="true"></i>
+                  <h4>Transparencia</h4>
+                  <p>Información clara y honesta en cada operación. Sin sorpresas ni letra chica.</p>
+                </article>
+                <article class="value-card">
+                  <i class="fas fa-lightbulb" aria-hidden="true"></i>
+                  <h4>Innovación</h4>
+                  <p>Tecnología de vanguardia para encontrar tu hogar ideal: tours 3D, firma digital, CRM propio.</p>
+                </article>
+<article class="value-card">
+                  <i class="fas fa-heart" aria-hidden="true"></i>
+                  <h4>Cercanía</h4>
+                  <p>Te acompaíamos en cada paso. Un asesor dedicado desde la primera visita hasta la firma.</p>
+                </article>
+                <article class="value-card">
+                  <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                  <h4>Seguridad</h4>
+                  <p>Verificación jurídica completa. Tu inversión protegida en cada etapa del proceso.
+                </article>
+              </div>
+            </div>
+          </div>
+          
+          <div class="about-stats" role="list" aria-label="Estadísticas de Bienenhaus">
+            <div class="stat-item" role="listitem">
+              <span class="stat-number">500+</span>
+              <span class="stat-label">Propiedades activas</span>
+            </div>
+            <div class="stat-item" role="listitem">
+              <span class="stat-number">15</span>
+              <span class="stat-label">Agentes especializados</span>
+            </div>
+            <div class="stat-item" role="listitem">
+              <span class="stat-number">15+</span>
+              <span class="stat-label">Años de experiencia</span>
+            </div>
+            <div class="stat-item" role="listitem">
+              <span class="stat-number">98%</span>
+              <span class="stat-label">Clientes satisfechos</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Equipo / Agentes Section -->
+      <section id="equipo" aria-labelledby="equipo-title" class="section">
+        <div class="container">
+          <header class="section-header">
+            <h2 id="equipo-title" class="section-title"><i class="fas fa-user-tie" aria-hidden="true"></i> Nuestro Equipo</h2>
+            <p class="section-subtitle">Agentes especializados por zona y tipo de propiedad</p>
+          </header>
+          
+          <div class="agents-grid" id="agentsGrid" role="list" aria-label="Lista de agentes" aria-busy="true">
+            <!-- Agents will be rendered here by JS -->
+            <div class="agent-skeleton" role="status" aria-label="Cargando equipo">
+              <div class="agent-card skeleton-card">
+                <div class="skeleton skeleton-avatar"></div>
+                <div class="skeleton skeleton-title" style="width: 50%; margin: 0 auto 0.5rem;"></div>
+                <div class="skeleton skeleton-text" style="width: 70%; margin: 0 auto 0.25rem;"></div>
+                <div class="skeleton skeleton-text" style="width: 90%; margin: 0 auto 0.25rem;"></div>
+                <div class="skeleton skeleton-text" style="width: 60%; margin: 0 auto;"></div>
+              </div>
+              <div class="agent-card skeleton-card">
+                <div class="skeleton skeleton-avatar"></div>
+                <div class="skeleton skeleton-title" style="width: 50%; margin: 0 auto 0.5rem;"></div>
+                <div class="skeleton skeleton-text" style="width: 70%; margin: 0 auto 0.25rem;"></div>
+                <div class="skeleton skeleton-text" style="width: 90%; margin: 0 auto 0.25rem;"></div>
+                <div class="skeleton skeleton-text" style="width: 60%; margin: 0 auto;"></div>
+              </div>
+              <div class="agent-card skeleton-card">
+                <div class="skeleton skeleton-avatar"></div>
+                <div class="skeleton skeleton-title" style="width: 50%; margin: 0 auto 0.5rem;"></div>
+                <div class="skeleton skeleton-text" style="width: 70%; margin: 0 auto 0.25rem;"></div>
+                <div class="skeleton skeleton-text" style="width: 90%; margin: 0 auto 0.25rem;"></div>
+                <div class="skeleton skeleton-text" style="width: 60%; margin: 0 auto;"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="team-cta text-center" style="margin-top: 3rem;">
+            <a href="#contacto" class="btn btn-primary btn-lg">
+              <i class="fas fa-comments" aria-hidden="true"></i> ¿Querés trabajar con nosotros? Contactanos
+            </a>
+          </div>
+        </div>
+      </section>
+      
+<!-- Servicios Section -->
+      <section id="servicios" aria-labelledby="servicios-title" class="section section-alt">
+        <div class="container">
+          <header class="section-header">
+            <h2 id="servicios-title" class="section-title"><i class="fas fa-concierge-bell" aria-hidden="true"></i> Nuestros Servicios</h2>
+            <p class="section-subtitle">Soluciones integrales para cada necesidad inmobiliaria</p>
+          </header>
+
+          <!-- Illustration -->
+          <div style="text-align: center; margin-bottom: var(--space-7);">
+            <img src="/bienenhaus-web-/assets/illustrations/flat-vector-illustration--two-puzzle-pieces-fittin.svg" alt="Servicios personalizados - Matching agente-cliente" style="max-width: 100%; height: auto; max-height: 280px; filter: drop-shadow(0 8px 24px rgba(32, 184, 171, 0.2));" loading="lazy">
+          </div>
+
+          <div class="services-grid">
+            <article class="service-card">
+              <div class="service-icon"><i class="fas fa-search" aria-hidden="true"></i></div>
+              <h3>Búsqueda Personalizada</h3>
+              <p>Te escuchamos y filtramos el mercado para mostrarte solo lo que realmente buscás.
+            </article>
+            <article class="service-card">
+              <div class="service-icon"><i class="fas fa-home" aria-hidden="true"></i></div>
+              <h3>Venta de Propiedades</h3>
+              <p>Comercialización profesional con marketing digital, fotos profesionales y difusión masiva.
+            </article>
+            <article class="service-card">
+              <div class="service-icon"><i class="fas fa-key" aria-hidden="true"></i></div>
+              <h3>Alquileres</h3>
+              <p>Gestión integral: publicación, selección de inquilinos, contratos y cobranzas.
+            </article>
+            <article class="service-card">
+              <div class="service-icon"><i class="fas fa-calculator" aria-hidden="true"></i></div>
+              <h3>Tasación Profesional</h3>
+              <p>Valoración real de mercado con informe técnico respaldado por CPI Córdoba.
+            </article>
+            <article class="service-card">
+              <div class="service-icon"><i class="fas fa-file-contract" aria-hidden="true"></i></div>
+              <h3>Gestión Legal y Notarial</h3>
+              <p>Escrituras, boletos, sucesiones, hipotecas. Todo el papeleo, nosotros nos encargamos.
+            </article>
+            <article class="service-card">
+              <div class="service-icon"><i class="fas fa-camera" aria-hidden="true"></i></div>
+              <h3>Fotografía y Tours 3D</h3>
+              <p>Equipo propio de fotografía profesional, videos aéreos y recorridos virtuales 360°.
+            </article>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Testimonios / FAQ Section -->
+      <section id="faq" aria-labelledby="faq-title" class="section">
+        <div class="container">
+<header class="section-header">
+            <h2 id="faq-title" class="section-title"><i class="fas fa-question-circle" aria-hidden="true"></i> Preguntas Frecuentes</h2>
+            <p class="section-subtitle">Resolvemos tus dudas antes de que las tengas</p>
+          </header>
+
+          <!-- Illustration -->
+          <div style="text-align: center; margin-bottom: var(--space-7);">
+            <img src="/bienenhaus-web-/assets/illustrations/flat-vector-illustration-of-an-oversized-magnifyin.svg" alt="Preguntas frecuentes - Búsqueda y respuestas" style="max-width: 100%; height: auto; max-height: 280px; filter: drop-shadow(0 8px 24px rgba(32, 184, 171, 0.2));" loading="lazy">
+          </div>
+
+          <div class="faq-grid" id="faqGrid" aria-busy="true" role="status" aria-label="Preguntas frecuentes">
+            <!-- FAQ skeleton placeholders (replaced by JS) -->
+            <div class="faq-item faq-skeleton">
+              <div class="skeleton skeleton-title" style="width: 70%;"></div>
+              <div class="skeleton skeleton-text" style="margin-top: 0.5rem;"></div>
+              <div class="skeleton skeleton-text" style="width: 85%;"></div>
+            </div>
+            <div class="faq-item faq-skeleton">
+              <div class="skeleton skeleton-title" style="width: 60%;"></div>
+              <div class="skeleton skeleton-text" style="margin-top: 0.5rem;"></div>
+              <div class="skeleton skeleton-text" style="width: 90%;"></div>
+            </div>
+            <div class="faq-item faq-skeleton">
+              <div class="skeleton skeleton-title" style="width: 80%;"></div>
+              <div class="skeleton skeleton-text" style="margin-top: 0.5rem;"></div>
+              <div class="skeleton skeleton-text" style="width: 75%;"></div>
+            </div>
+            <div class="faq-item faq-skeleton">
+              <div class="skeleton skeleton-title" style="width: 55%;"></div>
+              <div class="skeleton skeleton-text" style="margin-top: 0.5rem;"></div>
+              <div class="skeleton skeleton-text" style="width: 80%;"></div>
+            </div>
+            <div class="faq-item faq-skeleton">
+              <div class="skeleton skeleton-title" style="width: 65%;"></div>
+              <div class="skeleton skeleton-text" style="margin-top: 0.5rem;"></div>
+              <div class="skeleton skeleton-text" style="width: 85%;"></div>
+            </div>
+            <div class="faq-item faq-skeleton">
+              <div class="skeleton skeleton-title" style="width: 75%;"></div>
+              <div class="skeleton skeleton-text" style="margin-top: 0.5rem;"></div>
+              <div class="skeleton skeleton-text" style="width: 70%;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+<!-- Contacto Section -->
+      <section id="contacto" aria-labelledby="contacto-title" class="section section-alt">
+        <div class="container">
+          <header class="section-header">
+            <h2 id="contacto-title" class="section-title"><i class="fas fa-envelope" aria-hidden="true"></i> Contactanos</h2>
+            <p class="section-subtitle">Estamos para ayudarte. Escribinos y te respondemos en menos de 24hs.
+          </header>
+
+          <!-- Illustration -->
+          <div style="text-align: center; margin-bottom: var(--space-7);">
+            <img src="/bienenhaus-web-/assets/illustrations/flat-vector-illustration--heart-shaped-house-outli.svg" alt="Contacto - Encuentra tu hogar" style="max-width: 100%; height: auto; max-height: 280px; filter: drop-shadow(0 8px 24px rgba(32, 184, 171, 0.2));" loading="lazy">
+          </div>
+
+          <div class="contact-grid">
+            <form class="contact-form" id="contactForm" novalidate>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="contactName">Nombre completo <span class="required" aria-hidden="true">*</span></label>
+                  <input type="text" id="contactName" name="name" required autocomplete="name" placeholder="Juan Pérez">
+                </div>
+                <div class="form-group">
+                  <label for="contactEmail">Email <span class="required" aria-hidden="true">*</span></label>
+                  <input type="email" id="contactEmail" name="email" required autocomplete="email" placeholder="juan@email.com">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="contactPhone">Teléfono</label>
+                  <input type="tel" id="contactPhone" name="phone" autocomplete="tel" placeholder="+54 351 XXX-XXXX">
+                </div>
+                <div class="form-group">
+                  <label for="contactSubject">Asunto</label>
+                  <select id="contactSubject" name="subject" required>
+                    <option value="">Seleccioná un tema</option>
+                    <option value="compra">Quiero comprar una propiedad</option>
+                    <option value="venta">Quiero vender mi propiedad</option>
+                    <option value="alquiler">Busco alquilar / Quiero alquilar mi propiedad</option>
+                    <option value="tasacion">Solicitar tasación gratuita</option>
+                    <option value="asesoria">Asesoría legal / notarial</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="contactMessage">Mensaje <span class="required" aria-hidden="true">*</span></label>
+                <textarea id="contactMessage" name="message" required rows="5" placeholder="Contanos qué necesitás..."></textarea>
+              </div>
+              <div class="form-group checkbox-group">
+                <input type="checkbox" id="contactConsent" name="consent" required>
+                <label for="contactConsent">Acepto la <a href="/politica-privacidad" target="_blank">Política de Privacidad</a> y autorizo a Bienenhaus a contactarme <span class="required" aria-hidden="true">*</span></label>
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg btn-full">
+                <i class="fas fa-paper-plane" aria-hidden="true"></i> Enviar mensaje
+              </button>
+              <div class="form-message" id="contactFormMessage" aria-live="polite"></div>
+            </form>
+            
+            <div class="contact-info">
+              <h3>Otras formas de contactarnos</h3>
+              <div class="contact-methods">
+                <a href="https://wa.me/5493511234567" target="_blank" rel="noopener" class="contact-method whatsapp">
+                  <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                  <div>
+                    <strong>WhatsApp</strong>
+                    <span>+54 9 351 123-4567</span>
+                  </div>
+                </a>
+                <a href="tel:+543511234567" class="contact-method phone">
+                  <i class="fas fa-phone" aria-hidden="true"></i>
+                  <div>
+                    <strong>Teléfono</strong>
+                    <span>+54 351 123-4567</span>
+                  </div>
+                </a>
+                <a href="mailto:bienenhaus.propiedades@gmail.com" class="contact-method email">
+                  <i class="fas fa-envelope" aria-hidden="true"></i>
+                  <div>
+                    <strong>Email</strong>
+                    <span>bienenhaus.propiedades@gmail.com</span>
+                  </div>
+                </a>
+                <div class="contact-method address">
+                  <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                  <div>
+                    <strong>Oficina</strong>
+                    <span>Av. Rafael Núñez 4250, Córdoba Capital</span>
+                    <small>Lun-Vie 9:00-19:00 / Sáb 10:00-14:00</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+<!-- Newsletter Section -->
+      <section id="newsletter" class="section newsletter-section" aria-labelledby="newsletter-title">
+        <div class="container">
+          <div class="newsletter-content">
+            <h2 id="newsletter-title">¿No querés perderte ninguna oportunidad?</h2>
+            <p>Suscribite a nuestro newsletter y recibí las mejores propiedades en tu inbox cada semana.
+
+            <!-- Illustration -->
+            <div style="text-align: center; margin: var(--space-5) 0; max-width: 200px; margin-left: auto; margin-right: auto;">
+              <img src="/bienenhaus-web-/assets/illustrations/flat-vector-illustration--abstract-calculator-with.svg" alt="Calculadora hipotecaria - Planifica tu inversión" style="max-width: 100%; height: auto; filter: drop-shadow(0 4px 16px rgba(32, 184, 171, 0.15));" loading="lazy">
+            </div>
+
+            <form class="newsletter-form" id="newsletterForm" novalidate>
+            <div class="newsletter-input-group">
+              <input type="email" id="newsletterEmail" name="email" required placeholder="Tu email" autocomplete="email" aria-label="Email para suscripción">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane" aria-hidden="true"></i> Suscribirme
+              </button>
+            </div>
+            <p class="newsletter-note">Sin spam. Solo las mejores propiedades. Podés darte de baja cuando quieras.
+          </form>
+        </div>
+      </section>
+</main>
+
+    <!-- CTA Section -->
+    <section id="cta" class="section section-alt" aria-labelledby="cta-title" style="background-image: url('/bienenhaus-web-/assets/images/cta/cta-silhouette.webp'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative;">
+      <div class="container" style="position: relative; z-index: 1;">
+        <div style="max-width: 600px; margin: 0 auto; text-align: center; padding: var(--space-9) var(--space-5);">
+          <h2 id="cta-title" class="section-title" style="margin-bottom: var(--space-4);">¿Listo para encontrar tu hogar ideal?</h2>
+          <p class="section-subtitle" style="margin-bottom: var(--space-6);">Más de 500 propiedades en Córdoba te esperan. Asesoría personalizada, tasación gratuita y video tours 360°.</p>
+          <div class="hero-cta" style="justify-content: center; gap: var(--space-4); flex-wrap: wrap;">
+            <a href="#catalogo" class="btn btn-primary btn-lg">
+              <i class="fas fa-search" aria-hidden="true"></i> Ver propiedades
+            </a>
+            <a href="#contacto" class="btn btn-secondary btn-lg">
+              <i class="fas fa-comments" aria-hidden="true"></i> Solicitar asesoría
+            </a>
+          </div>
+        </div>
+        <!-- Dark overlay for readability -->
+        <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(8, 9, 11, 0.85) 0%, rgba(8, 9, 11, 0.7) 50%, rgba(8, 9, 11, 0.9) 100%); pointer-events: none;"></div>
+      </div>
+    </section>
+
+    <!-- Back to top -->
+    <button type="button" class="back-to-top" id="backToTop" aria-label="Volver arriba">
+      <i class="fas fa-chevron-up" aria-hidden="true"></i>
+    </button>
+    
+    <!-- Footer placeholder - will be replaced by Footer component -->
+    <footer id="footer-placeholder"></footer>
+    
+    <!-- Toast container for notifications -->
+    <div id="toast-container" class="toast-container" role="region" aria-label="Notificaciones" aria-live="polite"></div>
+    
+  
+  <!-- Scroll-reveal: adds .visible class when sections enter viewport -->
+  <script>
+  (function() {
+    'use strict';
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    
+    var sections = document.querySelectorAll('.section, .hero3d');
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+      
+      sections.forEach(function(s) { observer.observe(s); });
+    } else {
+      sections.forEach(function(s) { s.classList.add('visible'); });
+    }
+    
+    // Back to top button
+    var backBtn = document.getElementById('backToTop');
+    if (backBtn) {
+      window.addEventListener('scroll', function() {
+        if (window.scrollY > 600) {
+          backBtn.classList.add('visible');
+        } else {
+          backBtn.classList.remove('visible');
+        }
+      }, { passive: true });
+      
+      backBtn.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+  })();
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
