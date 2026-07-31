@@ -31,7 +31,7 @@ export function sanitizeClassName(str: string): string {
 
 export function sanitizeShortText(str: string, maxLen = 200): string {
   if (!str) return '';
-  const cleaned = String(str).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+  const cleaned = String(str).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\u200B-\u200F\u2028-\u202F\uFEFF]/g, '');
   if (cleaned.length <= maxLen) return cleaned;
   return cleaned.slice(0, maxLen) + '\u2026';
 }

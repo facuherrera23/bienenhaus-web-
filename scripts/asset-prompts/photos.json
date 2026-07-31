@@ -1,0 +1,137 @@
+{
+  "styleSheet": "warm natural golden hour light, premium modern architecture, earthy beige terracotta sage palette, editorial real estate photography, architectural digest aesthetic, no people, no text, no watermarks, no cars, immaculate landscaping, high dynamic range, 8k detail, photorealistic, Canon R5 24mm f1.4 style",
+  "negativePrompt": "people, text, watermarks, logos, cars, clutter, overexposed, underexposed, blurry, low quality, cartoon, illustration, painting, sketch, watermark, signature, timestamp, date, ugly, deformed, noisy, grainy, dark, gloomy, cold blue tones",
+  "defaults": {
+    "steps": 4,
+    "cfg_scale": 3.5,
+    "sampler": "euler"
+  },
+  "categories": [
+    {
+      "name": "hero",
+      "count": 5,
+      "resolution": "1344x768",
+      "prompts": [
+        "stunning modern villa exterior at golden hour, floor-to-ceiling glass walls reflecting warm sunset, infinity pool mirroring sky, manicured mediterranean garden with olive trees and lavender, architectural masterpiece, aerial perspective",
+        "luxury penthouse terrace at sunset, panoramic city skyline view, sleek glass railing, designer outdoor furniture with neutral linen cushions, string lights overhead, sophisticated urban living, wide angle",
+        "contemporary beach house at golden hour, elevated on stilts, weathered wood cladding, expansive deck with built-in seating, ocean horizon stretching to infinity, serene coastal luxury, drone perspective",
+        "modern farmhouse at magic hour, white board-and-batten siding, black metal roof, wraparound porch with rocking chairs, mature oak trees, warm glow from interior windows, inviting elegant rural estate",
+        "architectural showpiece at twilight, brutalist concrete structure softened by warm interior lighting, cascading green walls, reflecting pool, dramatic shadows, museum-quality residential architecture"
+      ]
+    },
+    {
+      "name": "properties_exterior",
+      "count": 25,
+      "resolution": "1152x896",
+      "prompts": [
+        "modern two-story family home, clean white stucco, black window frames, landscaped front yard with native grasses, welcoming entry, bright mid-morning light",
+        "contemporary townhouse row, unified facade with individual character, green roof terraces, shared courtyard, urban infill excellence, soft afternoon light",
+        "scandinavian-inspired cabin, light timber cladding, large picture windows, stone foundation, pine forest backdrop, cozy hygge atmosphere, diffused northern light",
+        "mid-century modern renovation, flat roof, clerestory windows, brick accent wall, xeriscape landscaping, palm springs aesthetic, golden desert light",
+        "industrial loft conversion, exposed brick, steel beams, massive arched windows, rooftop garden, urban grit meets refinement, dramatic side lighting",
+        "mediterranean villa, terracotta roof, arched loggias, bougainvillea climbing walls, courtyard fountain, old-world charm modern comfort, warm southern light",
+        "minimalist concrete house, board-formed walls, ribbon windows, cantilevered upper floor, reflecting pool, zen garden, pure form, overcast soft light",
+        "tropical modern residence, butterfly roof, deep overhangs, louvered screens, indoor-outdoor flow, lush jungle setting, dappled green light",
+        "craftsman bungalow restored, natural stone columns, exposed rafters, art glass windows, mature landscaping, timeless character, warm autumn light",
+        "ultra-modern glass box, frameless corners, smart glass technology, floating staircase visible through transparency, cliffside location, dramatic coastal light",
+        "barn conversion, soaring vaulted ceiling, original timber frame, glazed gable end, rolling hills backdrop, rustic elegance, late afternoon glow",
+        "passive house certified, triple-glazed windows, thick insulation visible at reveals, solar array integrated, net-zero energy, crisp winter light",
+        "spanish colonial revival, white stucco, red tile roof, wrought iron details, central courtyard with citrus trees, romantic heritage, golden hour",
+        "japanese-inspired residence, shou sugi ban charred wood, shoji screens, engawa veranda, koi pond, maple trees, serene minimalism, misty morning light",
+        "geodesic dome home, triangular glazing panels, efficient geometry, woodland clearing, futuristic yet organic, ethereal forest light",
+        "art deco apartment building, geometric facade, curved corners, decorative metalwork, rooftop terrace, jazz age glamour, dramatic evening light",
+        "container house cluster, colorful shipping containers stacked creatively, rooftop decks, industrial chic, sustainable living, bright sunny day",
+        "treehouse luxury retreat, suspended among ancient oaks, glass floor panels, rope bridge access, canopy views, magical childhood dream realized, dappled sunlight",
+        "earthship biomecture, rammed earth tires, south-facing greenhouse, thermal mass walls, off-grid self-sufficiency, desert landscape, harsh beautiful light",
+        "floating house on lake, modular pontoons, full perimeter deck, floor-to-ceiling windows all sides, water reflections, tranquil isolation, mirror-calm dawn",
+        "a-frame cabin reimagined, steeply pitched roof, glazed gables, loft bedroom, stone hearth, alpine meadow setting, cozy mountain retreat, alpenglow",
+        "courtyard house, inward-facing rooms around central garden, privacy walls, fountain centerpiece, indoor-outdoor rooms, sanctuary in city, soft filtered light",
+        "hillside residence, terraced architecture following slope, green roofs each level, infinity edges, panoramic valley views, site-responsive design, sweeping vista light",
+        "tiny house luxury, 400 sq ft perfectly optimized, transforming furniture, skylights, off-grid capable, minimal footprint maximum life, bright airy interior glow",
+        "smart home showcase, integrated technology invisible, kinetic facade, adaptive glazing, energy dashboard visible, future of living today, cool tech aesthetic light",
+        "heritage mansion restored, ornate cornice, grand portico, formal gardens, crystal chandelier visible through window, timeless grandeur, regal evening light"
+      ]
+    },
+    {
+      "name": "properties_interior",
+      "count": 25,
+      "resolution": "1152x896",
+      "prompts": [
+        "open concept living room, double-height ceiling, floor-to-ceiling windows, designer sectional in warm neutral, sculptural coffee table, statement lighting, curated art, warm ambient glow",
+        "gourmet kitchen, waterfall quartz island, professional range, integrated panel-ready appliances, walk-in pantry visible, pendant lights, herbs on sill, bright functional beauty",
+        "primary suite retreat, sitting area with fireplace, private balcony access, custom built-ins, neutral linen bedding, layered textures, sanctuary atmosphere, soft morning light",
+        "spa bathroom, freestanding soaking tub with view, frameless glass shower, dual vanity, natural stone slab walls, heated floors, candlelight serenity, golden hour",
+        "home office library, floor-to-ceiling walnut shelves, rolling ladder, leather chair, natural light flooding, quiet productivity, intellectual warmth, afternoon sun beams",
+        "wine cellar tasting room, climate-controlled walls, display racking, stone archway, leather banquette, sommelier lighting, connoisseur elegance, intimate amber glow",
+        "indoor-outdoor living room, disappearing glass walls, matched flooring continues to patio, outdoor kitchen visible, seamless flow, entertaining dream, sunset glow",
+        "grand entrance foyer, floating staircase, chandelier centerpiece, gallery wall, console table with sculpture, first impression perfection, dramatic entry light",
+        "family room media lounge, acoustic panels disguised as art, plush sectional, projection screen hidden, snack bar, cozy technology, warm evening ambiance",
+        "breakfast nook, built-in banquette, round pedestal table, bay window seating, morning coffee ritual, cheerful start, bright optimistic light",
+        "walk-in closet boutique, custom organization, island with jewelry drawers, full-length mirror, chandelier, dressing room luxury, bright clear light",
+        "laundry room elevated, quartz counters, farmhouse sink, drying rack, wallpaper accent, functional beauty, domestic chore joy, clean bright light",
+        "mudroom command center, cubbies per family member, bench storage, pet station, chalkboard calendar, organized chaos tamed, practical elegance, natural light",
+        "guest suite private, en-suite bath, sitting area, kitchenette, private patio access, hotel-quality hospitality, welcoming warmth, soft diffused light",
+        "game room lounge, pool table center, bar with wine fridge, acoustic ceiling, vintage arcade, playful sophistication, moody atmospheric light",
+        "fitness studio, mirrored wall, rubber flooring, equipment curated, floor-to-ceiling windows, motivation environment, energizing bright light",
+        "craft studio maker space, natural light, organized supplies, large work table, inspiration board, creative sanctuary, productive artistic glow",
+        "reading nook turret, circular window seat, built-in bookshelves, cozy textiles, escape into stories, intimate scale, magical golden hour",
+        "pet spa room, elevated washing station, drying area, toy storage, built-in beds, furry family luxury, practical love, clean warm light",
+        "safe room panic suite, reinforced discreetly, comfortable furnishings, supplies stocked, peace of mind invisible, secure serenity, calm neutral light",
+        "aging-in-place primary, zero-threshold shower, grab bars designed beautifully, wider doors, smart home controls, dignity independence, bright accessible light",
+        "multi-generational wing, separate entrance, kitchenette, living space, bedroom, bath, together yet independent, family harmony, warm inclusive light",
+        "home theater cinema, acoustic perfection, reclining leather rows, star ceiling, concession stand, immersive escape, dark dramatic lighting",
+        "conservatory garden room, glass roof, tropical plants, wicker furniture, bird songs, indoor jungle, biophilic bliss, dappled green light",
+        "butler's pantry service, countertop appliances hidden, dishware display, prep sink, seamless entertaining flow, domestic ballet, functional bright light",
+        "owner's retreat balcony, fire table, city views, privacy screening, morning coffee sanctuary, personal outdoor room, serene dawn light"
+      ]
+    },
+    {
+      "name": "agents",
+      "count": 10,
+      "resolution": "768x1344",
+      "prompts": [
+        "professional real estate agent portrait, warm confident smile, modern blazer in earth tone, natural outdoor background with blurred luxury property, golden hour lighting, approachable expertise",
+        "real estate professional headshot, friendly direct gaze, crisp white shirt under neutral cardigan, soft bokeh city skyline, morning light, trustworthy competent",
+        "property specialist portrait, polished professional, subtle jewelry, blurred contemporary interior background, studio lighting with warm fill, knowledgeable approachable",
+        "senior broker portrait, distinguished presence, tailored jacket, panoramic office window view, dramatic side lighting, authoritative yet warm",
+        "new agent portrait, enthusiastic energy, smart casual attire, blurred neighborhood street with for-sale signs, bright optimistic lighting, fresh eager",
+        "luxury specialist portrait, refined elegance, silk tie or scarf, blurred waterfront mansion background, golden hour glow, sophisticated exclusive",
+        "commercial agent portrait, confident posture, modern office background with market data screens, cool professional lighting, analytical sharp",
+        "relocation specialist portrait, welcoming warmth, global map subtle in background, soft natural light, empathetic knowledgeable",
+        "investment advisor portrait, intelligent focus, contemporary office, property portfolio tablets visible, balanced lighting, strategic trusted",
+        "team leader portrait, collaborative stance, diverse team blurred in background, bright open office, inclusive inspiring"
+      ]
+    },
+    {
+      "name": "sections",
+      "count": 12,
+      "resolution": "1152x896",
+      "prompts": [
+        "about us section hero, modern office interior with team collaborating, glass walls, branded subtle, natural light, transparency trust",
+        "services section hero, conceptual split screen: buying journey left, selling journey right, clean graphic style photography, bright clear",
+        "testimonials section hero, happy family at new home threshold, keys in hand, genuine joy, warm authentic moment, golden hour",
+        "contact section hero, inviting consultation space, comfortable seating, coffee service, city view, professional welcoming, soft afternoon light",
+        "market report section hero, elegant data visualization printed on premium paper, laptop open, coffee, analytical sophistication, bright morning",
+        "neighborhood guide hero, aerial drone shot of desirable district, parks, schools, amenities highlighted, community vitality, sweeping vista",
+        "mortgage calculator hero, young couple reviewing tablet with loan officer, confident planning, bright future, warm collaborative light",
+        "home valuation hero, homeowner and agent reviewing comparative market analysis on tablet, transparent process, trust building, natural light",
+        "blog insights hero, stylish desk with magazine spread open, reading glasses, coffee, thought leadership, intellectual warm",
+        "faq section hero, friendly agent gesturing to invisible questions, approachable expertise, clean modern background, bright welcoming",
+        "careers section hero, diverse team in modern workspace, growth culture evident, energetic positive, bright optimistic",
+        "press media hero, luxury property feature in premium magazine spread, editorial quality, aspirational lifestyle, sophisticated light"
+      ]
+    },
+    {
+      "name": "cta",
+      "count": 5,
+      "resolution": "1344x768",
+      "prompts": [
+        "call to action hero, stunning property silhouette at sunset, \"Find Your Dream Home\" implied, emotional aspirational, golden hour magic",
+        "cta banner, keys on modern entry table with fresh flowers, new beginnings symbolism, clean minimal, bright hopeful",
+        "cta section, family walking up illuminated path to front door, welcome home narrative, warm inviting glow",
+        "cta hero, aerial view of perfect suburban street at twilight, all homes glowing, community belonging, magical evening",
+        "cta banner, sold sign with agent handshake reflection in window, success closure, bright confident light"
+      ]
+    }
+  ]
+}

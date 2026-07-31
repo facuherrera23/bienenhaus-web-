@@ -33,6 +33,8 @@
     "jsdom": "^29.1.1",
     "prettier": "^3.9.6",
     "rollup-plugin-visualizer": "^7.0.1",
+    "sharp-cli": "^5.2.0",
+    "svgo": "^4.0.2",
     "terser": "^5.49.0",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.65.0",

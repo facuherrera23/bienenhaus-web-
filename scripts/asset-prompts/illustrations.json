@@ -1,0 +1,30 @@
+{
+  "styleSheet": "flat vector illustration style, warm earthy palette (terracotta #C66B3D, sage #7A9E7E, cream #F5F0E8, charcoal #2D2D2D, soft gold #D4A843), clean geometric shapes, subtle textures, architectural digest editorial illustration aesthetic, consistent stroke weight 2px, rounded corners 8px, no gradients only flat colors, minimal detail maximum clarity",
+  "categories": [
+    {
+      "name": "illustrations",
+      "count": 18,
+      "resolution": "1024x1024",
+      "prompts": [
+        "hero illustration: stylized modern house with garden, warm sun rays, birds flying, welcoming path leading to front door, flat vector, earthy palette",
+        "search illustration: magnifying glass over stylized map with house pins, location markers glowing, clean flat design, sage and terracotta",
+        "filter illustration: elegant funnel icon with sliders and toggles, property types as tiny icons (house, apartment, land), organized neat",
+        "favorites illustration: heart-shaped house outline, warm glow emanating, small sparkles, emotional connection, flat vector style",
+        "mortgage calculator illustration: abstract calculator with house silhouette display, numbers floating, clean financial trust aesthetic",
+        "neighborhood guide illustration: stylized community map with park, school, cafe, transit icons connected by walking paths, vibrant friendly",
+        "agent matching illustration: two puzzle pieces fitting together (agent + client), handshake negative space, partnership metaphor, warm tones",
+        "virtual tour illustration: VR headset merging with house interior view, technology meets real estate, modern innovative, sage accent",
+        "market trends illustration: upward trending chart made of tiny house icons, steady growth, confident optimistic, terracotta accent",
+        "home valuation illustration: house on scale balanced with gold coins, fair market value concept, justice trust, clean composition",
+        "closing illustration: keys handed over, contract signed, celebration confetti subtle, milestone achievement, warm golden moment",
+        "moving day illustration: stylized moving truck with boxes labeled rooms, checklists, organized transition, sage green truck",
+        "investment illustration: property portfolio as building blocks stacking upward, golden block on top, wealth building, terracotta gold",
+        "renovation illustration: before/after split house, paint roller, hammer, transformation arrow, potential realized, dynamic composition",
+        "legal protection illustration: shield with house silhouette inside, gavel and contract icons, security peace of mind, charcoal accent",
+        "insurance illustration: umbrella sheltering stylized house, rain drops bouncing off, protection coverage, clean minimal",
+        "energy efficiency illustration: house with solar panels, leaf icons, battery storage, green certification badge, sustainable future, sage dominant",
+        "smart home illustration: house with connected device icons (thermostat, lock, light, camera) linked by subtle lines, modern convenience, terracotta accents"
+      ]
+    }
+  ]
+}

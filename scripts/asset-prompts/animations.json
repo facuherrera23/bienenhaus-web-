@@ -1,0 +1,23 @@
+{
+  "styleSheet": "Lottie JSON animations, 30fps, 2-3 seconds duration, loopable, simple shape layers only (no images), reduced motion safe (opacity/transform only), 300x300 viewport, minimal keyframes, elegant easing (easeOutCubic), warm brand colors as shape fills (terracotta #C66B3D, sage #7A9E7E, gold #D4A843)",
+  "categories": [
+    {
+      "name": "animations",
+      "count": 12,
+      "prompts": [
+        "hero-float: house icon gentle vertical float (0 to -8px to 0), 3s easeInOutSine loop, subtle breathing motion",
+        "card-hover-lift: card shape translateY(0 to -4px) with shadow scale(1 to 1.02), 300ms easeOutCubic, reverse on out",
+        "skeleton-shimmer: left-to-right gradient sweep across card placeholder, 1.5s linear infinite, reduced motion = static",
+        "glow-pulse: outer glow ring scale(1 to 1.15) opacity(0.4 to 0), 2s easeOutCubic infinite, ambient premium feel",
+        "loading-spinner: three dots bouncing sequentially (stagger 150ms), 1s easeInOutCubic loop, brand colors",
+        "heart-beat: heart icon scale(1 to 1.2 to 1) on favorite toggle, 400ms easeOutBack, single play",
+        "check-success: checkmark drawing stroke-dashoffset 0 to 1, 500ms easeOutCubic, scale pop 1 to 1.15, single play",
+        "map-pin-drop: pin falling from top with bounce, rotation settle, 800ms easeOutBounce, single play",
+        "key-turn: key icon rotating 90deg clockwise, 600ms easeInOutCubic, unlock metaphor, single play",
+        "arrow-slide: chevron sliding right 8px and back, 1.5s easeInOutSine infinite, continue reading hint",
+        "phone-ring: phone icon with radiating rings expanding opacity 0.6 to 0, 1.5s easeOutCubic infinite, call CTA",
+        "email-send: paper plane launching from envelope, arc trajectory, 800ms easeOutCubic, contact sent feedback"
+      ]
+    }
+  ]
+}

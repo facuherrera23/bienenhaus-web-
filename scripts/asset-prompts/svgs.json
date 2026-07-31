@@ -1,0 +1,69 @@
+{
+  "styleSheet": "SVG icons, 24x24 viewBox, 1.5px stroke weight, stroke-linecap round, stroke-linejoin round, currentColor for strokes, no fills (outline style), consistent geometric precision, optical alignment, Lucide-inspired aesthetic, scalable crisp at any size",
+  "categories": [
+    {
+      "name": "navigation",
+      "count": 8,
+      "prompts": [
+        "chevron-left: simple left-pointing chevron, two strokes forming arrow",
+        "chevron-right: simple right-pointing chevron, two strokes forming arrow",
+        "chevron-down: simple down-pointing chevron for dropdowns",
+        "chevron-up: simple up-pointing chevron",
+        "menu: three horizontal lines (hamburger), equal spacing",
+        "close: X mark, two crossing strokes, 24x24 centered",
+        "home: simple house outline, roof triangle + square base, door negative space",
+        "search: magnifying glass circle + handle stroke, classic icon"
+      ]
+    },
+    {
+      "name": "property",
+      "count": 12,
+      "prompts": [
+        "house: standalone house icon, roof, walls, door, window, clean silhouette",
+        "building: multi-story apartment building, multiple windows aligned, entrance",
+        "land: empty lot outline with grass tufts, simple ground line",
+        "key: traditional key shape, bow head, blade, teeth, symbolic access",
+        "door: entry door with handle, slight ajar negative space, welcoming",
+        "window: four-pane window cross mullion, clean architectural",
+        "garage: garage door outline, simple geometric",
+        "garden: simple tree + flower bed, landscaping symbol",
+        "pool: water rectangle with ladder, ripple lines",
+        "balcony: railing outline with floor slab, outdoor living",
+        "floor-plan: simplified floor plan walls + door swing arcs",
+        "ruler: measuring tape or ruler, dimensioning tool"
+      ]
+    },
+    {
+      "name": "ui",
+      "count": 10,
+      "prompts": [
+        "heart: outline heart shape, favorites/wishlist",
+        "star: five-point star outline, featured/rating",
+        "share: three connected dots with lines, sharing action",
+        "download: arrow down into tray, saving action",
+        "print: printer outline, document printing",
+        "email: envelope outline, contact action",
+        "phone: handset outline, call action",
+        "map-pin: location marker tear drop, property location",
+        "calendar: date grid outline, scheduling",
+        "clock: analog clock face outline, timing"
+      ]
+    },
+    {
+      "name": "decorative",
+      "count": 10,
+      "prompts": [
+        "sun: circle with radiating strokes, warmth energy",
+        "leaf: simple leaf outline, nature sustainability",
+        "sparkles: three small stars, magic premium",
+        "arrow-up-right: external link, new window",
+        "check: checkmark, confirmation success",
+        "alert-circle: circle with exclamation, attention",
+        "info: circle with i, information",
+        "settings: gear cog outline, configuration",
+        "user: person silhouette circle + body, profile",
+        "lock: padlock outline, security privacy"
+      ]
+    }
+  ]
+}
