@@ -1,4 +1,3 @@
-comienza con este plan:
 # DESIGN SYSTEM PLAN — BIENENHAUS PROPIEDADES
 ## "Nocturne" — Sistema Normativo Completo (Migración desde Midnight Hive)
 

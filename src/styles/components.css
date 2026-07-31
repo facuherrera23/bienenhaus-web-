@@ -276,7 +276,8 @@
 
 .skeleton-text { height: 1rem; width: 100%; }
 .skeleton-title { height: 1.5rem; width: 60%; }
-.skeleton-card { height: 200px; border-radius: var(--radius-md); }
+.skeleton-image { height: 190px; border-radius: var(--radius-md); margin-bottom: var(--space-3); }
+.skeleton-card { border-radius: var(--radius-md); padding: var(--space-4); }
 .skeleton-avatar { width: 48px; height: 48px; border-radius: var(--radius-full); }
 .skeleton-button { height: 44px; width: 120px; border-radius: var(--radius-full); }
 

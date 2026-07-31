@@ -105,6 +105,18 @@ export async function cargarContenidoSitio() {
     return siteContent;
   } catch (e) {
     logWarn('Content load failed - using default HTML content', { error: e }, 'content');
+    // Clear any section that has a static skeleton placeholder so it doesn't hang on "loading"
+    const faqGrid = document.getElementById('faqGrid');
+    if (faqGrid) {
+      faqGrid.innerHTML = `
+        <div class="empty-state" role="alert" style="grid-column: 1 / -1;">
+          <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--ds-color-warning, var(--color-warning)); margin-bottom: 1rem; display: block;"></i>
+          <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--ds-color-text, var(--color-text)); margin-bottom: 0.5rem;">No se pudieron cargar las preguntas frecuentes</h3>
+          <p style="font-size: 0.95rem; color: var(--ds-color-text-secondary, var(--color-text-secondary));">Intenta recargar la página en unos instantes.</p>
+        </div>
+      `;
+      faqGrid.removeAttribute('aria-busy');
+    }
     return {};
   }
 }
@@ -478,12 +490,25 @@ function renderFaqGrid(value) {
   
   const faqs = Array.isArray(value) ? value : parsePipeArray(value, ['pregunta', 'respuesta']);
   
+  if (faqs.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" role="status" style="grid-column: 1 / -1;">
+        <i class="fas fa-question-circle" style="font-size: 3rem; color: var(--ds-color-text-muted, var(--color-text-muted)); margin-bottom: 1rem; display: block;"></i>
+        <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--ds-color-text-secondary, var(--color-text-secondary)); margin-bottom: 0.5rem;">No hay preguntas frecuentes</h3>
+        <p style="font-size: 0.95rem; color: var(--ds-color-text-muted, var(--color-text-muted));">Pronto publicaremos las preguntas más frecuentes.</p>
+      </div>
+    `;
+    container.removeAttribute('aria-busy');
+    return;
+  }
+  
   container.innerHTML = faqs.map(faq => `
     <div class="faq-item">
       <h4><i class="fas fa-chevron-right"></i> ${escapeHtml(faq.pregunta || '')}</h4>
       <p>${escapeHtml(faq.respuesta || '')}</p>
     </div>
   `).join('');
+  container.removeAttribute('aria-busy');
 }
 
 // ================================================================

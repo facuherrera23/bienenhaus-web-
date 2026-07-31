@@ -22,7 +22,7 @@ Timeout:  15000ms
 Call log:
   - Expect "not toHaveAttribute" with timeout 15000ms
   - waiting for locator('#section-properties')
-    33 × locator resolved to <section hidden="" class="settings-panel" id="section-properties" aria-labelledby="properties-title">…</section>
+    33 × locator resolved to <section hidden="" id="section-properties" class="settings-panel active" aria-labelledby="properties-title">…</section>
        - unexpected value "attribute present"
 
 ```
@@ -30,13 +30,15 @@ Call log:
 ```yaml
 - heading "Bienenhaus Admin" [level=1]
 - paragraph: Panel de Administración - Inicia sesión para continuar
-- alert
+- alert: Invalid login credentials
 - text: Email
 - textbox "Email":
   - /placeholder: admin@bienenhaus.com.ar
+  - text: admin@bienenhaus.com.ar
 - text: Contraseña
 - textbox "Contraseña":
   - /placeholder: ••••••••
+  - text: demo123456
 - button " Iniciar Sesión"
 - banner:
   - button "Toggle sidebar": 

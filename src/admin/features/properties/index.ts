@@ -5,7 +5,8 @@
 import { supabase } from '../../../supabase.ts';
 import { CONFIG } from '../../../config.ts';
 import { uploadToCloudinary, validateImageFile } from '../../../cloudinary.ts';
-import { showToast, formatPrice } from '../../shared/utils.ts';
+import { showToast } from '../../shared/utils.ts';
+import { formatPrice, formatDate } from '../../../utils/format.ts';
 import { loadMLSyncLog } from '../mercadoLibre/index.ts';
 import { logError, logWarn, logDebug, logInfo } from '../../../utils/logger.ts';
 // Cropper.js loaded dynamically in openImageEditor() (Vercel: bundle-dynamic-imports)
@@ -477,34 +478,57 @@ async function bulkDelete(): Promise<void> {
   if (!confirm(`¿Eliminar ${selectedPropertyIds.size} propiedad${selectedPropertyIds.size === 1 ? '' : 'es'}? Esta acción no se puede deshacer.`)) return;
 
   const ids = Array.from(selectedPropertyIds);
-  try {
-    const { data: images } = await supabase
-      .from('imagenes')
-      .select('cloudinary_public_id')
-      .in('propiedad_id', ids);
 
-    if (images?.length) {
-      for (const img of images) {
-        if (img.cloudinary_public_id) {
-          // TODO: Delete from Cloudinary via signed request
+  // First, delete Cloudinary images if any
+  const { data: images } = await supabase
+    .from('imagenes')
+    .select('cloudinary_public_id')
+    .in('propiedad_id', ids);
+
+  if (images?.length) {
+    const publicIds = images
+      .filter(img => img.cloudinary_public_id)
+      .map(img => img.cloudinary_public_id!);
+    
+    if (publicIds.length > 0) {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL?.replace(/\.supabase\.co.*/, '')}.supabase.co/functions/v1/cloudinary-delete`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({ public_ids: publicIds }),
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.warn('Cloudinary delete warning:', errorData);
+          }
+} catch (e) {
+          console.warn('Cloudinary delete failed (non-blocking):', e);
         }
       }
     }
 
-    const { error } = await supabase
-      .from('propiedades')
-      .delete()
-      .in('id', ids);
+    // Then delete from database
+    try {
+      const { error } = await supabase
+        .from('propiedades')
+        .delete()
+        .in('id', ids);
 
-    if (error) throw error;
+      if (error) throw error;
 
-    showToast(`${ids.length} propiedad${ids.length === 1 ? '' : 'es'} eliminada${ids.length === 1 ? '' : 's'}`, 'success');
-    clearSelection();
-    await loadProperties();
-  } catch (e: unknown) {
-    logError('Bulk delete error', e, 'admin-properties');
-    showToast(`Error al eliminar: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error');
-  }
+      showToast(`${ids.length} propiedad${ids.length === 1 ? '' : 'es'} eliminada${ids.length === 1 ? '' : 's'}`, 'success');
+      clearSelection();
+      await loadProperties();
+} catch (e: unknown) {
+      logError('Bulk delete error', e, 'admin-properties');
+      showToast(`Error al eliminar: ${e instanceof Error ? e.message : 'Error desconocido'}`, 'error');
+    }
 }
 
 function clearSelection(): void {
@@ -1010,10 +1034,7 @@ export function cloneProperty(id: number): void {
 (window as any).editProperty = editProperty;
 (window as any).cloneProperty = cloneProperty;
 
-(window as any).confirmDelete = (type: string, id: number, name: string) => confirmDelete(type, id, name);
-
 (window as any).filterProperties = filterProperties;
-(window as any).filterAgents = filterAgents;
 
 export function bulkActionProperties(action: string, data?: any): void {
   bulkAction(action, data);
@@ -1027,18 +1048,6 @@ export function bulkActionProperties(action: string, data?: any): void {
 (window as any).bulkChangeOperation = bulkChangeOperation;
 (window as any).bulkDelete = bulkDelete;
 (window as any).clearBulkSelection = clearSelection;
-
-function filterAgents(): void {
-  // Will be overridden by agents module
-}
-
-function confirmDelete(type: string, _id: number, name: string): void {
-  if (confirm(`¿Eliminar ${type === 'property' ? 'propiedad' : 'agente'} "${name}"? Esta acción no se puede deshacer.`)) {
-    if (type === 'property') {
-      bulkDelete();
-    }
-  }
-}
 
 export {
   propertiesCache,

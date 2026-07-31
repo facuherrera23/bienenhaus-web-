@@ -12,67 +12,23 @@
 # Error details
 
 ```
-Error: expect(locator).not.toBeEmpty() failed
+Error: expect(locator).toContainText(expected) failed
 
-Locator:  locator('#loginError')
-Expected: not empty
-Received: empty
-Timeout:  5000ms
+Locator: locator('#loginError')
+Expected pattern: /error|incorrect|inválido|credenciales/i
+Received string:  "Invalid login credentials"
+Timeout: 5000ms
 
 Call log:
-  - Expect "not toBeEmpty" with timeout 5000ms
+  - Expect "toContainText" with timeout 5000ms
   - waiting for locator('#loginError')
-    14 × locator resolved to <div role="alert" id="loginError" class="login-error"></div>
-       - unexpected value "empty"
+    14 × locator resolved to <div role="alert" id="loginError" class="login-error visible">Invalid login credentials</div>
+       - unexpected value "Invalid login credentials"
 
 ```
 
 ```yaml
-- heading "Bienenhaus Admin" [level=1]
-- paragraph: Panel de Administración - Inicia sesión para continuar
-- alert
-- text: Email
-- textbox "Email":
-  - /placeholder: admin@bienenhaus.com.ar
-- text: Contraseña
-- textbox "Contraseña":
-  - /placeholder: ••••••••
-- button " Iniciar Sesión"
-- banner:
-  - button "Toggle sidebar": 
-  - text:  Bienenhaus Admin
-  - search:
-    - text: 
-    - searchbox "Búsqueda global"
-  - button "Usuario": U
-- navigation "Navegación principal":
-  - navigation:
-    - list:
-      - listitem:
-        - menuitem " Dashboard"
-      - listitem:
-        - menuitem " Propiedades 0"
-      - listitem:
-        - menuitem " Agentes 0"
-      - listitem
-      - listitem:
-        - menuitem "MercadoLibre"
-      - listitem:
-        - menuitem " Configuración"
-  - text: v1.0.0
-- main:
-  - region "Dashboard":
-    - heading "Dashboard" [level=2]
-    - button " Actualizar"
-    - region "Estadísticas principales":
-      - article:  0 Propiedades
-      - article:  0 Agentes
-      - article:  0 Sync ML
-      - article:  0 Errores
-    - region "Actividad Reciente":
-      - heading "Actividad Reciente" [level=3]
-      - paragraph: No hay actividad reciente
-- region "Notificaciones"
+- alert: Invalid login credentials
 ```
 
 # Test source
@@ -104,9 +60,9 @@ Call log:
   24 |     await submitBtn.click();
   25 |     // Check for error message text content - the element gets populated after error
   26 |     const errorDiv = page.locator('#loginError');
-> 27 |     await expect(errorDiv).not.toBeEmpty({ timeout: 5000 });
-     |                                ^ Error: expect(locator).not.toBeEmpty() failed
-  28 |     await expect(errorDiv).toContainText(/error|incorrect|inválido|credenciales/i, { timeout: 5000 });
+  27 |     await expect(errorDiv).not.toBeEmpty({ timeout: 5000 });
+> 28 |     await expect(errorDiv).toContainText(/error|incorrect|inválido|credenciales/i, { timeout: 5000 });
+     |                            ^ Error: expect(locator).toContainText(expected) failed
   29 |   });
   30 | });
   31 | 

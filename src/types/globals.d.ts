@@ -20,6 +20,7 @@ declare global {
     itemsPorPagina: number;
     propiedadActual: any;
     loadProperties: (...args: any[]) => any;
+    loadAgents: () => Promise<void>;
     cargarContenidoSitio: (...args: any[]) => any;
     showToast: (message: string, type?: string, duration?: number, persistent?: boolean) => number;
     abrirAdmin: () => void;

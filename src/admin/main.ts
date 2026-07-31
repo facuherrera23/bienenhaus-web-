@@ -5,7 +5,8 @@ import '../styles/tokens.css';
 import '../styles/admin.css';
 import { supabase } from '../supabase.ts';
 import { CONFIG } from '../config.ts';
-import { showToast, parsePipeArray, closeConfirmModal, executeDelete, formatDate } from './shared/utils.ts';
+import { showToast, parsePipeArray, closeConfirmModal, executeDelete, confirmDelete } from './shared/utils.ts';
+import { formatDate } from '../utils/format.ts';
 import { logError, logWarn, logDebug, logInfo } from '../utils/logger.ts';
 
 // Feature module cache (loaded on demand)
@@ -63,7 +64,9 @@ const AUTH_CONFIG = {
   ACTIVITY_CHECK_INTERVAL_MS: 60 * 1000,
 };
 
-const loginAttempts = new Map<string, { count: number; lockedUntil: number }>();
+// Edge Function URL for rate limiting (set via VITE_SUPABASE_URL)
+const RATE_LIMIT_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL?.replace(/\.supabase\.co.*/, '')}.supabase.co/functions/v1/rate-limit`;
+
 let currentUser: any = null;
 let sessionTimer: number | null = null;
 let lastActivity = Date.now();
@@ -77,35 +80,62 @@ function getContentCache(): Record<string, any> { return contentCache; }
 function setContentCache(cache: Record<string, any>): void { contentCache = cache; }
 
 // ================================================================
-// AUTH HELPERS
+// AUTH HELPERS - Rate limiting via Edge Function (server-side)
 // ================================================================
 function getClientIP(): string { return 'admin-panel'; }
 
-function checkRateLimit(ip: string): { allowed: boolean; remainingTime?: number } {
-  const now = Date.now();
-  const attempt = loginAttempts.get(ip);
-  if (!attempt) return { allowed: true };
-  if (attempt.lockedUntil > now) return { allowed: false, remainingTime: attempt.lockedUntil - now };
-  if (attempt.count >= AUTH_CONFIG.MAX_LOGIN_ATTEMPTS) {
-    attempt.lockedUntil = now + AUTH_CONFIG.LOCKOUT_DURATION_MS;
-    loginAttempts.set(ip, attempt);
-    return { allowed: false, remainingTime: AUTH_CONFIG.LOCKOUT_DURATION_MS };
+async function checkRateLimit(ip: string): Promise<{ allowed: boolean; remainingTime?: number }> {
+  try {
+    const response = await fetch(RATE_LIMIT_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ identifier: ip, action: 'check' }),
+    });
+    
+    if (!response.ok) {
+      console.warn('Rate limit check failed, allowing request');
+      return { allowed: true };
+    }
+    
+    return await response.json();
+  } catch (e) {
+    console.warn('Rate limit check failed, allowing request:', e);
+    return { allowed: true };
   }
-  return { allowed: true };
 }
 
-function recordFailedAttempt(ip: string): void {
-  const now = Date.now();
-  const attempt = loginAttempts.get(ip) || { count: 0, lockedUntil: 0 };
-  attempt.count += 1;
-  if (attempt.count >= AUTH_CONFIG.MAX_LOGIN_ATTEMPTS) {
-    attempt.lockedUntil = now + AUTH_CONFIG.LOCKOUT_DURATION_MS;
-    showToast(`Demasiados intentos fallidos. Cuenta bloqueada por ${AUTH_CONFIG.LOCKOUT_DURATION_MS / 60000} minutos.`, 'error');
+async function recordFailedAttempt(ip: string): Promise<void> {
+  try {
+    await fetch(RATE_LIMIT_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ identifier: ip, action: 'record' }),
+    });
+  } catch (e) {
+    console.warn('Record failed attempt failed:', e);
   }
-  loginAttempts.set(ip, attempt);
 }
 
-function clearFailedAttempts(ip: string): void { loginAttempts.delete(ip); }
+async function clearRateLimit(ip: string): Promise<void> {
+  try {
+    await fetch(RATE_LIMIT_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ identifier: ip, action: 'clear' }),
+    });
+  } catch (e) {
+    console.warn('Clear rate limit failed:', e);
+  }
+}
 
 function startSessionTimer(): void {
   if (sessionTimer) clearInterval(sessionTimer);
@@ -147,7 +177,12 @@ async function checkAuth(): Promise<boolean> {
       }
       throw error;
     }
-    if (session && session.user.email === CONFIG.ADMIN_EMAIL) {
+    // Check both email AND is_admin claim (set by Supabase RLS/hook)
+    const isAdmin = session?.user?.user_metadata?.is_admin === true || 
+                    session?.user?.app_metadata?.is_admin === true ||
+                    session?.user?.email === CONFIG.ADMIN_EMAIL;
+    
+    if (session && isAdmin) {
       currentUser = session.user;
       showDashboard();
       return true;
@@ -164,7 +199,7 @@ async function handleLogin(email: string, password: string): Promise<void> {
   const btn = document.getElementById('btnLogin') as HTMLButtonElement;
   const errorDiv = document.getElementById('loginError')!;
   const ip = getClientIP();
-  const rateLimit = checkRateLimit(ip);
+  const rateLimit = await checkRateLimit(ip);
   if (!rateLimit.allowed) {
     const mins = Math.ceil((rateLimit.remainingTime || 0) / 60000);
     errorDiv.textContent = `Demasiados intentos. Intenta en ${mins} minutos.`;
@@ -185,10 +220,10 @@ async function handleLogin(email: string, password: string): Promise<void> {
       throw new Error('Acceso denegado: credenciales no autorizadas');
     }
     currentUser = data.user;
-    clearFailedAttempts(ip);
+    await clearRateLimit(ip);
     showDashboard();
   } catch (e: unknown) {
-    recordFailedAttempt(ip);
+    await recordFailedAttempt(ip);
     errorDiv.textContent = e instanceof Error ? e.message : 'Error desconocido';
     errorDiv.classList.add('visible');
   } finally {
@@ -844,21 +879,6 @@ async function saveSettings(): Promise<void> {
 // ================================================================
 // INIT
 // ================================================================
-
-// Override confirmDelete to handle both properties and agents
-(window as any).confirmDelete = (type: string, id: number, name: string): void => {
-  if (confirm(`¿Eliminar ${type === 'property' ? 'propiedad' : 'agente'} "${name}"? Esta acción no se puede deshacer.`)) {
-    if (type === 'property') {
-      (window as any).bulkDelete();
-    } else if (type === 'agent') {
-      supabase.from('agentes').update({ activo: false }).eq('id', id).then(({ error }: any) => {
-        if (error) { showToast('Error al eliminar agente', 'error'); return; }
-        showToast('Agente eliminado correctamente', 'success');
-        loadFeature('agents').then(m => m.loadAgents());
-      });
-    }
-  }
-};
 
 document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();

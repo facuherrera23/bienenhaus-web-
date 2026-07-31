@@ -6,6 +6,7 @@
 import './PropertyGrid.css';
 import { supabasePromise } from '../../lib/supabase-loader.ts';
 import { logWarn, logError } from '../../utils/logger.ts';
+import { formatPrice } from '../../utils/format.ts';
 
 let gridElement = null;
 let currentProperties = [];
@@ -204,6 +205,7 @@ function renderProperties(properties) {
         <button class="btn btn-secondary" onclick="window.clearFilters?.(); window.applyFilters?.();">Limpiar filtros</button>
       </div>
     `;
+    gridElement.removeAttribute('aria-busy');
     return;
   }
   
@@ -218,6 +220,7 @@ function renderProperties(properties) {
   });
   
   gridElement.appendChild(fragment);
+  gridElement.removeAttribute('aria-busy');
   
   // Setup infinite scroll if needed
   if (loadMode === 'infinite') {
@@ -248,7 +251,8 @@ function createPropertyCard(property) {
   card.tabIndex = 0;
   
   const badgeClass = property.operacion === 'venta' ? 'badge-venta' : 'badge-alquiler';
-  const price = formatPrice(property.precio, property.moneda, property.operacion);
+  const formattedPrice = formatPrice(property.precio, property.moneda, property.operacion);
+  
   const features = [];
   
   if (property.habitaciones) features.push(`<span><i class="fas fa-bed" aria-hidden="true"></i> ${property.habitaciones}</span>`);
@@ -268,11 +272,10 @@ function createPropertyCard(property) {
       ${property.destacado ? '<span class="badge badge-destacado">Destacada</span>' : ''}
     </div>
     
-    <div class="property-content">
+<div class="property-content">
       <div class="property-price">
-        <span class="currency">$</span>
-        <span class="amount">${Number(price.amount).toLocaleString('es-AR')}</span>
-        <span class="period">${price.period || ''}</span>
+        <span class="formatted-price">${formattedPrice}</span>
+      </div>
       </div>
       
       <h3 class="property-title">${property.titulo}</h3>
@@ -348,12 +351,6 @@ function toggleFavorite(propertyId, button) {
   localStorage.setItem('favoritos', JSON.stringify(favorites));
 }
 
-function formatPrice(price, currency = 'ARS', operation = 'venta') {
-  const symbol = currency === 'USD' ? 'U$S' : '$';
-  const suffix = operation === 'alquiler' ? '/mes' : '';
-  return { amount: Number(price).toLocaleString('es-AR'), period: suffix };
-}
-
 function updateCounter(shown, total) {
   const counter = document.getElementById('contadorPropiedades');
   if (counter) {
@@ -419,6 +416,7 @@ function showLoading(show) {
   if (!grid) return;
   
   if (show && currentPage === 1) {
+    grid.setAttribute('aria-busy', 'true');
     grid.innerHTML = `
       <div class="property-skeleton" style="grid-column: 1 / -1;">
         ${Array(6).fill(0).map(() => `
@@ -432,6 +430,8 @@ function showLoading(show) {
         `).join('')}
       </div>
     `;
+  } else if (!show) {
+    grid.removeAttribute('aria-busy');
   }
 }
 
@@ -464,7 +464,7 @@ function cleanupInfiniteScroll() {
 
 function showError(message) {
   if (!gridElement) return;
-  gridElement.innerHTML = `
+gridElement.innerHTML = `
     <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: var(--color-gray-500);">
       <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--color-warning); margin-bottom: 1rem; display: block;"></i>
       <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--color-gray-700); margin-bottom: 0.5rem;">Error al cargar</h3>
@@ -472,6 +472,7 @@ function showError(message) {
       <button class="btn btn-primary" onclick="loadProperties()">Reintentar</button>
     </div>
   `;
+  gridElement.removeAttribute('aria-busy');
 }
 
 // Expose globally

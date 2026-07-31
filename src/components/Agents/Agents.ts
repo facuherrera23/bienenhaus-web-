@@ -27,6 +27,7 @@ interface Agent {
 let agentsCache: Agent[] = [];
 
 async function loadAgents(): Promise<void> {
+  setAgentsBusy(true);
   try {
     const { data, error } = await supabase
       .from('agentes')
@@ -48,15 +49,38 @@ async function loadAgents(): Promise<void> {
     agentsCache = data || [];
     renderAgentsGrid();
     updateAgentStats();
+    setAgentsBusy(false);
   } catch (e) {
-    logWarn('Agents load failed - showing empty', { error: e }, 'agents');
+    logWarn('Agents load failed - showing error', { error: e }, 'agents');
     agentsCache = [];
-    renderAgentsGrid();
+    renderAgentError(e instanceof Error ? e.message : 'No se pudo cargar el equipo');
     updateAgentStats();
+    setAgentsBusy(false);
   }
 }
 
+function setAgentsBusy(busy: boolean): void {
+  const grid = document.getElementById('agentsGrid');
+  if (!grid) return;
+  if (busy) grid.setAttribute('aria-busy', 'true');
+  else grid.removeAttribute('aria-busy');
+}
+
+function renderAgentError(message: string): void {
+  const grid = document.getElementById('agentsGrid');
+  if (!grid) return;
+  grid.innerHTML = `
+    <div class="empty-state" role="alert" style="grid-column: 1 / -1;">
+      <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--ds-color-warning); margin-bottom: 1rem; display: block;"></i>
+      <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--ds-color-text); margin-bottom: 0.5rem;">Error al cargar el equipo</h3>
+      <p style="font-size: 0.95rem; color: var(--ds-color-text-secondary); margin-bottom: 1.5rem;">${escapeHtml(message)}</p>
+      <button class="btn btn-primary" type="button" onclick="window.loadAgents?.()"><i class="fas fa-redo" aria-hidden="true"></i> Reintentar</button>
+    </div>
+  `;
+}
+
 function initAgents(): void {
+  window.loadAgents = loadAgents;
   loadAgents();
 }
 
@@ -83,6 +107,7 @@ function renderAgentsGrid(): void {
         <p style="font-size: 0.95rem; color: var(--ds-color-text-muted);">No hay agentes activos para mostrar</p>
       </div>
     `;
+    setAgentsBusy(false);
     return;
   }
 
@@ -122,6 +147,7 @@ function renderAgentsGrid(): void {
       if (agent) openContactModal(agent);
     });
   });
+  setAgentsBusy(false);
 }
 
 // Open contact modal for agent
@@ -198,14 +224,6 @@ document.body.appendChild(modal);
   });
   
   document.body.style.overflow = 'hidden';
-}
-
-function closeAgentModal(): void {
-  const modal = document.getElementById('agentModal');
-  if (modal) {
-    modal.classList.remove('active');
-    document.body.style.overflow = '';
-  }
 }
 
 function closeContactModal(): void {

@@ -38,17 +38,6 @@ export function showToast(message: string, type: 'success' | 'error' | 'warning'
   }, duration);
 }
 
-export function formatPrice(price: number, currency = 'ARS', operation = 'sale'): string {
-  const symbol = currency === 'USD' ? 'U$S' : '$';
-  const suffix = operation === 'rent' ? '/mes' : '';
-  return `${symbol} ${Number(price).toLocaleString('es-AR')}${suffix}`;
-}
-
-export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-
 export function getInitials(name: string): string {
   if (!name) return '?';
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -103,9 +92,35 @@ export async function executeDelete(): Promise<void> {
     if (type === 'property') {
       const { data: images } = await import('../../supabase.ts').then(m => m.supabase
         .from('imagenes').select('cloudinary_public_id').eq('propiedad_id', id));
+      
       if (images?.length) {
-        // TODO: Delete from Cloudinary via signed request
+        const publicIds = images
+          .filter(img => img.cloudinary_public_id)
+          .map(img => img.cloudinary_public_id!);
+        
+        if (publicIds.length > 0) {
+          try {
+            const response = await fetch(
+              `${import.meta.env.VITE_SUPABASE_URL?.replace(/\.supabase\.co.*/, '')}.supabase.co/functions/v1/cloudinary-delete`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+                },
+                body: JSON.stringify({ public_ids: publicIds }),
+              });
+            
+            if (!response.ok) {
+              const errorData = await response.json();
+              console.warn('Cloudinary delete warning:', errorData);
+            }
+          } catch (e) {
+            console.warn('Cloudinary delete failed (non-blocking):', e);
+          }
+        }
       }
+      
       const { error } = await import('../../supabase.ts').then(m => m.supabase
         .from('propiedades').delete().eq('id', id));
       if (error) throw error;
